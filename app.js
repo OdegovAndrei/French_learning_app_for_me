@@ -1,0 +1,1059 @@
+import { buildAnkiTsv } from "./anki.js";
+import {
+  buildCards,
+  buildVocabularyNotes,
+  cardsFromVocabularyNote,
+  filterCards,
+  renderClozeFront,
+  revealCloze
+} from "./cards.js";
+import { checkExercise } from "./exercises.js";
+import {
+  buildReviewQueue,
+  createSchedule,
+  isDueSchedule,
+  isNewSchedule,
+  previewSchedule,
+  resetSchedule,
+  reviewSchedule
+} from "./srs.js";
+import {
+  clearDatabase,
+  deleteRecord,
+  exportDatabase,
+  getAllRecords,
+  getRecord,
+  getValue,
+  importDatabase,
+  migrateLegacyProgress,
+  putRecord,
+  setValue,
+  validateBackup
+} from "./storage.js";
+
+const app = document.querySelector("#app");
+const title = document.querySelector("#view-title");
+const modalRoot = document.querySelector("#modal-root");
+const saveIndicator = document.querySelector("#save-indicator");
+
+const state = {
+  data: null,
+  view: "today",
+  currentLessonId: null,
+  appState: defaultAppState(),
+  settings: defaultSettings(),
+  customNotes: [],
+  schedules: new Map(),
+  reviewLogs: [],
+  exerciseAttempts: new Map(),
+  voices: [],
+  reviewMode: "review",
+  reviewDeck: "all",
+  reviewSeen: new Set(),
+  reviewAnswerVisible: false,
+  mediaRecorder: null,
+  audioChunks: [],
+  recordingContext: null,
+  audioUrls: new Set(),
+  saveTimers: new Map()
+};
+
+const viewTitles = {
+  today: "Сегодня",
+  lessons: "Уроки",
+  pronunciation: "Произношение",
+  grammar: "Грамматика",
+  vocabulary: "Словарь",
+  review: "Повторение",
+  progress: "Прогресс",
+  settings: "Настройки"
+};
+
+init();
+
+async function init() {
+  try {
+    const response = await fetch("data/lessons.json");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    state.data = await response.json();
+    state.appState = await migrateLegacyProgress(defaultAppState());
+    state.settings = { ...defaultSettings(), ...(await getValue("settings", {})) };
+    state.customNotes = await getAllRecords("vocabulary");
+    state.schedules = new Map((await getAllRecords("schedules")).map((item) => [item.id, item]));
+    state.reviewLogs = await getAllRecords("reviewLogs");
+    state.exerciseAttempts = new Map((await getAllRecords("exercises")).map((item) => [item.id, item]));
+    await migrateLegacySchedules();
+
+    state.view = viewTitles[state.appState.currentView] ? state.appState.currentView : "today";
+    state.currentLessonId =
+      state.appState.currentLessonId || getNextLesson()?.id || state.data.lessons[0]?.id;
+
+    bindGlobalActions();
+    refreshVoices();
+    window.speechSynthesis?.addEventListener?.("voiceschanged", refreshVoices);
+    render();
+  } catch (error) {
+    app.innerHTML = `<div class="empty-state">Не удалось загрузить кабинет: ${escapeHtml(error.message)}</div>`;
+  }
+}
+
+function bindGlobalActions() {
+  document.querySelectorAll(".nav-item").forEach((button) => {
+    button.addEventListener("click", () => switchView(button.dataset.view));
+  });
+  document.querySelector("#open-settings").addEventListener("click", () => switchView("settings"));
+  window.addEventListener("scroll", () => {
+    window.clearTimeout(state.scrollTimer);
+    state.scrollTimer = window.setTimeout(() => {
+      state.appState.scrollPositions[state.view] = window.scrollY;
+      saveAppState();
+    }, 180);
+  });
+  window.addEventListener("keydown", handleReviewKeyboard);
+}
+
+function switchView(view) {
+  state.appState.scrollPositions[state.view] = window.scrollY;
+  state.view = view;
+  state.appState.currentView = view;
+  state.reviewSeen.clear();
+  state.reviewAnswerVisible = false;
+  saveAppState();
+  render();
+}
+
+function render() {
+  releaseAudioUrls();
+  title.textContent = viewTitles[state.view];
+  document.querySelectorAll(".nav-item").forEach((button) => {
+    button.classList.toggle("active", button.dataset.view === state.view);
+  });
+
+  const renderers = {
+    today: renderToday,
+    lessons: renderLessons,
+    pronunciation: renderPronunciation,
+    grammar: renderGrammar,
+    vocabulary: renderVocabulary,
+    review: renderReview,
+    progress: renderProgress,
+    settings: renderSettings
+  };
+  renderers[state.view]();
+
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: state.appState.scrollPositions[state.view] || 0, behavior: "instant" });
+  });
+}
+
+function renderToday() {
+  const lesson = getLesson(state.currentLessonId) || getNextLesson() || state.data.lessons[0];
+  setCurrentLesson(lesson.id, false);
+  const reviewInfo = getReviewSummary();
+  app.innerHTML = `
+    <div class="metrics-grid today-metrics">
+      <button class="metric metric-button" type="button" data-go-review>
+        <p class="eyebrow">Повторение</p>
+        <strong>${reviewInfo.due} к повторению</strong>
+        <span>${reviewInfo.newSlots} новых сегодня</span>
+      </button>
+      <div class="metric">
+        <p class="eyebrow">Текущий урок</p>
+        <strong>${escapeHtml(lesson.level)} · ${escapeHtml(lesson.title)}</strong>
+        <span>Прогресс сохраняется автоматически</span>
+      </div>
+    </div>
+    <div class="dashboard-grid with-top-gap">
+      <div id="today-lesson"></div>
+      <aside class="section-band daily-plan">
+        <div class="section-heading"><div><p class="eyebrow">45-60 минут</p><h4>Распорядок дня</h4></div></div>
+        <ol class="example-list">
+          <li>5 минут: карточки, которые пора повторить.</li>
+          <li>10 минут: новый мини-диалог.</li>
+          <li>5-10 минут: звук или правило чтения.</li>
+          <li>10 минут: мини-грамматика из диалога.</li>
+          <li>10 минут: упражнения с проверкой.</li>
+          <li>5-10 минут: запись голоса.</li>
+        </ol>
+        <button class="secondary-button full-button" type="button" data-go-review>Начать повторение</button>
+      </aside>
+    </div>`;
+  renderLessonInto(document.querySelector("#today-lesson"), lesson);
+  document.querySelectorAll("[data-go-review]").forEach((button) => {
+    button.addEventListener("click", () => switchView("review"));
+  });
+}
+
+function renderLessons() {
+  app.innerHTML = `
+    <section class="section-band">
+      <div class="section-heading"><div><p class="eyebrow">Сценарии A1-A2</p><h4>Выбери урок</h4></div></div>
+      <div class="lesson-grid">${state.data.lessons.map(renderLessonTile).join("")}</div>
+    </section>
+    <div id="selected-lesson" class="lesson-layout with-top-gap"></div>`;
+  document.querySelectorAll(".lesson-tile").forEach((button) => {
+    button.addEventListener("click", () => {
+      setCurrentLesson(button.dataset.lessonId);
+      state.appState.scrollPositions.lessons = 0;
+      renderLessons();
+    });
+  });
+  renderLessonInto(document.querySelector("#selected-lesson"), getLesson(state.currentLessonId));
+}
+
+function renderPronunciation() {
+  app.innerHTML = `
+    <section class="section-band">
+      <div class="section-heading"><div><p class="eyebrow">Каждый день</p><h4>Звуки и правила чтения</h4></div></div>
+      <div class="phrase-grid">
+        ${state.data.pronunciationTopics.map((topic) => `
+          <article class="phrase-tile">
+            <span class="tag rose">${escapeHtml(topic.level)}</span>
+            <h5 class="compact-title">${escapeHtml(topic.title)}</h5>
+            <p class="fr">${escapeHtml(topic.target)}</p>
+            <p class="note">${escapeHtml(topic.cue)}</p>
+            <p class="note"><strong>Мини-пары:</strong> ${topic.minimalPairs.map(escapeHtml).join(", ")}</p>
+            ${renderVoiceLab(topic.target, `pronunciation:${topic.id}`)}
+          </article>`).join("")}
+      </div>
+    </section>`;
+  bindVoiceLabs();
+}
+
+function renderGrammar() {
+  app.innerHTML = `
+    <section class="section-band">
+      <div class="section-heading"><div><p class="eyebrow">Фокус на форме</p><h4>Грамматика как справочник</h4></div></div>
+      <div class="phrase-grid">
+        ${state.data.grammarTopics.map((topic) => `
+          <article class="phrase-tile">
+            <span class="tag amber">${escapeHtml(topic.level)}</span>
+            <h5 class="compact-title">${escapeHtml(topic.title)}</h5>
+            <p class="grammar-rule">${escapeHtml(topic.rule)}</p>
+            <ul class="example-list">${topic.examples.map((example) => `<li>${escapeHtml(example)}</li>`).join("")}</ul>
+          </article>`).join("")}
+      </div>
+    </section>`;
+}
+
+function renderVocabulary() {
+  const notes = getVocabularyNotes();
+  app.innerHTML = `
+    <section class="section-band">
+      <div class="section-heading vocab-heading">
+        <div><p class="eyebrow">${notes.length} записей · ${getAllCards().length} карточек</p><h4>Словарь и свои слова</h4></div>
+        <div class="control-row">
+          <input class="search-input" type="search" id="vocab-search" placeholder="Поиск по словарю" />
+          <button class="primary-button" type="button" id="add-word">Добавить слово</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="vocab-table">
+          <thead><tr><th>Французский</th><th>IPA</th><th>Значение</th><th>Источник</th><th></th></tr></thead>
+          <tbody id="vocab-body">${notes.map(renderVocabRow).join("")}</tbody>
+        </table>
+      </div>
+    </section>`;
+
+  document.querySelector("#add-word").addEventListener("click", () => openWordDialog());
+  bindVocabularyActions();
+  document.querySelector("#vocab-search").addEventListener("input", (event) => {
+    const query = event.target.value.trim().toLocaleLowerCase("fr");
+    const filtered = notes.filter((note) =>
+      [note.fr, note.ru, note.ipa, note.note, note.lessonTitle, ...(note.tags || [])]
+        .join(" ")
+        .toLocaleLowerCase("fr")
+        .includes(query)
+    );
+    document.querySelector("#vocab-body").innerHTML = filtered.map(renderVocabRow).join("");
+    bindVocabularyActions();
+  });
+}
+
+function renderReview() {
+  const allActive = getActiveCards();
+  const deckCards = filterCards(allActive, state.reviewDeck);
+  const queue = buildReviewQueue({
+    cards: deckCards,
+    schedules: state.schedules,
+    logs: state.reviewLogs,
+    newLimit: state.settings.newCardsPerDay,
+    cram: state.reviewMode === "cram",
+    seen: state.reviewSeen
+  });
+  const card = queue[0];
+  const summary = getReviewSummary(deckCards);
+
+  app.innerHTML = `
+    <section class="review-stage">
+      <div class="review-toolbar">
+        <div class="segmented" aria-label="Режим повторения">
+          <button type="button" data-review-mode="review" class="${state.reviewMode === "review" ? "active" : ""}">Повторение</button>
+          <button type="button" data-review-mode="cram" class="${state.reviewMode === "cram" ? "active" : ""}">Зубрёжка</button>
+        </div>
+        <select id="review-deck" class="select-control" aria-label="Колода">
+          ${renderDeckOptions()}
+        </select>
+        <button class="secondary-button" type="button" id="review-add-word">Добавить слово</button>
+      </div>
+      <div class="review-counters">
+        <span><strong>${summary.due}</strong> пора</span>
+        <span><strong>${summary.newCount}</strong> новых</span>
+        <span><strong>${queue.length}</strong> в этой сессии</span>
+      </div>
+      ${card ? renderReviewCard(card) : renderReviewEmpty(summary)}
+    </section>`;
+
+  bindReviewToolbar();
+  if (card) bindReviewCard(card);
+}
+
+function renderProgress() {
+  const completed = state.appState.completedLessons.length;
+  const cards = getAllCards();
+  const reviewed = new Set(state.reviewLogs.map((log) => log.cardId)).size;
+  const due = cards.filter((card) => isDueSchedule(state.schedules.get(card.id))).length;
+  app.innerHTML = `
+    <div class="metrics-grid">
+      ${renderMetric("Пройдено уроков", `${completed}/${state.data.lessons.length}`, "Разговорные сценарии")}
+      ${renderMetric("Карточки", cards.length, `${reviewed} уже изучались`)}
+      ${renderMetric("Нужно повторить", due, "По расписанию FSRS")}
+      ${renderMetric("Свои слова", state.customNotes.length, "Хранятся только на этом устройстве")}
+    </div>
+    <section class="section-band with-top-gap">
+      <div class="section-heading"><div><p class="eyebrow">История</p><h4>Последние повторения</h4></div></div>
+      ${state.reviewLogs.length ? `
+        <div class="history-list">${[...state.reviewLogs].sort((a, b) => new Date(b.reviewedAt) - new Date(a.reviewedAt)).slice(0, 12).map((log) => {
+          const card = cards.find((item) => item.id === log.cardId);
+          return `<div class="history-row"><strong>${escapeHtml(card?.front || "Удалённая карточка")}</strong><span>${escapeHtml(log.rating)}</span><time>${formatDateTime(log.reviewedAt)}</time></div>`;
+        }).join("")}</div>` : `<div class="empty-state">История появится после первого повторения.</div>`}
+    </section>`;
+}
+
+function renderSettings() {
+  const voiceOptions = state.voices.map((voice) => `
+    <option value="${escapeHtml(voice.voiceURI)}" ${voice.voiceURI === state.settings.voiceURI ? "selected" : ""}>
+      ${escapeHtml(voice.name)} · ${escapeHtml(voice.lang)}${voice.localService ? " · локальный" : ""}
+    </option>`).join("");
+  app.innerHTML = `
+    <div class="settings-layout">
+      <section class="section-band">
+        <div class="section-heading"><div><p class="eyebrow">Произношение</p><h4>Французский голос</h4></div></div>
+        <label class="field-label">Голос
+          <select class="select-control full-control" id="voice-select">
+            ${voiceOptions || `<option value="">Французские голоса пока не найдены</option>`}
+          </select>
+        </label>
+        <label class="field-label">Скорость: <output id="voice-rate-output">${state.settings.voiceRate.toFixed(2)}</output>
+          <input id="voice-rate" type="range" min="0.55" max="1.1" step="0.05" value="${state.settings.voiceRate}" />
+        </label>
+        <button class="secondary-button" type="button" id="test-voice">Прослушать пример</button>
+        <p class="note">Кабинет использует выбранный голос macOS. Дополнительные французские голоса можно бесплатно установить в системных настройках Mac.</p>
+      </section>
+
+      <section class="section-band">
+        <div class="section-heading"><div><p class="eyebrow">Локальные данные</p><h4>Резервная копия</h4></div></div>
+        <div class="stacked-actions">
+          <button class="secondary-button" type="button" id="backup-light">Лёгкая копия без аудио</button>
+          <button class="secondary-button" type="button" id="backup-full">Полная копия с аудио</button>
+          <label class="secondary-button file-button">Восстановить из JSON<input id="restore-backup" type="file" accept="application/json,.json" /></label>
+        </div>
+        <p class="note">IndexedDB переживает перезагрузку браузера. JSON-копия защищает от очистки данных сайта.</p>
+      </section>
+
+      <section class="section-band">
+        <div class="section-heading"><div><p class="eyebrow">Необязательно</p><h4>Anki</h4></div></div>
+        <p>Anki — отдельная программа с карточками. Встроенный FSRS уже выполняет ту же основную задачу, поэтому экспорт нужен только для переноса карточек.</p>
+        <button class="secondary-button" type="button" id="export-anki">Экспортировать Anki TSV</button>
+      </section>
+
+      <section class="section-band danger-band">
+        <div class="section-heading"><div><p class="eyebrow">Опасная зона</p><h4>Сброс кабинета</h4></div></div>
+        <button class="danger-button" type="button" id="reset-progress">Удалить весь локальный прогресс</button>
+      </section>
+    </div>`;
+  bindSettingsActions();
+}
+
+function renderLessonInto(container, lesson) {
+  const template = document.querySelector("#lesson-template").content.cloneNode(true);
+  template.querySelector(".lesson-level").textContent = `${lesson.level} · ${lesson.scenario}`;
+  template.querySelector(".lesson-title").textContent = lesson.title;
+  template.querySelector(".lesson-goal").textContent = lesson.goal;
+  const completeButton = template.querySelector(".complete-lesson");
+  const isDone = state.appState.completedLessons.includes(lesson.id);
+  completeButton.textContent = isDone ? "Урок пройден" : "Отметить урок пройденным";
+  completeButton.addEventListener("click", () => markLessonComplete(lesson.id));
+  template.querySelector(".dialogue-list").innerHTML = lesson.dialogue.map(renderDialogueLine).join("");
+  template.querySelector(".pronunciation-target").innerHTML = renderPronunciationForLesson(lesson);
+  template.querySelector(".grammar-note").innerHTML = renderGrammarForLesson(lesson);
+  template.querySelector(".exercise-list").innerHTML = lesson.exercises
+    .map((exercise, index) => renderExercise(lesson, exercise, index))
+    .join("");
+  template.querySelector(".voice-lab").innerHTML = renderVoiceLab(lesson.targetPhrase, `lesson:${lesson.id}`);
+  container.replaceChildren(template);
+  bindLessonActions(container, lesson);
+  bindVoiceLabs(container);
+}
+
+function bindLessonActions(container, lesson) {
+  container.querySelectorAll("[data-speak]").forEach((button) => {
+    button.addEventListener("click", () => speakFrench(button.dataset.speak));
+  });
+  container.querySelectorAll(".exercise").forEach((box) => bindExercise(box, lesson));
+}
+
+function renderExercise(lesson, exercise, index) {
+  const id = exercise.id || `${lesson.id}-${index}`;
+  const attempt = state.exerciseAttempts.get(id) || { id, lessonId: lesson.id, answer: "" };
+  const result = attempt.result;
+  const modelVisible = attempt.showModel;
+  const hintVisible = attempt.showHint;
+  return `
+    <div class="exercise" data-exercise-id="${escapeHtml(id)}">
+      <div class="exercise-header"><span class="tag">${escapeHtml(exercise.type)}</span>${result ? `<span class="result-badge ${escapeHtml(result.status)}">${resultLabel(result.status)}</span>` : ""}</div>
+      <p><strong>${escapeHtml(exercise.prompt)}</strong></p>
+      <textarea placeholder="Напиши свой ответ здесь...">${escapeHtml(attempt.answer || "")}</textarea>
+      <div class="control-row">
+        <button class="primary-button compact-button" type="button" data-check-exercise>Проверить</button>
+        <button class="pill-button" type="button" data-show-hint>Подсказка</button>
+        <button class="pill-button" type="button" data-show-model>Показать пример</button>
+      </div>
+      ${result ? `<div class="exercise-feedback ${escapeHtml(result.status)}">${escapeHtml(result.message)}${result.missing?.length ? `<br><strong>Добавь:</strong> ${result.missing.map(escapeHtml).join(", ")}` : ""}</div>` : ""}
+      ${hintVisible ? `<div class="exercise-help"><strong>Подсказка:</strong> ${escapeHtml(exercise.hints?.join(" ") || "Вернись к диалогу и найди нужную конструкцию.")}</div>` : ""}
+      ${modelVisible ? `<div class="model-answer"><strong>Возможный ответ</strong><p>${nl2br(exercise.modelAnswer || exercise.acceptedAnswers?.[0] || "Ответ зависит от твоей ситуации.")}</p>${exercise.explanation ? `<span>${escapeHtml(exercise.explanation)}</span>` : ""}</div>` : ""}
+    </div>`;
+}
+
+function bindExercise(box, lesson) {
+  const id = box.dataset.exerciseId;
+  const exercise = lesson.exercises.find((item, index) => (item.id || `${lesson.id}-${index}`) === id);
+  const textarea = box.querySelector("textarea");
+  textarea.addEventListener("input", () => {
+    const attempt = getExerciseAttempt(id, lesson.id);
+    attempt.answer = textarea.value;
+    attempt.updatedAt = new Date().toISOString();
+    state.exerciseAttempts.set(id, attempt);
+    debounceSave(`exercise:${id}`, () => putRecord("exercises", attempt));
+  });
+  box.querySelector("[data-check-exercise]").addEventListener("click", async () => {
+    const attempt = getExerciseAttempt(id, lesson.id);
+    attempt.answer = textarea.value;
+    attempt.result = checkExercise(exercise, textarea.value);
+    attempt.checkedAt = new Date().toISOString();
+    state.exerciseAttempts.set(id, attempt);
+    await putRecord("exercises", attempt);
+    preserveScrollAndRender();
+  });
+  box.querySelector("[data-show-hint]").addEventListener("click", async () => {
+    const attempt = getExerciseAttempt(id, lesson.id);
+    attempt.showHint = true;
+    state.exerciseAttempts.set(id, attempt);
+    await putRecord("exercises", attempt);
+    preserveScrollAndRender();
+  });
+  box.querySelector("[data-show-model]").addEventListener("click", async () => {
+    const attempt = getExerciseAttempt(id, lesson.id);
+    attempt.showModel = true;
+    state.exerciseAttempts.set(id, attempt);
+    await putRecord("exercises", attempt);
+    preserveScrollAndRender();
+  });
+}
+
+function renderReviewCard(card) {
+  const schedule = state.schedules.get(card.id) || createSchedule(card.id);
+  const preview = previewSchedule(schedule);
+  const front = card.kind === "cloze" ? renderClozeFront(card.front) : card.front;
+  return `
+    <article class="review-card" data-card-id="${escapeHtml(card.id)}">
+      <div class="review-context">${escapeHtml(card.lessonTitle)} · ${escapeHtml(card.kind)}</div>
+      <div class="review-front">${nl2br(front)}</div>
+      <div class="control-row review-primary-actions">
+        <button class="icon-text-button" type="button" data-card-speak aria-label="Прослушать">▶ Прослушать</button>
+        ${state.reviewAnswerVisible ? "" : `<button class="primary-button" type="button" id="show-answer">Показать ответ</button>`}
+      </div>
+      ${state.reviewAnswerVisible ? `
+        <div class="review-back visible">
+          ${card.kind === "cloze" ? `<p class="cloze-reveal">${nl2br(revealCloze(card.front))}</p>` : ""}
+          <p class="fr">${nl2br(card.back)}</p>
+          <div class="rating-grid">
+            ${renderRatingButton("again", "Again", preview.again.interval)}
+            ${renderRatingButton("hard", "Hard", preview.hard.interval)}
+            ${renderRatingButton("good", "Good", preview.good.interval)}
+            ${renderRatingButton("easy", "Easy", preview.easy.interval)}
+          </div>
+        </div>` : ""}
+      <div class="review-card-tools">
+        <button type="button" data-card-skip>Пропустить</button>
+        <button type="button" data-card-reset>Сбросить карточку</button>
+        ${card.source === "custom" ? `<button type="button" data-card-edit>Редактировать</button>` : ""}
+        <button type="button" data-card-suspend>Приостановить</button>
+      </div>
+    </article>`;
+}
+
+function bindReviewToolbar() {
+  document.querySelectorAll("[data-review-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.reviewMode = button.dataset.reviewMode;
+      state.reviewSeen.clear();
+      state.reviewAnswerVisible = false;
+      renderReview();
+    });
+  });
+  document.querySelector("#review-deck").addEventListener("change", (event) => {
+    state.reviewDeck = event.target.value;
+    state.reviewSeen.clear();
+    state.reviewAnswerVisible = false;
+    renderReview();
+  });
+  document.querySelector("#review-add-word").addEventListener("click", () => openWordDialog());
+}
+
+function bindReviewCard(card) {
+  document.querySelector("#show-answer")?.addEventListener("click", () => {
+    state.reviewAnswerVisible = true;
+    renderReview();
+  });
+  document.querySelector("[data-card-speak]").addEventListener("click", () => speakFrench(card.audioText));
+  document.querySelectorAll("[data-score]").forEach((button) => {
+    button.addEventListener("click", () => gradeReviewCard(card, button.dataset.score));
+  });
+  document.querySelector("[data-card-skip]").addEventListener("click", () => {
+    state.reviewSeen.add(card.id);
+    state.reviewAnswerVisible = false;
+    renderReview();
+  });
+  document.querySelector("[data-card-reset]").addEventListener("click", async () => {
+    const schedule = resetSchedule(card.id);
+    state.schedules.set(card.id, schedule);
+    await putRecord("schedules", schedule);
+    state.reviewSeen.add(card.id);
+    state.reviewAnswerVisible = false;
+    renderReview();
+  });
+  document.querySelector("[data-card-suspend]").addEventListener("click", async () => {
+    if (!state.appState.suspendedCardIds.includes(card.id)) state.appState.suspendedCardIds.push(card.id);
+    await saveAppState();
+    state.reviewAnswerVisible = false;
+    renderReview();
+  });
+  document.querySelector("[data-card-edit]")?.addEventListener("click", () => {
+    openWordDialog(state.customNotes.find((note) => note.id === card.noteId));
+  });
+}
+
+async function gradeReviewCard(card, rating) {
+  const schedule = state.schedules.get(card.id) || createSchedule(card.id);
+  const { schedule: nextSchedule, log } = reviewSchedule(schedule, rating);
+  log.id = `${card.id}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
+  state.schedules.set(card.id, nextSchedule);
+  state.reviewLogs.push(log);
+  await Promise.all([putRecord("schedules", nextSchedule), putRecord("reviewLogs", log)]);
+  state.reviewSeen.add(card.id);
+  state.reviewAnswerVisible = false;
+  showSaved();
+  renderReview();
+}
+
+function openWordDialog(note = null) {
+  const editing = Boolean(note);
+  modalRoot.innerHTML = `
+    <div class="modal-backdrop">
+      <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="word-dialog-title">
+        <div class="section-heading"><div><p class="eyebrow">Своя карточка</p><h4 id="word-dialog-title">${editing ? "Редактировать слово" : "Добавить слово"}</h4></div><button class="modal-close" type="button" aria-label="Закрыть">×</button></div>
+        <form id="word-form">
+          <label class="field-label">Французский<input name="fr" required value="${escapeHtml(note?.fr || "")}" /></label>
+          <label class="field-label">Перевод<input name="ru" required value="${escapeHtml(note?.ru || "")}" /></label>
+          <label class="field-label">IPA<input name="ipa" value="${escapeHtml(note?.ipa || "")}" placeholder="/bɔ̃.ʒuʁ/" /></label>
+          <label class="field-label">Заметка<textarea name="note">${escapeHtml(note?.note || "")}</textarea></label>
+          <label class="field-label">Теги<input name="tags" value="${escapeHtml((note?.tags || []).join(", "))}" placeholder="еда, A1" /></label>
+          <label class="field-label">Направление<select name="direction" class="select-control full-control">
+            <option value="both" ${!note || note.directions?.length === 2 ? "selected" : ""}>Обе стороны</option>
+            <option value="ru-fr" ${note?.directions?.length === 1 && note.directions[0] === "ru-fr" ? "selected" : ""}>Русский → французский</option>
+            <option value="fr-ru" ${note?.directions?.length === 1 && note.directions[0] === "fr-ru" ? "selected" : ""}>Французский → русский</option>
+          </select></label>
+          <div class="control-row modal-actions"><button class="primary-button" type="submit">Сохранить</button><button class="secondary-button" type="button" data-cancel>Отмена</button></div>
+        </form>
+      </section>
+    </div>`;
+  const close = () => { modalRoot.innerHTML = ""; };
+  modalRoot.querySelector(".modal-close").addEventListener("click", close);
+  modalRoot.querySelector("[data-cancel]").addEventListener("click", close);
+  modalRoot.querySelector("#word-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = new FormData(event.target);
+    const direction = values.get("direction");
+    const record = {
+      id: note?.id || `custom:${crypto.randomUUID()}`,
+      source: "custom",
+      fr: values.get("fr").trim(),
+      ru: values.get("ru").trim(),
+      ipa: values.get("ipa").trim(),
+      note: values.get("note").trim(),
+      tags: values.get("tags").split(",").map((tag) => tag.trim()).filter(Boolean),
+      directions: direction === "both" ? ["ru-fr", "fr-ru"] : [direction],
+      createdAt: note?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    await putRecord("vocabulary", record);
+    const index = state.customNotes.findIndex((item) => item.id === record.id);
+    if (index >= 0) state.customNotes[index] = record;
+    else state.customNotes.push(record);
+    close();
+    showSaved();
+    render();
+  });
+}
+
+function bindVocabularyActions() {
+  document.querySelectorAll("[data-vocab-speak]").forEach((button) => {
+    button.addEventListener("click", () => speakFrench(button.dataset.vocabSpeak));
+  });
+  document.querySelectorAll("[data-note-suspend]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const id = button.dataset.noteSuspend;
+      const current = state.appState.suspendedNoteIds;
+      state.appState.suspendedNoteIds = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
+      await saveAppState();
+      renderVocabulary();
+    });
+  });
+  document.querySelectorAll("[data-note-edit]").forEach((button) => {
+    button.addEventListener("click", () => openWordDialog(state.customNotes.find((note) => note.id === button.dataset.noteEdit)));
+  });
+  document.querySelectorAll("[data-note-delete]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const note = state.customNotes.find((item) => item.id === button.dataset.noteDelete);
+      if (!note || !window.confirm(`Удалить «${note.fr}» и его карточки?`)) return;
+      for (const card of cardsFromVocabularyNote(note)) {
+        await deleteRecord("schedules", card.id);
+        state.schedules.delete(card.id);
+      }
+      await deleteRecord("vocabulary", note.id);
+      state.customNotes = state.customNotes.filter((item) => item.id !== note.id);
+      renderVocabulary();
+    });
+  });
+}
+
+function bindSettingsActions() {
+  const voiceSelect = document.querySelector("#voice-select");
+  const rate = document.querySelector("#voice-rate");
+  voiceSelect.addEventListener("change", async () => {
+    state.settings.voiceURI = voiceSelect.value;
+    await saveSettings();
+  });
+  rate.addEventListener("input", () => {
+    state.settings.voiceRate = Number(rate.value);
+    document.querySelector("#voice-rate-output").textContent = Number(rate.value).toFixed(2);
+    debounceSave("settings", saveSettings);
+  });
+  document.querySelector("#test-voice").addEventListener("click", () => speakFrench("Bonjour, je voudrais un café, s'il vous plaît."));
+  document.querySelector("#backup-light").addEventListener("click", () => downloadBackup(false));
+  document.querySelector("#backup-full").addEventListener("click", () => downloadBackup(true));
+  document.querySelector("#restore-backup").addEventListener("change", restoreBackup);
+  document.querySelector("#export-anki").addEventListener("click", exportAnki);
+  document.querySelector("#reset-progress").addEventListener("click", async () => {
+    if (!window.confirm("Удалить уроки, карточки, свои слова, ответы и аудиозаписи? Это действие нельзя отменить.")) return;
+    await clearDatabase();
+    localStorage.removeItem("frenchStudyProgress");
+    window.location.reload();
+  });
+}
+
+function bindVoiceLabs(scope = document) {
+  scope.querySelectorAll(".voice-lab-box").forEach((box) => {
+    const target = box.dataset.target;
+    const key = box.dataset.key;
+    const startButton = box.querySelector("[data-record-start]");
+    const stopButton = box.querySelector("[data-record-stop]");
+    const status = box.querySelector(".recording-status");
+    const audio = box.querySelector("audio");
+    box.querySelector("[data-speak]").addEventListener("click", () => speakFrench(target));
+    startButton.addEventListener("click", () => startRecording({ key, status, audio, startButton, stopButton }));
+    stopButton.addEventListener("click", () => stopRecording());
+    box.querySelector("[data-transcribe]").addEventListener("click", () => transcribeTarget(target, box.querySelector(".transcript-output")));
+    restoreRecording(key, audio, status);
+  });
+}
+
+async function startRecording(context) {
+  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+    context.status.textContent = "Запись недоступна в этом браузере.";
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    state.audioChunks = [];
+    state.recordingContext = { ...context, stream };
+    state.mediaRecorder = new MediaRecorder(stream);
+    state.mediaRecorder.addEventListener("dataavailable", (event) => {
+      if (event.data.size > 0) state.audioChunks.push(event.data);
+    });
+    state.mediaRecorder.addEventListener("stop", saveFinishedRecording);
+    state.mediaRecorder.start();
+    context.status.textContent = "Идёт запись...";
+    context.startButton.disabled = true;
+    context.stopButton.disabled = false;
+  } catch (error) {
+    context.status.textContent = `Нет доступа к микрофону: ${error.message}`;
+  }
+}
+
+function stopRecording() {
+  if (state.mediaRecorder?.state !== "recording") return;
+  state.mediaRecorder.stop();
+}
+
+async function saveFinishedRecording() {
+  const context = state.recordingContext;
+  const blob = new Blob(state.audioChunks, { type: state.mediaRecorder.mimeType || "audio/webm" });
+  context.stream.getTracks().forEach((track) => track.stop());
+  const record = { id: context.key, blob, updatedAt: new Date().toISOString(), size: blob.size };
+  await putRecord("recordings", record);
+  setAudioSource(context.audio, blob);
+  context.status.textContent = "Запись сохранена локально. Можно перезагрузить страницу и продолжить.";
+  context.startButton.disabled = false;
+  context.stopButton.disabled = true;
+  showSaved();
+}
+
+async function restoreRecording(key, audio, status) {
+  const record = await getRecord("recordings", key);
+  if (!record?.blob || !audio.isConnected) return;
+  setAudioSource(audio, record.blob);
+  status.textContent = `Последняя запись: ${formatDateTime(record.updatedAt)}`;
+}
+
+function setAudioSource(audio, blob) {
+  const url = URL.createObjectURL(blob);
+  state.audioUrls.add(url);
+  audio.src = url;
+  audio.hidden = false;
+}
+
+function transcribeTarget(target, output) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    output.textContent = "STT в этом браузере недоступен. Запись и эталон остаются доступными для сравнения на слух.";
+    return;
+  }
+  const recognition = new SpeechRecognition();
+  recognition.lang = "fr-FR";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  output.textContent = "Скажи фразу после сигнала браузера...";
+  recognition.addEventListener("result", (event) => {
+    output.innerHTML = `<strong>Распознано:</strong> ${escapeHtml(event.results[0][0].transcript)}<br><span class="note">Цель: ${escapeHtml(target)}</span>`;
+  });
+  recognition.addEventListener("error", (event) => { output.textContent = `Распознавание не сработало: ${event.error}`; });
+  recognition.start();
+}
+
+function refreshVoices() {
+  if (!window.speechSynthesis) return;
+  state.voices = window.speechSynthesis.getVoices()
+    .filter((voice) => voice.lang.toLocaleLowerCase().startsWith("fr"))
+    .sort((a, b) => voicePriority(b) - voicePriority(a) || a.name.localeCompare(b.name));
+  if (!state.voices.some((voice) => voice.voiceURI === state.settings.voiceURI)) {
+    state.settings.voiceURI = state.voices[0]?.voiceURI || "";
+    if (state.settings.voiceURI) saveSettings();
+  }
+  if (state.view === "settings" && state.data) renderSettings();
+}
+
+function voicePriority(voice) {
+  const preferredNames = ["Thomas", "Amélie", "Amelie", "Audrey", "Marie"];
+  const nameScore = preferredNames.findIndex((name) => voice.name.includes(name));
+  return (voice.localService ? 100 : 0) + (voice.lang.toLowerCase() === "fr-fr" ? 20 : 0) + (nameScore >= 0 ? 10 - nameScore : 0);
+}
+
+function speakFrench(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(String(text).replace(/\n.*$/s, ""));
+  utterance.lang = "fr-FR";
+  utterance.rate = state.settings.voiceRate;
+  utterance.voice = state.voices.find((voice) => voice.voiceURI === state.settings.voiceURI) || state.voices[0] || null;
+  window.speechSynthesis.speak(utterance);
+}
+
+async function downloadBackup(includeRecordings) {
+  const snapshot = await exportDatabase({ includeRecordings });
+  downloadBlob(
+    new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" }),
+    `french-study-${includeRecordings ? "full" : "light"}-${new Date().toISOString().slice(0, 10)}.json`
+  );
+}
+
+async function restoreBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const snapshot = JSON.parse(await file.text());
+    validateBackup(snapshot);
+    if (!window.confirm("Заменить текущие локальные данные содержимым резервной копии?")) return;
+    await importDatabase(snapshot);
+    window.location.reload();
+  } catch (error) {
+    window.alert(`Не удалось восстановить копию: ${error.message}`);
+  } finally {
+    event.target.value = "";
+  }
+}
+
+function exportAnki() {
+  downloadBlob(
+    new Blob([buildAnkiTsv(getAllCards())], { type: "text/tab-separated-values;charset=utf-8" }),
+    "french-study-anki.tsv"
+  );
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function getVocabularyNotes() {
+  return buildVocabularyNotes(state.data, state.customNotes);
+}
+
+function getAllCards() {
+  return buildCards(state.data, state.customNotes);
+}
+
+function getActiveCards() {
+  return getAllCards().filter((card) =>
+    !state.appState.suspendedCardIds.includes(card.id) && !state.appState.suspendedNoteIds.includes(card.noteId)
+  );
+}
+
+function getReviewSummary(cards = getActiveCards()) {
+  const due = cards.filter((card) => isDueSchedule(state.schedules.get(card.id))).length;
+  const newCount = cards.filter((card) => isNewSchedule(state.schedules.get(card.id))).length;
+  const introducedToday = new Set(
+    state.reviewLogs.filter((log) => log.wasNew && isToday(log.reviewedAt)).map((log) => log.cardId)
+  ).size;
+  return {
+    due,
+    newCount,
+    newSlots: Math.max(0, state.settings.newCardsPerDay - introducedToday)
+  };
+}
+
+function renderVocabRow(note) {
+  const suspended = state.appState.suspendedNoteIds.includes(note.id);
+  return `
+    <tr class="${suspended ? "suspended-row" : ""}">
+      <td><strong>${escapeHtml(note.fr)}</strong><button class="inline-audio" type="button" data-vocab-speak="${escapeHtml(note.fr)}" aria-label="Прослушать ${escapeHtml(note.fr)}">▶</button><small>${escapeHtml(note.note || "")}</small></td>
+      <td>${escapeHtml(note.ipa || "—")}</td>
+      <td>${escapeHtml(note.ru)}</td>
+      <td>${note.source === "custom" ? `<span class="tag rose">своё</span>` : escapeHtml(note.lessonTitle)}</td>
+      <td><div class="row-actions">
+        <button type="button" data-note-suspend="${escapeHtml(note.id)}">${suspended ? "Вернуть" : "Скрыть"}</button>
+        ${note.source === "custom" ? `<button type="button" data-note-edit="${escapeHtml(note.id)}">Изменить</button><button type="button" data-note-delete="${escapeHtml(note.id)}">Удалить</button>` : ""}
+      </div></td>
+    </tr>`;
+}
+
+function renderDialogueLine(line) {
+  return `<div class="dialogue-line"><div class="speaker">${escapeHtml(line.speaker)}</div><div><div class="fr">${escapeHtml(line.fr)}</div><div class="ipa">${escapeHtml(line.ipa)}</div><div class="translation">${escapeHtml(line.ru)}</div><button class="pill-button" type="button" data-speak="${escapeHtml(line.fr)}">Прослушать</button></div></div>`;
+}
+
+function renderPronunciationForLesson(lesson) {
+  const topic = state.data.pronunciationTopics.find((item) => item.id === lesson.pronunciationTopic);
+  return `<div class="target-phrase"><span class="tag rose">${escapeHtml(topic.level)}</span><strong>${escapeHtml(topic.title)}</strong><span>${escapeHtml(topic.target)}</span></div><p class="note">${escapeHtml(topic.cue)}</p><ul class="example-list">${topic.minimalPairs.map((pair) => `<li>${escapeHtml(pair)}</li>`).join("")}</ul>`;
+}
+
+function renderGrammarForLesson(lesson) {
+  const topic = state.data.grammarTopics.find((item) => item.id === lesson.grammarTopic);
+  return `<div class="target-phrase"><span class="tag amber">${escapeHtml(topic.level)}</span><strong>${escapeHtml(topic.title)}</strong></div><p class="grammar-rule">${escapeHtml(topic.rule)}</p><ul class="example-list">${topic.examples.map((example) => `<li>${escapeHtml(example)}</li>`).join("")}</ul>`;
+}
+
+function renderVoiceLab(target, key) {
+  return `
+    <div class="voice-lab-box" data-key="${escapeHtml(key)}" data-target="${escapeHtml(target)}">
+      <div class="target-phrase"><span class="tag rose">voice</span><strong>${escapeHtml(target)}</strong><span class="note">Прослушай выбранный голос, затем запиши себя.</span></div>
+      <div class="control-row"><button class="pill-button" type="button" data-speak>Эталон</button><button class="pill-button" type="button" data-record-start>Записать</button><button class="pill-button" type="button" data-record-stop disabled>Стоп</button><button class="pill-button" type="button" data-transcribe>STT</button><span class="recording-status">Готово к записи</span></div>
+      <audio controls hidden></audio>
+      <p class="note transcript-output">STT необязателен: окончательное сравнение делается по эталону и сохранённой записи.</p>
+    </div>`;
+}
+
+function renderLessonTile(lesson) {
+  const done = state.appState.completedLessons.includes(lesson.id);
+  return `<button class="lesson-tile ${done ? "done" : ""}" type="button" data-lesson-id="${lesson.id}"><div class="tag-row"><span class="tag">${lesson.level}</span>${done ? `<span class="tag rose">пройден</span>` : ""}</div><h4 class="compact-title">${escapeHtml(lesson.title)}</h4><p class="note">${escapeHtml(lesson.goal)}</p></button>`;
+}
+
+function renderDeckOptions() {
+  const options = [
+    ["all", "Все карточки"], ["vocabulary", "Слова"], ["phrases", "Фразы"], ["custom", "Свои"]
+  ];
+  state.data.lessons.forEach((lesson) => options.push([lesson.id, `${lesson.level} · ${lesson.title}`]));
+  return options.map(([value, label]) => `<option value="${value}" ${state.reviewDeck === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("");
+}
+
+function renderRatingButton(score, label, interval) {
+  return `<button type="button" data-score="${score}" class="rating-button ${score}"><strong>${label}</strong><span>${escapeHtml(interval)}</span></button>`;
+}
+
+function renderReviewEmpty(summary) {
+  return `<div class="empty-state"><strong>${state.reviewMode === "cram" ? "Колода закончилась" : "На сегодня всё"}</strong><p>${summary.newCount ? "Новые карточки появятся завтра или после увеличения дневного лимита." : "Добавь своё слово или продолжай урок."}</p></div>`;
+}
+
+function renderMetric(label, value, note) {
+  return `<div class="metric"><p class="eyebrow">${escapeHtml(label)}</p><strong>${escapeHtml(value)}</strong><span>${escapeHtml(note)}</span></div>`;
+}
+
+async function markLessonComplete(lessonId) {
+  if (!state.appState.completedLessons.includes(lessonId)) state.appState.completedLessons.push(lessonId);
+  if (state.view === "today") setCurrentLesson(getNextLesson()?.id || lessonId, false);
+  await saveAppState();
+  render();
+}
+
+function setCurrentLesson(lessonId, save = true) {
+  state.currentLessonId = lessonId;
+  state.appState.currentLessonId = lessonId;
+  if (save) saveAppState();
+}
+
+function getNextLesson() {
+  return state.data.lessons.find((lesson) => !state.appState.completedLessons.includes(lesson.id));
+}
+
+function getLesson(id) {
+  return state.data.lessons.find((lesson) => lesson.id === id) || state.data.lessons[0];
+}
+
+function getExerciseAttempt(id, lessonId) {
+  return state.exerciseAttempts.get(id) || { id, lessonId, answer: "", createdAt: new Date().toISOString() };
+}
+
+function preserveScrollAndRender() {
+  state.appState.scrollPositions[state.view] = window.scrollY;
+  render();
+}
+
+function handleReviewKeyboard(event) {
+  if (state.view !== "review" || ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName)) return;
+  if ([" ", "Enter"].includes(event.key) && !state.reviewAnswerVisible) {
+    event.preventDefault();
+    document.querySelector("#show-answer")?.click();
+    return;
+  }
+  const ratingByKey = { "1": "again", "2": "hard", "3": "good", "4": "easy" };
+  if (state.reviewAnswerVisible && ratingByKey[event.key]) {
+    event.preventDefault();
+    document.querySelector(`[data-score="${ratingByKey[event.key]}"]`)?.click();
+  }
+  if (event.key.toLocaleLowerCase() === "s") document.querySelector("[data-card-skip]")?.click();
+}
+
+async function migrateLegacySchedules() {
+  if (await getValue("legacySchedulesMigrated", false)) return;
+  const legacy = state.appState.legacyCardProgress || {};
+  for (const [oldKey, progress] of Object.entries(legacy)) {
+    const match = oldKey.match(/^(l\d+)-(\d+)$/);
+    if (!match) continue;
+    const id = `phrase:${match[1]}:${match[2]}`;
+    if (state.schedules.has(id)) continue;
+    const intervalDays = Math.max(1, Number(progress.intervalDays) || 1);
+    const due = progress.dueAt || new Date().toISOString();
+    const schedule = {
+      ...createSchedule(id),
+      id,
+      due,
+      stability: intervalDays,
+      difficulty: 5,
+      scheduled_days: intervalDays,
+      reps: Math.max(1, Number(progress.reps) || 1),
+      state: 2,
+      last_review: new Date(new Date(due).getTime() - intervalDays * 86400000).toISOString()
+    };
+    state.schedules.set(id, schedule);
+    await putRecord("schedules", schedule);
+  }
+  await setValue("legacySchedulesMigrated", true);
+}
+
+async function saveAppState() {
+  await setValue("appState", state.appState);
+  showSaved();
+}
+
+async function saveSettings() {
+  await setValue("settings", state.settings);
+  showSaved();
+}
+
+function debounceSave(key, callback) {
+  window.clearTimeout(state.saveTimers.get(key));
+  state.saveTimers.set(key, window.setTimeout(async () => {
+    await callback();
+    showSaved();
+  }, 250));
+}
+
+function showSaved() {
+  saveIndicator.textContent = "Сохранено локально";
+  saveIndicator.classList.add("saved-flash");
+  window.setTimeout(() => saveIndicator.classList.remove("saved-flash"), 700);
+}
+
+function releaseAudioUrls() {
+  for (const url of state.audioUrls) URL.revokeObjectURL(url);
+  state.audioUrls.clear();
+}
+
+function defaultAppState() {
+  return {
+    completedLessons: [],
+    currentView: "today",
+    currentLessonId: null,
+    scrollPositions: {},
+    suspendedCardIds: [],
+    suspendedNoteIds: [],
+    legacyCardProgress: {},
+    legacyRecordingMetadata: {}
+  };
+}
+
+function defaultSettings() {
+  return { voiceURI: "", voiceRate: 0.82, newCardsPerDay: 10 };
+}
+
+function resultLabel(status) {
+  return { correct: "верно", almost: "почти", incorrect: "попробуй ещё", open: "сравни" }[status] || status;
+}
+
+function isToday(value) {
+  const date = new Date(value);
+  const now = new Date();
+  return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+}
+
+function formatDateTime(value) {
+  return new Intl.DateTimeFormat("ru", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+}
+
+function nl2br(value) {
+  return escapeHtml(value).replaceAll("\n", "<br>");
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}

@@ -1,0 +1,1029 @@
+{
+  "meta": {
+    "title": "French Study A1-A2",
+    "dailyMinutes": "45-60",
+    "method": "conversation first, pronunciation daily, grammar after the phrase"
+  },
+  "resources": [
+    {
+      "name": "Tex's French Grammar",
+      "type": "grammar",
+      "url": "https://utexas.pressbooks.pub/texfrenchgrammar/",
+      "note": "Открытая грамматика University of Texas, CC BY."
+    },
+    {
+      "name": "TV5MONDE Apprendre",
+      "type": "input",
+      "url": "https://apprendre.tv5monde.com/",
+      "note": "Бесплатные упражнения A1-B2 на основе видео."
+    },
+    {
+      "name": "Le français facile avec RFI",
+      "type": "listening",
+      "url": "https://francaisfacile.rfi.fr/",
+      "note": "Аудио, новости и упражнения с транскриптами."
+    },
+    {
+      "name": "Tatoeba",
+      "type": "sentences",
+      "url": "https://tatoeba.org/",
+      "note": "Открытые примеры предложений и переводы."
+    },
+    {
+      "name": "Wiktionary",
+      "type": "dictionary",
+      "url": "https://fr.wiktionary.org/",
+      "note": "Словарь, IPA и часто аудио."
+    },
+    {
+      "name": "Lingua Libre",
+      "type": "pronunciation",
+      "url": "https://lingualibre.org/",
+      "note": "Свободные записи произношения через Wikimedia."
+    },
+    {
+      "name": "Anki",
+      "type": "review",
+      "url": "https://apps.ankiweb.net/",
+      "note": "Бесплатная desktop SRS-система для интервального повторения."
+    },
+    {
+      "name": "Praat",
+      "type": "phonetics",
+      "url": "https://www.fon.hum.uva.nl/praat/",
+      "note": "Бесплатный анализ записи голоса, если захочется глубже смотреть звук."
+    }
+  ],
+  "pronunciationTopics": [
+    {
+      "id": "u-y",
+      "title": "Французский u /y/",
+      "level": "A0",
+      "target": "tu, une, russe, salut",
+      "cue": "Скажи русское 'и', оставь язык на месте и округли губы как для 'у'.",
+      "minimalPairs": ["tu / tout", "rue / roue", "su / sous"]
+    },
+    {
+      "id": "nasals",
+      "title": "Носовые гласные",
+      "level": "A1",
+      "target": "un bon vin blanc",
+      "cue": "Не добавляй русское 'н' в конце. Гласная звучит через рот и нос одновременно.",
+      "minimalPairs": ["pain / pan / pont", "vin / vent / vont", "bon / beau"]
+    },
+    {
+      "id": "r",
+      "title": "Французское r /ʁ/",
+      "level": "A1",
+      "target": "bonjour, merci, très, rue",
+      "cue": "Звук рождается глубже, чем русское 'р'. Цель - понятность, не идеальная театральность.",
+      "minimalPairs": ["rue / vous", "merci / mais si", "très / thé"]
+    },
+    {
+      "id": "liaison",
+      "title": "Liaison и enchainement",
+      "level": "A1",
+      "target": "vous avez, les amis, un étudiant",
+      "cue": "Некоторые конечные согласные оживают перед гласной и связывают слова в одну фразу.",
+      "minimalPairs": ["vous avez", "vous parlez", "les amis"]
+    },
+    {
+      "id": "silent-endings",
+      "title": "Немые окончания",
+      "level": "A1",
+      "target": "parlez, petit, grand, beaucoup",
+      "cue": "Финальные согласные часто не звучат. Сначала учим слово как звук, затем как написание.",
+      "minimalPairs": ["petit / petite", "grand / grande", "parle / parlez"]
+    }
+  ],
+  "grammarTopics": [
+    {
+      "id": "fixed-phrases",
+      "title": "Готовые разговорные формулы",
+      "level": "A0",
+      "rule": "На старте Bonjour, Merci и Au revoir учатся целиком. Не нужно разбирать каждое слово, чтобы сразу использовать фразу.",
+      "examples": ["Bonjour !", "Merci.", "Au revoir."]
+    },
+    {
+      "id": "etre",
+      "title": "Être: быть",
+      "level": "A1",
+      "rule": "Je suis, tu es, il/elle est, vous êtes нужны для представления и описания себя.",
+      "examples": ["Je suis André.", "Tu es étudiant ?", "Vous êtes russe ?"]
+    },
+    {
+      "id": "articles",
+      "title": "Артикли un / une / le / la",
+      "level": "A1",
+      "rule": "Во французском существительное почти всегда живет с артиклем. Род лучше учить вместе со словом.",
+      "examples": ["un café", "une table", "le métro", "la rue"]
+    },
+    {
+      "id": "questions",
+      "title": "Вопросы через est-ce que",
+      "level": "A1",
+      "rule": "Est-ce que превращает фразу в нейтральный разговорный вопрос.",
+      "examples": ["Est-ce que vous avez un café ?", "Est-ce que tu parles français ?"]
+    },
+    {
+      "id": "voudrais",
+      "title": "Je voudrais",
+      "level": "A1",
+      "rule": "Je voudrais - вежливый способ попросить что-то. На старте это важнее полной таблицы conditionnel.",
+      "examples": ["Je voudrais un café.", "Je voudrais payer.", "Je voudrais aller au centre."]
+    },
+    {
+      "id": "near-future",
+      "title": "Ближайшее будущее: aller + infinitif",
+      "level": "A2",
+      "rule": "Je vais + infinitif говорит о ближайшем плане: я собираюсь что-то сделать.",
+      "examples": ["Je vais travailler.", "Nous allons manger.", "Vous allez partir ?"]
+    }
+  ],
+  "lessons": [
+    {
+      "id": "l01",
+      "level": "A0",
+      "title": "Приветствие и вежливый вход в разговор",
+      "goal": "Сказать здравствуйте, спасибо, до свидания и начать любой контакт без неловкости.",
+      "scenario": "first-contact",
+      "tags": ["speaking", "pronunciation", "politeness"],
+      "targetPhrase": "Bonjour, merci, au revoir.",
+      "pronunciationTopic": "r",
+      "grammarTopic": "fixed-phrases",
+      "dialogue": [
+        {
+          "speaker": "A",
+          "fr": "Bonjour !",
+          "ipa": "/bɔ̃.ʒuʁ/",
+          "ru": "Здравствуйте!"
+        },
+        {
+          "speaker": "B",
+          "fr": "Bonjour !",
+          "ipa": "/bɔ̃.ʒuʁ/",
+          "ru": "Здравствуйте!"
+        },
+        {
+          "speaker": "A",
+          "fr": "Merci.",
+          "ipa": "/mɛʁ.si/",
+          "ru": "Спасибо."
+        },
+        {
+          "speaker": "B",
+          "fr": "Au revoir.",
+          "ipa": "/o ʁə.vwaʁ/",
+          "ru": "До свидания."
+        }
+      ],
+      "vocabulary": [
+        {
+          "fr": "bonjour",
+          "ipa": "/bɔ̃.ʒuʁ/",
+          "ru": "здравствуйте / добрый день",
+          "note": "Почти обязательное начало общения."
+        },
+        {
+          "fr": "merci",
+          "ipa": "/mɛʁ.si/",
+          "ru": "спасибо",
+          "note": "Финальное i звучит."
+        },
+        {
+          "fr": "au revoir",
+          "ipa": "/o ʁə.vwaʁ/",
+          "ru": "до свидания",
+          "note": "В беглой речи часто короче."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l01-e1",
+          "type": "translate",
+          "prompt": "Переведи на французский: Здравствуйте. Спасибо. До свидания.",
+          "acceptedAnswers": ["Bonjour. Merci. Au revoir.", "Bonjour, merci, au revoir."],
+          "modelAnswer": "Bonjour. Merci. Au revoir.",
+          "hints": ["Все три выражения есть в диалоге выше."],
+          "requiredTokens": [],
+          "explanation": "Bonjour — приветствие днём, merci — благодарность, au revoir — прощание."
+        },
+        {
+          "id": "l01-e2",
+          "type": "speaking",
+          "prompt": "Запиши одну фразу целиком: Bonjour, merci, au revoir.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Bonjour, merci, au revoir.",
+          "hints": ["Произнеси фразу одним ритмическим блоком."],
+          "requiredTokens": ["bonjour", "merci", "au revoir"],
+          "explanation": "Сравни ритм и финальное /i/ в merci с эталонной записью."
+        },
+        {
+          "id": "l01-e3",
+          "type": "writing",
+          "prompt": "Напиши мини-диалог из двух реплик для входа в булочную.",
+          "acceptedAnswers": [],
+          "modelAnswer": "A : Bonjour, je voudrais une baguette, s'il vous plaît.\nB : Bonjour. Bien sûr.",
+          "hints": ["Начни с Bonjour.", "Для вежливой просьбы используй Je voudrais..."],
+          "requiredTokens": ["bonjour", "je voudrais"],
+          "explanation": "Это открытое задание. Важны приветствие, просьба и ответ собеседника; формулировки могут отличаться."
+        }
+      ],
+      "cards": [
+        {
+          "front": "Здравствуйте / добрый день",
+          "back": "Bonjour",
+          "type": "phrase"
+        },
+        {
+          "front": "Спасибо",
+          "back": "Merci",
+          "type": "phrase"
+        },
+        {
+          "front": "До свидания",
+          "back": "Au revoir",
+          "type": "phrase"
+        }
+      ]
+    },
+    {
+      "id": "l02",
+      "level": "A1",
+      "title": "Представиться",
+      "goal": "Назвать имя, национальность и роль одной связной фразой.",
+      "scenario": "introductions",
+      "tags": ["speaking", "etre", "identity"],
+      "targetPhrase": "Je m'appelle André. Je suis russe.",
+      "pronunciationTopic": "u-y",
+      "grammarTopic": "etre",
+      "dialogue": [
+        {
+          "speaker": "A",
+          "fr": "Bonjour, je m'appelle André.",
+          "ipa": "/bɔ̃.ʒuʁ ʒə ma.pɛl ɑ̃.dʁe/",
+          "ru": "Здравствуйте, меня зовут Андрей."
+        },
+        {
+          "speaker": "B",
+          "fr": "Enchanté !",
+          "ipa": "/ɑ̃.ʃɑ̃.te/",
+          "ru": "Очень приятно!"
+        },
+        {
+          "speaker": "A",
+          "fr": "Je suis russe.",
+          "ipa": "/ʒə sɥi ʁys/",
+          "ru": "Я русский."
+        },
+        {
+          "speaker": "B",
+          "fr": "Bienvenue !",
+          "ipa": "/bjɛ̃.və.ny/",
+          "ru": "Добро пожаловать!"
+        }
+      ],
+      "vocabulary": [
+        {
+          "fr": "je m'appelle",
+          "ipa": "/ʒə ma.pɛl/",
+          "ru": "меня зовут",
+          "note": "Буквально: я называю себя."
+        },
+        {
+          "fr": "je suis",
+          "ipa": "/ʒə sɥi/",
+          "ru": "я являюсь / я",
+          "note": "Форма être."
+        },
+        {
+          "fr": "russe",
+          "ipa": "/ʁys/",
+          "ru": "русский / русская",
+          "note": "Одинаково пишется для m/f в этой форме."
+        },
+        {
+          "fr": "enchanté",
+          "ipa": "/ɑ̃.ʃɑ̃.te/",
+          "ru": "очень приятно",
+          "note": "Финальное e в мужской форме не звучит."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l02-e1",
+          "type": "translate",
+          "prompt": "Переведи: Меня зовут Андрей. Я русский.",
+          "acceptedAnswers": ["Je m'appelle André. Je suis russe.", "Je m'appelle Andrey. Je suis russe."],
+          "modelAnswer": "Je m'appelle André. Je suis russe.",
+          "hints": ["Имя вводится через Je m'appelle..."],
+          "requiredTokens": [],
+          "explanation": "После je используется suis — форма être для первого лица."
+        },
+        {
+          "id": "l02-e2",
+          "type": "substitution",
+          "prompt": "Замени André на свое имя и произнеси фразу 3 раза.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Je m'appelle Andrey.",
+          "hints": ["После m'appelle просто поставь своё имя."],
+          "requiredTokens": ["je m'appelle"],
+          "explanation": "Апостроф обязателен: me appelle сокращается до m'appelle."
+        },
+        {
+          "id": "l02-e3",
+          "type": "writing",
+          "prompt": "Напиши 3 строки о себе: имя, национальность, роль.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Je m'appelle Andrey.\nJe suis russe.\nJe suis étudiant.",
+          "hints": ["Первая строка начинается с Je m'appelle.", "Во второй и третьей используй Je suis."],
+          "requiredTokens": ["je m'appelle", "je suis"],
+          "explanation": "Профессия или роль после être обычно употребляется без артикля."
+        }
+      ],
+      "cards": [
+        {
+          "front": "Меня зовут Андрей.",
+          "back": "Je m'appelle André.",
+          "type": "phrase"
+        },
+        {
+          "front": "Я русский.",
+          "back": "Je suis russe.",
+          "type": "phrase"
+        },
+        {
+          "front": "{{c1::Je suis}} russe.",
+          "back": "Я русский.",
+          "type": "cloze"
+        }
+      ]
+    },
+    {
+      "id": "l03",
+      "level": "A1",
+      "title": "Спросить имя",
+      "goal": "Познакомиться с человеком и вернуть вопрос 'а ты?'.",
+      "scenario": "names",
+      "tags": ["speaking", "questions"],
+      "targetPhrase": "Comment tu t'appelles ? Et toi ?",
+      "pronunciationTopic": "liaison",
+      "grammarTopic": "questions",
+      "dialogue": [
+        {
+          "speaker": "A",
+          "fr": "Bonjour ! Comment tu t'appelles ?",
+          "ipa": "/bɔ̃.ʒuʁ kɔ.mɑ̃ ty ta.pɛl/",
+          "ru": "Привет! Как тебя зовут?"
+        },
+        {
+          "speaker": "B",
+          "fr": "Je m'appelle André. Et toi ?",
+          "ipa": "/ʒə ma.pɛl ɑ̃.dʁe e twa/",
+          "ru": "Меня зовут Андрей. А тебя?"
+        },
+        {
+          "speaker": "A",
+          "fr": "Je m'appelle Camille.",
+          "ipa": "/ʒə ma.pɛl ka.mij/",
+          "ru": "Меня зовут Камиль."
+        },
+        {
+          "speaker": "B",
+          "fr": "Enchanté.",
+          "ipa": "/ɑ̃.ʃɑ̃.te/",
+          "ru": "Очень приятно."
+        }
+      ],
+      "vocabulary": [
+        {
+          "fr": "comment",
+          "ipa": "/kɔ.mɑ̃/",
+          "ru": "как",
+          "note": "Финальная t не звучит."
+        },
+        {
+          "fr": "tu t'appelles",
+          "ipa": "/ty ta.pɛl/",
+          "ru": "тебя зовут",
+          "note": "Разговорная форма на ты."
+        },
+        {
+          "fr": "et toi",
+          "ipa": "/e twa/",
+          "ru": "а ты",
+          "note": "Очень частый возврат вопроса."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l03-e1",
+          "type": "translate",
+          "prompt": "Переведи: Как тебя зовут? А тебя?",
+          "acceptedAnswers": ["Comment tu t'appelles ? Et toi ?", "Comment tu t'appelles? Et toi?"],
+          "modelAnswer": "Comment tu t'appelles ? Et toi ?",
+          "hints": ["Разговорный вопрос начинается с Comment tu..."],
+          "requiredTokens": [],
+          "explanation": "Et toi ? — короткий способ вернуть тот же вопрос собеседнику."
+        },
+        {
+          "id": "l03-e2",
+          "type": "speaking",
+          "prompt": "Запиши диалог A/B целиком, меняя имена.",
+          "acceptedAnswers": [],
+          "modelAnswer": "A : Comment tu t'appelles ?\nB : Je m'appelle Léa. Et toi ?\nA : Je m'appelle Andrey.",
+          "hints": ["В диалоге нужны вопрос, ответ и встречный вопрос."],
+          "requiredTokens": ["comment tu t'appelles", "je m'appelle", "et toi"],
+          "explanation": "Имена можно заменить любыми; проверяются опорные конструкции."
+        },
+        {
+          "id": "l03-e3",
+          "type": "writing",
+          "prompt": "Напиши формальную версию вопроса с vous.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Comment vous appelez-vous ?",
+          "hints": ["Формальная инверсия: appelez-vous."],
+          "requiredTokens": ["vous"],
+          "explanation": "Допустим также вариант Comment est-ce que vous vous appelez ?"
+        }
+      ],
+      "cards": [
+        {
+          "front": "Как тебя зовут?",
+          "back": "Comment tu t'appelles ?",
+          "type": "phrase"
+        },
+        {
+          "front": "А ты?",
+          "back": "Et toi ?",
+          "type": "phrase"
+        },
+        {
+          "front": "Comment {{c1::tu t'appelles}} ?",
+          "back": "Как тебя зовут?",
+          "type": "cloze"
+        }
+      ]
+    },
+    {
+      "id": "l04",
+      "level": "A1",
+      "title": "Кафе: заказать вежливо",
+      "goal": "Попросить кофе, воду или круассан без сложной грамматики.",
+      "scenario": "cafe",
+      "tags": ["food", "politeness", "articles"],
+      "targetPhrase": "Je voudrais un café, s'il vous plaît.",
+      "pronunciationTopic": "r",
+      "grammarTopic": "voudrais",
+      "dialogue": [
+        {
+          "speaker": "A",
+          "fr": "Bonjour.",
+          "ipa": "/bɔ̃.ʒuʁ/",
+          "ru": "Здравствуйте."
+        },
+        {
+          "speaker": "B",
+          "fr": "Bonjour. Je voudrais un café, s'il vous plaît.",
+          "ipa": "/ʒə vu.dʁɛ ɛ̃ ka.fe sil vu plɛ/",
+          "ru": "Здравствуйте. Я бы хотел кофе, пожалуйста."
+        },
+        {
+          "speaker": "A",
+          "fr": "Bien sûr. Et avec ça ?",
+          "ipa": "/bjɛ̃ syʁ e a.vɛk sa/",
+          "ru": "Конечно. И к этому?"
+        },
+        {
+          "speaker": "B",
+          "fr": "De l'eau, merci.",
+          "ipa": "/də lo mɛʁ.si/",
+          "ru": "Воду, спасибо."
+        }
+      ],
+      "vocabulary": [
+        {
+          "fr": "je voudrais",
+          "ipa": "/ʒə vu.dʁɛ/",
+          "ru": "я бы хотел",
+          "note": "Самая полезная вежливая просьба."
+        },
+        {
+          "fr": "un café",
+          "ipa": "/ɛ̃ ka.fe/",
+          "ru": "кофе",
+          "note": "Un показывает мужской род."
+        },
+        {
+          "fr": "de l'eau",
+          "ipa": "/də lo/",
+          "ru": "вода",
+          "note": "Перед гласной de превращается в d'."
+        },
+        {
+          "fr": "s'il vous plaît",
+          "ipa": "/sil vu plɛ/",
+          "ru": "пожалуйста",
+          "note": "Вежливая формула."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l04-e1",
+          "type": "substitution",
+          "prompt": "Подставь: un café / de l'eau / un croissant / un thé.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Je voudrais un café.\nJe voudrais de l'eau.\nJe voudrais un croissant.\nJe voudrais un thé.",
+          "hints": ["Каждая фраза начинается с Je voudrais."],
+          "requiredTokens": ["un café", "de l'eau", "un croissant", "un thé"],
+          "explanation": "Артикль входит в запоминаемую фразу вместе с существительным."
+        },
+        {
+          "id": "l04-e2",
+          "type": "speaking",
+          "prompt": "Запиши заказ одной фразой, не делая паузу перед s'il vous plaît.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Je voudrais un café, s'il vous plaît.",
+          "hints": ["Не отделяй s'il vous plaît длинной паузой."],
+          "requiredTokens": ["je voudrais", "s'il vous plaît"],
+          "explanation": "Вся просьба произносится как одна ритмическая группа."
+        },
+        {
+          "id": "l04-e3",
+          "type": "writing",
+          "prompt": "Составь заказ из двух предметов.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Je voudrais un café et un croissant, s'il vous plaît.",
+          "hints": ["Соедини два предмета союзом et."],
+          "requiredTokens": ["je voudrais", "et", "s'il vous plaît"],
+          "explanation": "Предметы можно выбрать любые; сохраняй артикли."
+        }
+      ],
+      "cards": [
+        {
+          "front": "Я бы хотел кофе, пожалуйста.",
+          "back": "Je voudrais un café, s'il vous plaît.",
+          "type": "phrase"
+        },
+        {
+          "front": "пожалуйста",
+          "back": "s'il vous plaît",
+          "type": "phrase"
+        },
+        {
+          "front": "{{c1::un}} café",
+          "back": "кофе, мужской род",
+          "type": "cloze"
+        }
+      ]
+    },
+    {
+      "id": "l05",
+      "level": "A1",
+      "title": "Магазин: спросить, есть ли что-то",
+      "goal": "Спросить наличие товара и понять короткий ответ.",
+      "scenario": "shop",
+      "tags": ["questions", "shopping"],
+      "targetPhrase": "Est-ce que vous avez du pain ?",
+      "pronunciationTopic": "nasals",
+      "grammarTopic": "questions",
+      "dialogue": [
+        {
+          "speaker": "A",
+          "fr": "Bonjour. Est-ce que vous avez du pain ?",
+          "ipa": "/bɔ̃.ʒuʁ ɛs kə vu.za.ve dy pɛ̃/",
+          "ru": "Здравствуйте. У вас есть хлеб?"
+        },
+        {
+          "speaker": "B",
+          "fr": "Oui, bien sûr.",
+          "ipa": "/wi bjɛ̃ syʁ/",
+          "ru": "Да, конечно."
+        },
+        {
+          "speaker": "A",
+          "fr": "Je voudrais une baguette.",
+          "ipa": "/ʒə vu.dʁɛ yn ba.ɡɛt/",
+          "ru": "Я бы хотел багет."
+        },
+        {
+          "speaker": "B",
+          "fr": "Voilà.",
+          "ipa": "/vwa.la/",
+          "ru": "Вот."
+        }
+      ],
+      "vocabulary": [
+        {
+          "fr": "est-ce que",
+          "ipa": "/ɛs kə/",
+          "ru": "вопросительная частица",
+          "note": "Ставит обычную фразу в режим вопроса."
+        },
+        {
+          "fr": "vous avez",
+          "ipa": "/vu.za.ve/",
+          "ru": "у вас есть",
+          "note": "Связка s -> z перед гласной."
+        },
+        {
+          "fr": "du pain",
+          "ipa": "/dy pɛ̃/",
+          "ru": "хлеб",
+          "note": "Pain содержит носовой звук."
+        },
+        {
+          "fr": "une baguette",
+          "ipa": "/yn ba.ɡɛt/",
+          "ru": "багет",
+          "note": "Женский род."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l05-e1",
+          "type": "translate",
+          "prompt": "Переведи: У вас есть хлеб?",
+          "acceptedAnswers": ["Est-ce que vous avez du pain ?", "Vous avez du pain ?"],
+          "modelAnswer": "Est-ce que vous avez du pain ?",
+          "hints": ["Начни вопрос с Est-ce que."],
+          "requiredTokens": [],
+          "explanation": "Du pain — неопределённое количество хлеба."
+        },
+        {
+          "id": "l05-e2",
+          "type": "substitution",
+          "prompt": "Замени du pain на du fromage, de l'eau, un sac.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Est-ce que vous avez du fromage ?\nEst-ce que vous avez de l'eau ?\nEst-ce que vous avez un sac ?",
+          "hints": ["Вопросительная рамка не меняется."],
+          "requiredTokens": ["du fromage", "de l'eau", "un sac"],
+          "explanation": "Меняется только дополнение после vous avez."
+        },
+        {
+          "id": "l05-e3",
+          "type": "speaking",
+          "prompt": "Запиши вопрос и ответ Oui, bien sûr.",
+          "acceptedAnswers": [],
+          "modelAnswer": "A : Est-ce que vous avez du pain ?\nB : Oui, bien sûr.",
+          "hints": ["Сначала полный вопрос, затем короткий ответ."],
+          "requiredTokens": ["est-ce que", "oui", "bien sûr"],
+          "explanation": "Bien sûr означает «конечно»."
+        }
+      ],
+      "cards": [
+        {
+          "front": "У вас есть хлеб?",
+          "back": "Est-ce que vous avez du pain ?",
+          "type": "phrase"
+        },
+        {
+          "front": "багет",
+          "back": "une baguette",
+          "type": "gender"
+        },
+        {
+          "front": "{{c1::Est-ce que}} vous avez du pain ?",
+          "back": "Вопросительная рамка.",
+          "type": "cloze"
+        }
+      ]
+    },
+    {
+      "id": "l06",
+      "level": "A1",
+      "title": "Дорога: спросить, где метро",
+      "goal": "Спросить направление и понять простые указания.",
+      "scenario": "directions",
+      "tags": ["travel", "questions"],
+      "targetPhrase": "Où est le métro, s'il vous plaît ?",
+      "pronunciationTopic": "silent-endings",
+      "grammarTopic": "articles",
+      "dialogue": [
+        {
+          "speaker": "A",
+          "fr": "Excusez-moi.",
+          "ipa": "/ɛk.sky.ze mwa/",
+          "ru": "Извините."
+        },
+        {
+          "speaker": "B",
+          "fr": "Oui ?",
+          "ipa": "/wi/",
+          "ru": "Да?"
+        },
+        {
+          "speaker": "A",
+          "fr": "Où est le métro, s'il vous plaît ?",
+          "ipa": "/u ɛ lə me.tʁo sil vu plɛ/",
+          "ru": "Где метро, пожалуйста?"
+        },
+        {
+          "speaker": "B",
+          "fr": "C'est à droite.",
+          "ipa": "/sɛ.ta dʁwat/",
+          "ru": "Это справа."
+        }
+      ],
+      "vocabulary": [
+        {
+          "fr": "excusez-moi",
+          "ipa": "/ɛk.sky.ze mwa/",
+          "ru": "извините",
+          "note": "Удобная формула перед вопросом."
+        },
+        {
+          "fr": "où",
+          "ipa": "/u/",
+          "ru": "где",
+          "note": "Не путать с ou без ударения: или."
+        },
+        {
+          "fr": "le métro",
+          "ipa": "/lə me.tʁo/",
+          "ru": "метро",
+          "note": "Мужской род."
+        },
+        {
+          "fr": "à droite",
+          "ipa": "/a dʁwat/",
+          "ru": "справа",
+          "note": "Направление."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l06-e1",
+          "type": "translate",
+          "prompt": "Переведи: Извините, где метро?",
+          "acceptedAnswers": ["Excusez-moi, où est le métro ?", "Excusez-moi. Où est le métro ?"],
+          "modelAnswer": "Excusez-moi, où est le métro ?",
+          "hints": ["Обращение начинается с Excusez-moi."],
+          "requiredTokens": [],
+          "explanation": "Перед существительным métro нужен определённый артикль le."
+        },
+        {
+          "id": "l06-e2",
+          "type": "substitution",
+          "prompt": "Замени le métro на la gare, la pharmacie, le café.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Où est la gare ?\nOù est la pharmacie ?\nOù est le café ?",
+          "hints": ["Сохраняй артикль каждого существительного."],
+          "requiredTokens": ["la gare", "la pharmacie", "le café"],
+          "explanation": "Артикль помогает запомнить род слова."
+        },
+        {
+          "id": "l06-e3",
+          "type": "writing",
+          "prompt": "Напиши два ответа: справа / слева.",
+          "acceptedAnswers": [],
+          "modelAnswer": "C'est à droite.\nC'est à gauche.",
+          "hints": ["Оба ответа начинаются с C'est."],
+          "requiredTokens": ["à droite", "à gauche"],
+          "explanation": "Предлог à обязателен в обоих выражениях направления."
+        }
+      ],
+      "cards": [
+        {
+          "front": "Извините.",
+          "back": "Excusez-moi.",
+          "type": "phrase"
+        },
+        {
+          "front": "Где метро?",
+          "back": "Où est le métro ?",
+          "type": "phrase"
+        },
+        {
+          "front": "метро",
+          "back": "le métro",
+          "type": "gender"
+        }
+      ]
+    },
+    {
+      "id": "l07",
+      "level": "A2",
+      "title": "Расписание: договориться о времени",
+      "goal": "Спросить время встречи и назвать простой план.",
+      "scenario": "schedule",
+      "tags": ["time", "near-future"],
+      "targetPhrase": "On se voit à quelle heure ?",
+      "pronunciationTopic": "liaison",
+      "grammarTopic": "near-future",
+      "dialogue": [
+        {
+          "speaker": "A",
+          "fr": "On se voit demain ?",
+          "ipa": "/ɔ̃ sə vwa də.mɛ̃/",
+          "ru": "Увидимся завтра?"
+        },
+        {
+          "speaker": "B",
+          "fr": "Oui. À quelle heure ?",
+          "ipa": "/wi a kɛ.lœʁ/",
+          "ru": "Да. Во сколько?"
+        },
+        {
+          "speaker": "A",
+          "fr": "À dix heures.",
+          "ipa": "/a di.zœʁ/",
+          "ru": "В десять."
+        },
+        {
+          "speaker": "B",
+          "fr": "Parfait. Je vais arriver à dix heures.",
+          "ipa": "/paʁ.fɛ ʒə vɛ a.ʁi.ve a di.zœʁ/",
+          "ru": "Отлично. Я приеду в десять."
+        }
+      ],
+      "vocabulary": [
+        {
+          "fr": "demain",
+          "ipa": "/də.mɛ̃/",
+          "ru": "завтра",
+          "note": "Носовой звук в конце."
+        },
+        {
+          "fr": "à quelle heure",
+          "ipa": "/a kɛ.lœʁ/",
+          "ru": "во сколько",
+          "note": "Полезная формула расписания."
+        },
+        {
+          "fr": "je vais arriver",
+          "ipa": "/ʒə vɛ a.ʁi.ve/",
+          "ru": "я собираюсь приехать",
+          "note": "Ближайшее будущее."
+        },
+        {
+          "fr": "parfait",
+          "ipa": "/paʁ.fɛ/",
+          "ru": "отлично",
+          "note": "Финальная t не звучит."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l07-e1",
+          "type": "translate",
+          "prompt": "Переведи: Увидимся завтра? Во сколько?",
+          "acceptedAnswers": ["On se voit demain ? À quelle heure ?", "On se voit demain? À quelle heure?"],
+          "modelAnswer": "On se voit demain ? À quelle heure ?",
+          "hints": ["«Увидимся» здесь передаётся через On se voit."],
+          "requiredTokens": [],
+          "explanation": "À quelle heure ? — устойчивый вопрос о времени."
+        },
+        {
+          "id": "l07-e2",
+          "type": "substitution",
+          "prompt": "Замени dix heures на neuf heures, midi, ce soir.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Je vais arriver à neuf heures.\nJe vais arriver à midi.\nJe vais arriver ce soir.",
+          "hints": ["Перед часом и midi ставится à; перед ce soir предлог не нужен."],
+          "requiredTokens": ["neuf heures", "midi", "ce soir"],
+          "explanation": "Je vais + инфинитив выражает ближайший план."
+        },
+        {
+          "id": "l07-e3",
+          "type": "speaking",
+          "prompt": "Запиши свой план на завтра через Je vais...",
+          "acceptedAnswers": [],
+          "modelAnswer": "Demain, je vais travailler et je vais arriver à neuf heures.",
+          "hints": ["После je vais поставь инфинитив действия."],
+          "requiredTokens": ["demain", "je vais"],
+          "explanation": "Содержание плана свободное; проверяется конструкция ближайшего будущего."
+        }
+      ],
+      "cards": [
+        {
+          "front": "Увидимся завтра?",
+          "back": "On se voit demain ?",
+          "type": "phrase"
+        },
+        {
+          "front": "во сколько",
+          "back": "à quelle heure",
+          "type": "phrase"
+        },
+        {
+          "front": "{{c1::Je vais}} arriver à dix heures.",
+          "back": "Я собираюсь приехать в десять.",
+          "type": "cloze"
+        }
+      ]
+    },
+    {
+      "id": "l08",
+      "level": "A2",
+      "title": "Нужна помощь",
+      "goal": "Попросить помощь и объяснить проблему простой фразой.",
+      "scenario": "help",
+      "tags": ["needs", "speaking"],
+      "targetPhrase": "J'ai besoin d'aide.",
+      "pronunciationTopic": "nasals",
+      "grammarTopic": "articles",
+      "dialogue": [
+        {
+          "speaker": "A",
+          "fr": "Excusez-moi, j'ai besoin d'aide.",
+          "ipa": "/ɛk.sky.ze mwa ʒe bə.zwɛ̃ dɛd/",
+          "ru": "Извините, мне нужна помощь."
+        },
+        {
+          "speaker": "B",
+          "fr": "Bien sûr. Quel est le problème ?",
+          "ipa": "/bjɛ̃ syʁ kɛl ɛ lə pʁɔ.blɛm/",
+          "ru": "Конечно. В чем проблема?"
+        },
+        {
+          "speaker": "A",
+          "fr": "Je ne comprends pas.",
+          "ipa": "/ʒə nə kɔ̃.pʁɑ̃ pa/",
+          "ru": "Я не понимаю."
+        },
+        {
+          "speaker": "B",
+          "fr": "Pas de problème.",
+          "ipa": "/pa də pʁɔ.blɛm/",
+          "ru": "Без проблем."
+        }
+      ],
+      "vocabulary": [
+        {
+          "fr": "j'ai besoin de",
+          "ipa": "/ʒe bə.zwɛ̃ də/",
+          "ru": "мне нужно",
+          "note": "Очень полезная формула потребности."
+        },
+        {
+          "fr": "aide",
+          "ipa": "/ɛd/",
+          "ru": "помощь",
+          "note": "d'aide после de из-за гласной."
+        },
+        {
+          "fr": "je ne comprends pas",
+          "ipa": "/ʒə nə kɔ̃.pʁɑ̃ pa/",
+          "ru": "я не понимаю",
+          "note": "В разговоре ne часто исчезает, но сначала учим полную форму."
+        },
+        {
+          "fr": "problème",
+          "ipa": "/pʁɔ.blɛm/",
+          "ru": "проблема",
+          "note": "Слово похоже на русское, но ударение и звук другие."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l08-e1",
+          "type": "translate",
+          "prompt": "Переведи: Мне нужна помощь. Я не понимаю.",
+          "acceptedAnswers": ["J'ai besoin d'aide. Je ne comprends pas.", "J'ai besoin de l'aide. Je ne comprends pas."],
+          "modelAnswer": "J'ai besoin d'aide. Je ne comprends pas.",
+          "hints": ["После besoin de перед гласной получается d'."],
+          "requiredTokens": [],
+          "explanation": "Отрицание окружает глагол: ne comprends pas."
+        },
+        {
+          "id": "l08-e2",
+          "type": "substitution",
+          "prompt": "Скажи: мне нужна вода / карта / информация.",
+          "acceptedAnswers": [],
+          "modelAnswer": "J'ai besoin d'eau.\nJ'ai besoin d'une carte.\nJ'ai besoin d'informations.",
+          "hints": ["Основа каждой фразы: J'ai besoin de..."],
+          "requiredTokens": ["d'eau", "d'une carte", "d'informations"],
+          "explanation": "De сокращается до d' перед гласной."
+        },
+        {
+          "id": "l08-e3",
+          "type": "speaking",
+          "prompt": "Запиши ситуацию: Excusez-moi + просьба + проблема.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Excusez-moi, j'ai besoin d'aide. Je ne comprends pas.",
+          "hints": ["Собери три уже знакомых блока в одну ситуацию."],
+          "requiredTokens": ["excusez-moi", "j'ai besoin", "je ne comprends pas"],
+          "explanation": "Это готовая аварийная фраза для ситуации, когда нужна помощь."
+        }
+      ],
+      "cards": [
+        {
+          "front": "Мне нужна помощь.",
+          "back": "J'ai besoin d'aide.",
+          "type": "phrase"
+        },
+        {
+          "front": "Я не понимаю.",
+          "back": "Je ne comprends pas.",
+          "type": "phrase"
+        },
+        {
+          "front": "{{c1::J'ai besoin de}} + nom",
+          "back": "Мне нужно + существительное",
+          "type": "cloze"
+        }
+      ]
+    }
+  ]
+}

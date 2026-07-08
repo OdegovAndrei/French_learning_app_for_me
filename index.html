@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>French Study A1-A2</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Навигация">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">FR</div>
+          <div>
+            <p class="eyebrow">A1-A2</p>
+            <h1>French Study</h1>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Разделы">
+          <button class="nav-item active" type="button" data-view="today">Сегодня</button>
+          <button class="nav-item" type="button" data-view="lessons">Уроки</button>
+          <button class="nav-item" type="button" data-view="pronunciation">Произношение</button>
+          <button class="nav-item" type="button" data-view="grammar">Грамматика</button>
+          <button class="nav-item" type="button" data-view="vocabulary">Словарь</button>
+          <button class="nav-item" type="button" data-view="review">Повторение</button>
+          <button class="nav-item" type="button" data-view="progress">Прогресс</button>
+          <button class="nav-item" type="button" data-view="settings">Настройки</button>
+        </nav>
+
+        <div class="sidebar-note">
+          <p>45-60 минут в день</p>
+          <strong>Фраза -> произношение -> мини-грамматика -> output</strong>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="topbar" aria-label="Панель статуса">
+          <div>
+            <p class="eyebrow">Локальный кабинет</p>
+            <h2 id="view-title">Сегодня</h2>
+          </div>
+          <div class="topbar-actions">
+            <span class="save-indicator" id="save-indicator">Сохранено локально</span>
+            <button class="text-button" type="button" id="open-settings">Настройки</button>
+          </div>
+        </section>
+
+        <section id="app" aria-live="polite"></section>
+      </main>
+    </div>
+
+    <div id="modal-root"></div>
+
+    <template id="lesson-template">
+      <article class="lesson-layout">
+        <header class="lesson-hero">
+          <div>
+            <p class="eyebrow lesson-level"></p>
+            <h3 class="lesson-title"></h3>
+            <p class="lesson-goal"></p>
+          </div>
+          <button class="primary-button complete-lesson" type="button">Отметить урок пройденным</button>
+        </header>
+
+        <section class="section-band">
+          <div class="section-heading">
+            <p class="eyebrow">10 минут</p>
+            <h4>Мини-диалог</h4>
+          </div>
+          <div class="dialogue-list"></div>
+        </section>
+
+        <section class="two-column">
+          <div class="panel">
+            <div class="section-heading">
+              <p class="eyebrow">5-10 минут</p>
+              <h4>Произношение</h4>
+            </div>
+            <div class="pronunciation-target"></div>
+          </div>
+          <div class="panel">
+            <div class="section-heading">
+              <p class="eyebrow">10 минут</p>
+              <h4>Мини-грамматика</h4>
+            </div>
+            <div class="grammar-note"></div>
+          </div>
+        </section>
+
+        <section class="section-band">
+          <div class="section-heading">
+            <p class="eyebrow">10 минут</p>
+            <h4>Активные упражнения</h4>
+          </div>
+          <div class="exercise-list"></div>
+        </section>
+
+        <section class="section-band">
+          <div class="section-heading">
+            <p class="eyebrow">5-10 минут</p>
+            <h4>Запись голоса</h4>
+          </div>
+          <div class="voice-lab"></div>
+        </section>
+      </article>
+    </template>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
