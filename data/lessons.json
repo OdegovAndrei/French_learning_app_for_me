@@ -2,7 +2,7 @@
   "meta": {
     "title": "French Study Starter",
     "catalogSchemaVersion": 2,
-    "contentVersion": "1.2.0",
+    "contentVersion": "1.3.0",
     "dailyMinutes": "45-60",
     "method": "conversation first, pronunciation daily, grammar after the phrase"
   },
@@ -48,6 +48,14 @@
       "description": "Базовая просьба о помощи и краткое объяснение проблемы.",
       "order": 4,
       "prerequisites": ["module:starter:orientation-plans"]
+    },
+    {
+      "id": "module:starter:reception-review",
+      "levelId": "starter",
+      "title": "Первые тексты и объявления",
+      "description": "Чтение меню, понимание короткого объявления, диктант и мини-медиация.",
+      "order": 5,
+      "prerequisites": ["module:starter:help"]
     }
   ],
   "resources": [
@@ -100,6 +108,351 @@
       "note": "Бесплатный анализ записи голоса, если захочется глубже смотреть звук."
     }
   ],
+  "courseRoadmap": {
+    "status": "draft",
+    "claimPolicy": "Roadmap показывает, что нужно добавить для A1-A2-B1-B2. Уровень считается заявленным только после опубликованных уроков, evidence по всем skill axes и отдельной проверки; текущий Starter не равен полному A1, A2, B1 или B2.",
+    "sources": [
+      {
+        "name": "Council of Europe CEFR",
+        "url": "https://www.coe.int/en/web/common-european-framework-reference-languages",
+        "note": "Официальная рамка CEFR и Companion Volume: can-do descriptors, mediation, online interaction, plurilingual competence."
+      },
+      {
+        "name": "Council of Europe CEFR Levels",
+        "url": "https://www.coe.int/en/web/common-european-framework-reference-languages/level-descriptions",
+        "note": "Официальное описание уровней A1-C2 как can-do progression."
+      },
+      {
+        "name": "Council of Europe CEFR illustrative tasks",
+        "url": "https://www.coe.int/en/web/common-european-framework-reference-languages/illustrations-of-levels",
+        "note": "Официальные направления assessment evidence: reception, written production, spoken interaction and production."
+      },
+      {
+        "name": "France Education International DELF tout public",
+        "url": "https://www.france-education-international.fr/diplome/delf-tout-public?langue=fr",
+        "note": "Официальная структура DELF A1, A2, B1, B2 для взрослых и grands adolescents."
+      }
+    ],
+    "skillAxes": [
+      {
+        "id": "listening",
+        "title": "Аудирование",
+        "evidenceTypes": ["listening-comprehension", "dictation", "transcript-after-attempt"]
+      },
+      {
+        "id": "reading",
+        "title": "Чтение",
+        "evidenceTypes": ["reading-comprehension", "information-search", "short-answer"]
+      },
+      {
+        "id": "spoken-interaction",
+        "title": "Устное взаимодействие",
+        "evidenceTypes": ["roleplay", "conversation-prompt", "recorded-response"]
+      },
+      {
+        "id": "spoken-production",
+        "title": "Устный монолог",
+        "evidenceTypes": ["recorded-monologue", "pronunciation-self-review", "rubric-speaking"]
+      },
+      {
+        "id": "written-production",
+        "title": "Письмо",
+        "evidenceTypes": ["guided-writing", "rubric-writing", "message-reply"]
+      },
+      {
+        "id": "mediation",
+        "title": "Медиация",
+        "evidenceTypes": ["summarize-for-a-friend", "explain-information", "compare-options"]
+      },
+      {
+        "id": "language-system",
+        "title": "Грамматика и словарь в действии",
+        "evidenceTypes": ["gap-fill", "sentence-transform", "controlled-production"]
+      }
+    ],
+    "levels": [
+      {
+        "id": "roadmap:a1",
+        "cefrLevel": "A1",
+        "title": "A1: выживание в повседневном контакте",
+        "status": "in-progress",
+        "claim": "План полного A1. Текущий Starter покрывает только первые социальные и бытовые сценарии.",
+        "prerequisites": ["starter"],
+        "targetOutcomes": [
+          "Понимать очень короткие реплики, объявления и инструкции при медленном темпе.",
+          "Читать простые вывески, меню, анкеты, сообщения и находить конкретную информацию.",
+          "Участвовать в очень коротком обмене: поздороваться, представиться, попросить, уточнить, поблагодарить.",
+          "Писать простое сообщение, анкету или список потребностей."
+        ],
+        "modules": [
+          {
+            "id": "roadmap:a1:social-identity",
+            "title": "Контакт, личная информация и анкеты",
+            "skillFocus": ["spoken-interaction", "written-production", "language-system"],
+            "outcomes": ["представиться", "спросить имя/страну/язык", "заполнить простую анкету"],
+            "grammar": ["être", "s'appeler", "nationalities", "tu/vous"],
+            "exerciseTypes": ["roleplay", "gap-fill", "guided-writing"]
+          },
+          {
+            "id": "roadmap:a1:daily-services",
+            "title": "Кафе, магазин, транспорт и цены",
+            "skillFocus": ["listening", "reading", "spoken-interaction"],
+            "outcomes": ["понять цену и часы работы", "заказать", "спросить дорогу"],
+            "grammar": ["articles", "numbers", "il y a", "polite requests"],
+            "exerciseTypes": ["listening-comprehension", "reading-comprehension", "roleplay"]
+          },
+          {
+            "id": "roadmap:a1:routines-plans",
+            "title": "Распорядок, встречи и ближайшие планы",
+            "skillFocus": ["listening", "spoken-production", "written-production"],
+            "outcomes": ["назначить встречу", "сказать время", "описать простой план"],
+            "grammar": ["present tense high-frequency verbs", "aller + infinitif", "time expressions"],
+            "exerciseTypes": ["dictation", "recorded-monologue", "message-reply"]
+          }
+        ],
+        "exitEvidence": [
+          {
+            "skill": "listening",
+            "evidence": "Ученик отвечает на вопросы по короткому медленному диалогу или объявлению без transcript до попытки."
+          },
+          {
+            "skill": "reading",
+            "evidence": "Ученик находит конкретные данные в меню, расписании, анкете или коротком сообщении."
+          },
+          {
+            "skill": "spoken-interaction",
+            "evidence": "Ученик записывает короткую ролевую сцену с просьбой, уточнением и вежливым завершением."
+          },
+          {
+            "skill": "spoken-production",
+            "evidence": "Ученик записывает 30-45 секунд о себе, распорядке или ближайшем плане по опорам."
+          },
+          {
+            "skill": "written-production",
+            "evidence": "Ученик пишет короткое сообщение или анкету с нужной информацией."
+          },
+          {
+            "skill": "mediation",
+            "evidence": "Ученик по-русски объясняет другу практическую информацию из простого французского текста."
+          },
+          {
+            "skill": "language-system",
+            "evidence": "Ученик использует базовые артикли, être, avoir, вопрос, отрицание и ближайшее будущее в мини-задачах."
+          }
+        ]
+      },
+      {
+        "id": "roadmap:a2",
+        "cefrLevel": "A2",
+        "title": "A2: устойчивые бытовые сценарии",
+        "status": "planned",
+        "claim": "План A2: больше тем, прошлого времени, связности и самостоятельности, но всё ещё простая коммуникация.",
+        "prerequisites": ["roadmap:a1"],
+        "targetOutcomes": [
+          "Понимать основные факты в коротких повседневных аудио и сообщениях.",
+          "Описывать прошлые события, привычки, маршрут, жильё, здоровье, работу/учёбу.",
+          "Решать практические проблемы в магазине, транспорте, гостинице и у врача.",
+          "Писать простые связные сообщения, просьбы и объяснения."
+        ],
+        "modules": [
+          {
+            "id": "roadmap:a2:past-events",
+            "title": "Что произошло: выходные, поездка, проблема",
+            "skillFocus": ["spoken-production", "written-production", "language-system"],
+            "outcomes": ["рассказать последовательность событий", "описать проблему", "попросить решение"],
+            "grammar": ["passé composé", "imparfait introduction", "time connectors"],
+            "exerciseTypes": ["order-dialogue", "guided-writing", "recorded-monologue"]
+          },
+          {
+            "id": "roadmap:a2:travel-housing",
+            "title": "Поездка, жильё и городские сервисы",
+            "skillFocus": ["listening", "reading", "spoken-interaction"],
+            "outcomes": ["забронировать", "уточнить условия", "сравнить варианты"],
+            "grammar": ["comparatives", "prepositions of place", "object pronouns introduction"],
+            "exerciseTypes": ["reading-comprehension", "listening-comprehension", "roleplay"]
+          },
+          {
+            "id": "roadmap:a2:work-study-health",
+            "title": "Учёба, работа, здоровье и обязанности",
+            "skillFocus": ["listening", "mediation", "written-production"],
+            "outcomes": ["понять инструкцию", "объяснить потребность", "написать короткое официальное сообщение"],
+            "grammar": ["devoir/pouvoir/vouloir", "imperative", "pronouns y/en introduction"],
+            "exerciseTypes": ["dictation", "summarize-for-a-friend", "message-reply"]
+          }
+        ],
+        "exitEvidence": [
+          {
+            "skill": "listening",
+            "evidence": "Ученик извлекает ключевые факты из коротких объявлений, инструкций и бытовых диалогов."
+          },
+          {
+            "skill": "reading",
+            "evidence": "Ученик понимает короткие практические тексты: email, объявление, описание услуги, правила."
+          },
+          {
+            "skill": "spoken-interaction",
+            "evidence": "Ученик поддерживает ролевой обмен с уточняющими вопросами и простым решением проблемы."
+          },
+          {
+            "skill": "spoken-production",
+            "evidence": "Ученик связно описывает событие, опыт или план в 1-2 минуты простыми средствами."
+          },
+          {
+            "skill": "written-production",
+            "evidence": "Ученик пишет короткое сообщение, объяснение или просьбу с понятной структурой."
+          },
+          {
+            "skill": "mediation",
+            "evidence": "Ученик передаёт другу главную практическую информацию из объявления, письма или инструкции."
+          },
+          {
+            "skill": "language-system",
+            "evidence": "Ученик управляет настоящим/прошлым, модальными глаголами, местоимениями и связками в контролируемых задачах."
+          }
+        ]
+      },
+      {
+        "id": "roadmap:b1",
+        "cefrLevel": "B1",
+        "title": "B1: самостоятельность и мнение",
+        "status": "planned",
+        "claim": "План B1: ученик должен справляться с путешествием, опытом, мнением, объяснением причин и простыми обсуждениями.",
+        "prerequisites": ["roadmap:a2"],
+        "targetOutcomes": [
+          "Понимать основную мысль ясной речи и текстов на знакомые темы.",
+          "Рассказывать историю, опыт, надежды и планы с причинами.",
+          "Участвовать в обсуждении знакомых тем, выражать мнение и реагировать.",
+          "Писать связный текст: письмо, отзыв, аргументированное сообщение."
+        ],
+        "modules": [
+          {
+            "id": "roadmap:b1:stories-experience",
+            "title": "Истории, опыт и планы",
+            "skillFocus": ["spoken-production", "written-production", "language-system"],
+            "outcomes": ["рассказать историю", "объяснить причины", "связать события"],
+            "grammar": ["passé composé vs imparfait", "plus-que-parfait introduction", "connectors"],
+            "exerciseTypes": ["recorded-monologue", "rubric-writing", "sentence-transform"]
+          },
+          {
+            "id": "roadmap:b1:opinions-media",
+            "title": "Мнения, новости и культура",
+            "skillFocus": ["listening", "reading", "spoken-interaction"],
+            "outcomes": ["понять основную мысль", "выразить позицию", "согласиться/возразить"],
+            "grammar": ["subjunctive introduction", "relative pronouns", "argument connectors"],
+            "exerciseTypes": ["listening-comprehension", "reading-comprehension", "roleplay"]
+          },
+          {
+            "id": "roadmap:b1:problems-negotiation",
+            "title": "Проблемы, переговоры и решения",
+            "skillFocus": ["spoken-interaction", "mediation", "written-production"],
+            "outcomes": ["объяснить проблему", "предложить решение", "написать жалобу/запрос"],
+            "grammar": ["conditional", "reported speech introduction", "pronoun review"],
+            "exerciseTypes": ["conversation-prompt", "summarize-for-a-friend", "message-reply"]
+          }
+        ],
+        "exitEvidence": [
+          {
+            "skill": "listening",
+            "evidence": "Ученик понимает основную мысль и ключевые детали ясных аудио на знакомые общественные и личные темы."
+          },
+          {
+            "skill": "reading",
+            "evidence": "Ученик понимает статьи, письма и инструкции средней длины, выделяет позицию автора и факты."
+          },
+          {
+            "skill": "spoken-interaction",
+            "evidence": "Ученик поддерживает обсуждение знакомой темы, задаёт вопросы, выражает согласие/несогласие."
+          },
+          {
+            "skill": "spoken-production",
+            "evidence": "Ученик даёт связный монолог 2-3 минуты о событии, опыте, плане или мнении."
+          },
+          {
+            "skill": "written-production",
+            "evidence": "Ученик пишет связный текст 160-180 слов с аргументами, фактами и простыми связками."
+          },
+          {
+            "skill": "mediation",
+            "evidence": "Ученик резюмирует ключевые пункты текста или аудио для практической задачи другого человека."
+          },
+          {
+            "skill": "language-system",
+            "evidence": "Ученик достаточно устойчиво использует времена, местоимения, connectors и вводные формы subjonctif/conditionnel."
+          }
+        ]
+      },
+      {
+        "id": "roadmap:b2",
+        "cefrLevel": "B2",
+        "title": "B2: аргументация, нюансы и автономность",
+        "status": "planned",
+        "claim": "План B2: свободнее понимать сложные тексты/аудио, защищать позицию, писать развёрнуто и медиировать смысл без ложной точности.",
+        "prerequisites": ["roadmap:b1"],
+        "targetOutcomes": [
+          "Понимать сложные тексты и аудио с явной аргументацией на общественные, учебные и профессиональные темы.",
+          "Строить и защищать позицию, учитывать контраргументы и уточнять нюансы.",
+          "Писать развёрнутый связный текст с тезисом, структурой и регистром.",
+          "Передавать содержание, позицию и практические выводы между языками или аудиториями."
+        ],
+        "modules": [
+          {
+            "id": "roadmap:b2:argumentation",
+            "title": "Аргументация и дебаты",
+            "skillFocus": ["spoken-interaction", "spoken-production", "language-system"],
+            "outcomes": ["сформулировать тезис", "защитить позицию", "ответить на контраргумент"],
+            "grammar": ["advanced connectors", "subjunctive consolidation", "concession and hypothesis"],
+            "exerciseTypes": ["debate-roleplay", "recorded-monologue", "sentence-transform"]
+          },
+          {
+            "id": "roadmap:b2:media-society",
+            "title": "Медиа, общество и сложное чтение",
+            "skillFocus": ["listening", "reading", "mediation"],
+            "outcomes": ["понять позицию автора", "отделить факт от мнения", "сжать информацию для другого адресата"],
+            "grammar": ["nominalisation", "passive voice", "discourse markers"],
+            "exerciseTypes": ["reading-comprehension", "listening-comprehension", "summarize-for-a-friend"]
+          },
+          {
+            "id": "roadmap:b2:formal-writing",
+            "title": "Эссе, письмо и профессиональная коммуникация",
+            "skillFocus": ["written-production", "reading", "language-system"],
+            "outcomes": ["написать аргументированный текст", "выдержать регистр", "переформулировать"],
+            "grammar": ["register", "complex relative clauses", "reported speech"],
+            "exerciseTypes": ["rubric-writing", "message-reply", "controlled-production"]
+          }
+        ],
+        "exitEvidence": [
+          {
+            "skill": "listening",
+            "evidence": "Ученик понимает структуру и главные аргументы интервью, лекции или дискуссии на знакомые сложные темы."
+          },
+          {
+            "skill": "reading",
+            "evidence": "Ученик анализирует статью или эссе: тезис, аргументы, тон, подразумеваемые связи."
+          },
+          {
+            "skill": "spoken-interaction",
+            "evidence": "Ученик участвует в дебате, уточняет позицию, реагирует на возражения и поддерживает регистр."
+          },
+          {
+            "skill": "spoken-production",
+            "evidence": "Ученик даёт структурированную устную позицию 3-5 минут с аргументами и примерами."
+          },
+          {
+            "skill": "written-production",
+            "evidence": "Ученик пишет текст не менее 250 слов с тезисом, аргументами, выводом и контролем регистра."
+          },
+          {
+            "skill": "mediation",
+            "evidence": "Ученик переформулирует сложную информацию для другого адресата, сохраняя смысл и практические выводы."
+          },
+          {
+            "skill": "language-system",
+            "evidence": "Ученик управляет сложными связками, hypotheticals, subjonctif, пассивом и перефразированием в output."
+          }
+        ]
+      }
+    ]
+  },
   "pronunciationTopics": [
     {
       "id": "u-y",
@@ -191,6 +544,20 @@
       "level": "A1",
       "rule": "J'ai besoin de + существительное выражает потребность; de становится d' перед гласной. В полном отрицании ne и pas окружают спрягаемый глагол.",
       "examples": ["J'ai besoin d'aide.", "J'ai besoin d'une carte.", "Je ne comprends pas."]
+    },
+    {
+      "id": "prices-hours",
+      "title": "Цены и часы работы",
+      "level": "A1",
+      "rule": "Combien ça coûte ? спрашивает цену. Для часов работы часто используется ouvert de ... à ...",
+      "examples": ["Combien ça coûte ?", "Le café est ouvert de huit heures à midi.", "Ça coûte trois euros."]
+    },
+    {
+      "id": "announcements",
+      "title": "Короткие объявления",
+      "level": "A1",
+      "rule": "В объявлениях важны ключевые слова: кто/что, место, время. Сначала ловим смысл, потом проверяем транскрипт.",
+      "examples": ["Le train part à dix heures.", "Le train est quai deux.", "Attention, le magasin est fermé."]
     }
   ],
   "lessons": [
@@ -670,7 +1037,7 @@
           "fr": "de l'eau",
           "ipa": "/də lo/",
           "ru": "вода",
-          "note": "Перед гласной de превращается в d'."
+          "note": "В de l'eau артикль le сокращается до l' перед гласной."
         },
         {
           "id": "vocab:l04:3",
@@ -1295,6 +1662,461 @@
           "id": "phrase:l08:2",
           "front": "{{c1::J'ai besoin de}} + nom",
           "back": "Мне нужно + существительное",
+          "type": "cloze"
+        }
+      ]
+    },
+    {
+      "id": "l09",
+      "level": "A1",
+      "title": "Меню и цены",
+      "goal": "Прочитать короткое меню, спросить цену и вежливо попросить оплату картой.",
+      "scenario": "prices-menu",
+      "targetPhrase": "Combien ça coûte ? Je voudrais payer par carte.",
+      "pronunciationTopic": "liaison",
+      "grammarTopic": "prices-hours",
+      "moduleId": "module:starter:reception-review",
+      "order": 1,
+      "prerequisites": ["l08"],
+      "tags": ["prices", "reading", "cafe"],
+      "objectives": [
+        {
+          "id": "obj:l09:read-simple-menu",
+          "skill": "reading-reception",
+          "cefrCanDo": "Может найти конкретную цену в очень коротком меню с знакомыми словами.",
+          "required": true
+        },
+        {
+          "id": "obj:l09:use-price-question",
+          "skill": "language-system",
+          "cefrCanDo": "Может собрать базовый вопрос о цене и фразу оплаты.",
+          "required": true
+        },
+        {
+          "id": "obj:l09:ask-and-pay",
+          "skill": "spoken-interaction",
+          "cefrCanDo": "Может спросить цену и сказать, как хочет оплатить, используя готовые формулы.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Client",
+          "fr": "Bonjour, je voudrais un thé, s'il vous plaît.",
+          "ipa": "/bɔ̃.ʒuʁ ʒə vu.dʁɛ ɛ̃ te sil vu plɛ/",
+          "ru": "Здравствуйте, я бы хотел чай, пожалуйста."
+        },
+        {
+          "speaker": "Serveur",
+          "fr": "Bien sûr. C'est trois euros.",
+          "ipa": "/bjɛ̃ syʁ sɛ tʁwa.z‿ø.ʁo/",
+          "ru": "Конечно. Это три евро."
+        },
+        {
+          "speaker": "Client",
+          "fr": "Je voudrais payer par carte.",
+          "ipa": "/ʒə vu.dʁɛ pe.je paʁ kaʁt/",
+          "ru": "Я бы хотел оплатить картой."
+        }
+      ],
+      "vocabulary": [
+        {
+          "id": "vocab:l09:0",
+          "fr": "combien",
+          "ipa": "/kɔ̃.bjɛ̃/",
+          "ru": "сколько",
+          "note": "Вопрос о количестве или цене."
+        },
+        {
+          "id": "vocab:l09:1",
+          "fr": "ça coûte",
+          "ipa": "/sa kut/",
+          "ru": "это стоит",
+          "note": "Разговорная формула цены: Combien ça coûte ?"
+        },
+        {
+          "id": "vocab:l09:2",
+          "fr": "un euro",
+          "ipa": "/ɛ̃.n‿ø.ʁo/",
+          "ru": "один евро",
+          "note": "Во множественном числе пишется euros, но часто не слышно s."
+        },
+        {
+          "id": "vocab:l09:3",
+          "fr": "payer par carte",
+          "ipa": "/pe.je paʁ kaʁt/",
+          "ru": "платить картой",
+          "note": "Par carte — способ оплаты."
+        },
+        {
+          "id": "vocab:l09:4",
+          "fr": "le menu",
+          "ipa": "/lə mə.ny/",
+          "ru": "меню",
+          "note": "Не путай с formule/menu как комплексный обед."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l09-e1",
+          "type": "reading-comprehension",
+          "prompt": "Прочитай мини-меню. Сколько стоит le thé ?",
+          "sourceText": "Menu du matin\nun café — 2 euros\nun thé — 3 euros\nune baguette — 1 euro",
+          "acceptedAnswers": ["3 euros", "trois euros", "Le thé coûte trois euros."],
+          "modelAnswer": "Le thé coûte trois euros.",
+          "hints": ["Ищи строку с un thé."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l09:read-simple-menu"],
+          "explanation": "Это первое рецептивное задание: нужно найти конкретную информацию в коротком тексте."
+        },
+        {
+          "id": "l09-e2",
+          "type": "gap-fill",
+          "prompt": "Заполни пропуск: Combien ___ coûte ?",
+          "acceptedAnswers": ["ça", "ca"],
+          "modelAnswer": "Combien ça coûte ?",
+          "hints": ["Нужна разговорная форма «это»."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l09:use-price-question"],
+          "explanation": "Ça coûte = это стоит. В письме нужен c cédille: ça."
+        },
+        {
+          "id": "l09-e3",
+          "type": "roleplay",
+          "prompt": "Ролевая мини-сцена: спроси цену и скажи, что хочешь оплатить картой.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Combien ça coûte ? Je voudrais payer par carte.",
+          "hints": ["Собери две формулы: вопрос о цене + способ оплаты."],
+          "requiredTokens": ["combien ça coûte", "je voudrais payer par carte"],
+          "objectiveIds": ["obj:l09:ask-and-pay"],
+          "rubric": [
+            "Есть вопрос о цене.",
+            "Есть вежливая фраза Je voudrais...",
+            "Есть способ оплаты par carte."
+          ],
+          "explanation": "Автопроверка ищет опорные элементы, но финальная оценка — сравнение с примером и рубрикой."
+        }
+      ],
+      "cards": [
+        {
+          "id": "phrase:l09:0",
+          "front": "Сколько это стоит?",
+          "back": "Combien ça coûte ?",
+          "type": "phrase"
+        },
+        {
+          "id": "phrase:l09:1",
+          "front": "Я бы хотел оплатить картой.",
+          "back": "Je voudrais payer par carte.",
+          "type": "phrase"
+        },
+        {
+          "id": "phrase:l09:2",
+          "front": "{{c1::Combien}} ça coûte ?",
+          "back": "Сколько это стоит?",
+          "type": "cloze"
+        }
+      ]
+    },
+    {
+      "id": "l10",
+      "level": "A1",
+      "title": "Короткое объявление: часы работы",
+      "goal": "Понять простое объявление о часах работы и записать ключевую фразу на слух.",
+      "scenario": "opening-hours",
+      "targetPhrase": "Le magasin est ouvert de neuf heures à midi.",
+      "pronunciationTopic": "silent-endings",
+      "grammarTopic": "announcements",
+      "moduleId": "module:starter:reception-review",
+      "order": 2,
+      "prerequisites": ["l09"],
+      "tags": ["listening", "hours", "announcements"],
+      "objectives": [
+        {
+          "id": "obj:l10:understand-hours",
+          "skill": "listening-reception",
+          "cefrCanDo": "Может понять очень короткое медленное объявление о времени работы, если можно переслушать.",
+          "required": true
+        },
+        {
+          "id": "obj:l10:transcribe-core-sentence",
+          "skill": "language-system",
+          "cefrCanDo": "Может записать короткую знакомую фразу на слух и проверить акценты.",
+          "required": true
+        },
+        {
+          "id": "obj:l10:write-hours-message",
+          "skill": "written-production",
+          "cefrCanDo": "Может написать простое сообщение о том, что место открыто или закрыто.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Annonce",
+          "fr": "Bonjour. Le magasin est ouvert de neuf heures à midi.",
+          "ipa": "/bɔ̃.ʒuʁ lə ma.ɡa.zɛ̃ ɛ.t‿u.vɛʁ də nœv œʁ a mi.di/",
+          "ru": "Здравствуйте. Магазин открыт с девяти часов до полудня."
+        },
+        {
+          "speaker": "Annonce",
+          "fr": "Aujourd'hui, il est fermé l'après-midi.",
+          "ipa": "/o.ʒuʁ.dɥi il ɛ fɛʁ.me la.pʁɛ mi.di/",
+          "ru": "Сегодня он закрыт после полудня."
+        }
+      ],
+      "vocabulary": [
+        {
+          "id": "vocab:l10:0",
+          "fr": "le magasin",
+          "ipa": "/lə ma.ɡa.zɛ̃/",
+          "ru": "магазин",
+          "note": "Полезное слово для объявлений и расписания."
+        },
+        {
+          "id": "vocab:l10:1",
+          "fr": "ouvert",
+          "ipa": "/u.vɛʁ/",
+          "ru": "открыт",
+          "note": "t на конце обычно не произносится."
+        },
+        {
+          "id": "vocab:l10:2",
+          "fr": "fermé",
+          "ipa": "/fɛʁ.me/",
+          "ru": "закрыт",
+          "note": "Противоположность ouvert."
+        },
+        {
+          "id": "vocab:l10:3",
+          "fr": "de neuf heures à midi",
+          "ipa": "/də nœv œʁ a mi.di/",
+          "ru": "с девяти часов до полудня",
+          "note": "de... à... = с... до..."
+        },
+        {
+          "id": "vocab:l10:4",
+          "fr": "aujourd'hui",
+          "ipa": "/o.ʒuʁ.dɥi/",
+          "ru": "сегодня",
+          "note": "Очень частое слово; апостроф обязателен."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l10-e1",
+          "type": "listening-comprehension",
+          "prompt": "Прослушай объявление. Когда магазин открыт?",
+          "transcript": "Bonjour. Le magasin est ouvert de neuf heures à midi. Aujourd'hui, il est fermé l'après-midi.",
+          "listenText": "Bonjour. Le magasin est ouvert de neuf heures à midi. Aujourd'hui, il est fermé l'après-midi.",
+          "acceptedAnswers": ["de neuf heures à midi", "neuf heures à midi", "9 heures à midi"],
+          "modelAnswer": "Le magasin est ouvert de neuf heures à midi.",
+          "hints": ["Сначала слушай без транскрипта; транскрипт открывается вместе с примером."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l10:understand-hours"],
+          "explanation": "Для listening важно не читать текст заранее, а сначала попытаться вытащить время на слух."
+        },
+        {
+          "id": "l10-e2",
+          "type": "dictation",
+          "prompt": "Диктант: прослушай и запиши фразу полностью.",
+          "transcript": "Le magasin est ouvert de neuf heures à midi.",
+          "listenText": "Le magasin est ouvert de neuf heures à midi.",
+          "acceptedAnswers": ["Le magasin est ouvert de neuf heures à midi."],
+          "modelAnswer": "Le magasin est ouvert de neuf heures à midi.",
+          "hints": ["Проверь акцент в à и порядок de... à..."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l10:transcribe-core-sentence"],
+          "explanation": "Диктант связывает слух, орфографию и знакомую грамматику de... à..."
+        },
+        {
+          "id": "l10-e3",
+          "type": "message-reply",
+          "prompt": "Напиши короткое сообщение другу: магазин открыт с 9 до 12, но сегодня закрыт после полудня.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Le magasin est ouvert de neuf heures à midi. Aujourd'hui, il est fermé l'après-midi.",
+          "hints": ["Используй de... à... и aujourd'hui."],
+          "requiredTokens": ["le magasin", "est ouvert", "de neuf heures à midi", "aujourd'hui", "est fermé"],
+          "objectiveIds": ["obj:l10:write-hours-message"],
+          "rubric": [
+            "Есть место: le magasin.",
+            "Есть время работы de neuf heures à midi.",
+            "Есть закрытие сегодня: aujourd'hui ... fermé."
+          ],
+          "explanation": "Это короткое письмо: автоматическая проверка ищет опоры, а ты сравниваешь полноту по рубрике."
+        }
+      ],
+      "cards": [
+        {
+          "id": "phrase:l10:0",
+          "front": "Магазин открыт с девяти до полудня.",
+          "back": "Le magasin est ouvert de neuf heures à midi.",
+          "type": "phrase"
+        },
+        {
+          "id": "phrase:l10:1",
+          "front": "Сегодня он закрыт.",
+          "back": "Aujourd'hui, il est fermé.",
+          "type": "phrase"
+        },
+        {
+          "id": "phrase:l10:2",
+          "front": "Le magasin est ouvert {{c1::de neuf heures à midi}}.",
+          "back": "Магазин открыт с девяти до полудня.",
+          "type": "cloze"
+        }
+      ]
+    },
+    {
+      "id": "l11",
+      "level": "A1",
+      "title": "Mini-bilan Starter: собрать ситуацию",
+      "goal": "Соединить приветствие, заказ, цену, дорогу и просьбу о помощи в одну короткую задачу.",
+      "scenario": "starter-bilan",
+      "targetPhrase": "Bonjour, je voudrais un café. Combien ça coûte ? Où est le métro ? J'ai besoin d'aide.",
+      "pronunciationTopic": "liaison",
+      "grammarTopic": "fixed-phrases",
+      "moduleId": "module:starter:reception-review",
+      "order": 3,
+      "prerequisites": ["l10"],
+      "tags": ["bilan", "mediation", "review"],
+      "objectives": [
+        {
+          "id": "obj:l11:mediate-basic-need",
+          "skill": "mediation",
+          "cefrCanDo": "Может передать другу простую практическую информацию из ситуации: что нужно, где находится место, сколько стоит.",
+          "required": true
+        },
+        {
+          "id": "obj:l11:perform-integrated-roleplay",
+          "skill": "spoken-interaction",
+          "cefrCanDo": "Может провести короткую связанную бытовую сцену из уже выученных формул.",
+          "required": true
+        },
+        {
+          "id": "obj:l11:write-starter-summary",
+          "skill": "written-production",
+          "cefrCanDo": "Может написать 3-4 простые фразы о потребности, цене и направлении.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "A",
+          "fr": "Bonjour, je voudrais un café. Combien ça coûte ?",
+          "ipa": "/bɔ̃.ʒuʁ ʒə vu.dʁɛ ɛ̃ ka.fe kɔ̃.bjɛ̃ sa kut/",
+          "ru": "Здравствуйте, я бы хотел кофе. Сколько это стоит?"
+        },
+        {
+          "speaker": "B",
+          "fr": "C'est deux euros. Le métro est à gauche.",
+          "ipa": "/sɛ dø.z‿ø.ʁo lə me.tʁo ɛ a ɡoʃ/",
+          "ru": "Это два евро. Метро слева."
+        },
+        {
+          "speaker": "A",
+          "fr": "Merci. J'ai besoin d'aide.",
+          "ipa": "/mɛʁ.si ʒe bə.zwɛ̃ dɛd/",
+          "ru": "Спасибо. Мне нужна помощь."
+        }
+      ],
+      "vocabulary": [
+        {
+          "id": "vocab:l11:0",
+          "fr": "une situation",
+          "ipa": "/yn si.ty.a.sjɔ̃/",
+          "ru": "ситуация",
+          "note": "Полезно для объяснения задания."
+        },
+        {
+          "id": "vocab:l11:1",
+          "fr": "résumer",
+          "ipa": "/ʁe.zy.me/",
+          "ru": "резюмировать / кратко пересказать",
+          "note": "Глагол для медиации: передать главное."
+        },
+        {
+          "id": "vocab:l11:2",
+          "fr": "d'abord",
+          "ipa": "/da.bɔʁ/",
+          "ru": "сначала",
+          "note": "Маркер последовательности."
+        },
+        {
+          "id": "vocab:l11:3",
+          "fr": "ensuite",
+          "ipa": "/ɑ̃.sɥit/",
+          "ru": "затем",
+          "note": "Маркер следующего шага."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l11-e1",
+          "type": "summarize-for-a-friend",
+          "prompt": "Медиация: друг не понимает ситуацию. Объясни по-французски 2-3 фразами: цена, где метро, что нужна помощь.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Le café coûte deux euros. Le métro est à gauche. J'ai besoin d'aide.",
+          "hints": ["Не переводи дословно; передай главное знакомыми фразами."],
+          "requiredTokens": ["coûte deux euros", "le métro", "à gauche", "j'ai besoin d'aide"],
+          "objectiveIds": ["obj:l11:mediate-basic-need"],
+          "rubric": [
+            "Передана цена.",
+            "Передано направление к метро.",
+            "Передана потребность в помощи."
+          ],
+          "explanation": "Медиация — это не новая грамматика, а умение передать смысл другому человеку."
+        },
+        {
+          "id": "l11-e2",
+          "type": "roleplay",
+          "prompt": "Ролевая сцена вслух: поздоровайся, закажи кофе, спроси цену, спроси где метро и попроси помощь.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Bonjour, je voudrais un café, s'il vous plaît. Combien ça coûte ? Où est le métro ? J'ai besoin d'aide.",
+          "hints": ["Собери уже знакомые блоки: Bonjour, je voudrais, combien, où, besoin d'aide."],
+          "requiredTokens": ["bonjour", "je voudrais", "combien ça coûte", "où est le métro", "j'ai besoin d'aide"],
+          "objectiveIds": ["obj:l11:perform-integrated-roleplay"],
+          "rubric": [
+            "Есть вежливый вход в разговор.",
+            "Есть заказ и вопрос о цене.",
+            "Есть вопрос о дороге и просьба о помощи."
+          ],
+          "explanation": "Это первый накопительный roleplay: он проверяет не одно слово, а связанный бытовой сценарий."
+        },
+        {
+          "id": "l11-e3",
+          "type": "rubric-writing",
+          "prompt": "Напиши 3-4 короткие фразы как мини-отчёт: сначала заказ, затем цена, потом метро и помощь.",
+          "acceptedAnswers": [],
+          "modelAnswer": "D'abord, je voudrais un café. C'est deux euros. Ensuite, le métro est à gauche. J'ai besoin d'aide.",
+          "hints": ["Используй d'abord и ensuite, если можешь."],
+          "requiredTokens": ["je voudrais", "deux euros", "le métro", "j'ai besoin d'aide"],
+          "objectiveIds": ["obj:l11:write-starter-summary"],
+          "rubric": [
+            "3-4 короткие понятные фразы.",
+            "Все четыре смысловых блока присутствуют.",
+            "Ошибки не мешают понять ситуацию."
+          ],
+          "explanation": "Для письма на этом этапе важнее понятность и полнота задачи, чем идеальная сложность."
+        }
+      ],
+      "cards": [
+        {
+          "id": "phrase:l11:0",
+          "front": "Сначала я бы хотел кофе.",
+          "back": "D'abord, je voudrais un café.",
+          "type": "phrase"
+        },
+        {
+          "id": "phrase:l11:1",
+          "front": "Затем метро слева.",
+          "back": "Ensuite, le métro est à gauche.",
+          "type": "phrase"
+        },
+        {
+          "id": "phrase:l11:2",
+          "front": "{{c1::J'ai besoin d'aide}}.",
+          "back": "Мне нужна помощь.",
           "type": "cloze"
         }
       ]

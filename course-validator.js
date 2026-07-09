@@ -1,4 +1,10 @@
-import { ALLOWED_LEVELS, COURSE_SCHEMA, COURSE_SCHEMA_VERSION } from "./course-schema.js";
+import {
+  ALLOWED_EXERCISE_TYPES,
+  ALLOWED_LEVELS,
+  COURSE_SCHEMA,
+  COURSE_SCHEMA_VERSION,
+  ROADMAP_LEVEL_STATUSES
+} from "./course-schema.js";
 
 const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9:._-]*$/;
 
@@ -28,6 +34,7 @@ export function collectCourseValidationErrors(catalog) {
       errors
     );
   });
+  validateCourseRoadmap(catalog.courseRoadmap, errors);
 
   const levelIds = new Set();
   const moduleIds = new Set();
@@ -159,6 +166,9 @@ export function collectCourseValidationErrors(catalog) {
       const exercisePath = `${path}.exercises[${index}]`;
       validateObject(exercise, exercisePath, COURSE_SCHEMA.exercise, errors);
       registerId(exercise?.id, `${exercisePath}.id`, exerciseIds, errors);
+      if (hasText(exercise?.type) && !ALLOWED_EXERCISE_TYPES.includes(exercise.type)) {
+        errors.push(`${exercisePath}.type: unsupported exercise type "${exercise.type}"`);
+      }
       validateTextArray(exercise?.acceptedAnswers, `${exercisePath}.acceptedAnswers`, errors);
       validateTextArray(exercise?.hints, `${exercisePath}.hints`, errors, { nonEmpty: true });
       validateTextArray(exercise?.requiredTokens, `${exercisePath}.requiredTokens`, errors);
@@ -166,6 +176,29 @@ export function collectCourseValidationErrors(catalog) {
         nonEmpty: true,
         unique: true
       });
+      validateTextArray(exercise?.options, `${exercisePath}.options`, errors);
+      validateTextArray(exercise?.rubric, `${exercisePath}.rubric`, errors);
+      if (exercise?.type === "reading-comprehension" && !hasText(exercise?.sourceText)) {
+        errors.push(`${exercisePath}.sourceText: reading-comprehension requires a source text`);
+      }
+      if (["listening-comprehension", "dictation"].includes(exercise?.type) && !hasText(exercise?.transcript)) {
+        errors.push(`${exercisePath}.transcript: ${exercise.type} requires a transcript`);
+      }
+      if ([
+        "conversation-prompt",
+        "debate-roleplay",
+        "guided-writing",
+        "message-reply",
+        "recorded-monologue",
+        "mediation",
+        "roleplay",
+        "rubric-writing",
+        "summarize-for-a-friend"
+      ].includes(exercise?.type)) {
+        if (!Array.isArray(exercise.rubric) || exercise.rubric.length === 0) {
+          errors.push(`${exercisePath}.rubric: ${exercise.type} requires review criteria`);
+        }
+      }
       validateReferenceArray(exercise?.objectiveIds, `${exercisePath}.objectiveIds`, localObjectiveIds, errors);
       if (exercise?.required !== false) {
         exercise?.objectiveIds?.forEach((objectiveId) => coveredObjectiveIds.add(objectiveId));
@@ -214,6 +247,91 @@ export function validateCourseCatalog(catalog) {
   return true;
 }
 
+function validateCourseRoadmap(roadmap, errors) {
+  if (roadmap === undefined) return;
+  validateObject(roadmap, "courseRoadmap", COURSE_SCHEMA.courseRoadmap, errors);
+
+  const sources = Array.isArray(roadmap?.sources) ? roadmap.sources : [];
+  sources.forEach((source, index) => {
+    const path = `courseRoadmap.sources[${index}]`;
+    validateObject(source, path, COURSE_SCHEMA.roadmapSource, errors);
+    validateHttpUrl(source?.url, `${path}.url`, errors);
+  });
+
+  const skillAxisIds = new Set();
+  const skillAxes = Array.isArray(roadmap?.skillAxes) ? roadmap.skillAxes : [];
+  skillAxes.forEach((axis, index) => {
+    const path = `courseRoadmap.skillAxes[${index}]`;
+    validateObject(axis, path, COURSE_SCHEMA.roadmapSkillAxis, errors);
+    registerId(axis?.id, `${path}.id`, skillAxisIds, errors);
+    validateTextArray(axis?.evidenceTypes, `${path}.evidenceTypes`, errors, {
+      nonEmpty: true,
+      unique: true
+    });
+  });
+
+  const roadmapIds = new Set();
+  const cefrLevels = new Set();
+  const levels = Array.isArray(roadmap?.levels) ? roadmap.levels : [];
+  levels.forEach((level, levelIndex) => {
+    const path = `courseRoadmap.levels[${levelIndex}]`;
+    validateObject(level, path, COURSE_SCHEMA.roadmapLevel, errors);
+    registerId(level?.id, `${path}.id`, roadmapIds, errors, "roadmap:");
+    validateLevel(level?.cefrLevel, `${path}.cefrLevel`, errors);
+    if (hasText(level?.cefrLevel)) {
+      if (cefrLevels.has(level.cefrLevel)) errors.push(`${path}.cefrLevel: duplicate roadmap level "${level.cefrLevel}"`);
+      cefrLevels.add(level.cefrLevel);
+    }
+    if (hasText(level?.status) && !ROADMAP_LEVEL_STATUSES.includes(level.status)) {
+      errors.push(`${path}.status: unsupported status "${level.status}"`);
+    }
+    validateTextArray(level?.prerequisites, `${path}.prerequisites`, errors, { unique: true });
+    validateTextArray(level?.targetOutcomes, `${path}.targetOutcomes`, errors, { nonEmpty: true });
+
+    const evidenceSkills = new Set();
+    const exitEvidence = Array.isArray(level?.exitEvidence) ? level.exitEvidence : [];
+    exitEvidence.forEach((evidence, evidenceIndex) => {
+      const evidencePath = `${path}.exitEvidence[${evidenceIndex}]`;
+      validateObject(evidence, evidencePath, COURSE_SCHEMA.roadmapExitEvidence, errors);
+      if (hasText(evidence?.skill)) {
+        if (!skillAxisIds.has(evidence.skill)) errors.push(`${evidencePath}.skill: unknown skill axis "${evidence.skill}"`);
+        if (evidenceSkills.has(evidence.skill)) errors.push(`${evidencePath}.skill: duplicate evidence for "${evidence.skill}"`);
+        evidenceSkills.add(evidence.skill);
+      }
+    });
+    skillAxisIds.forEach((axisId) => {
+      if (!evidenceSkills.has(axisId)) errors.push(`${path}.exitEvidence: missing evidence for skill axis "${axisId}"`);
+    });
+
+    const modules = Array.isArray(level?.modules) ? level.modules : [];
+    modules.forEach((module, moduleIndex) => {
+      const modulePath = `${path}.modules[${moduleIndex}]`;
+      validateObject(module, modulePath, COURSE_SCHEMA.roadmapModule, errors);
+      registerId(module?.id, `${modulePath}.id`, roadmapIds, errors, "roadmap:");
+      validateTextArray(module?.skillFocus, `${modulePath}.skillFocus`, errors, {
+        nonEmpty: true,
+        unique: true
+      });
+      module?.skillFocus?.forEach((axisId, axisIndex) => {
+        if (hasText(axisId) && !skillAxisIds.has(axisId)) {
+          errors.push(`${modulePath}.skillFocus[${axisIndex}]: unknown skill axis "${axisId}"`);
+        }
+      });
+      validateTextArray(module?.outcomes, `${modulePath}.outcomes`, errors, { nonEmpty: true });
+      validateTextArray(module?.grammar, `${modulePath}.grammar`, errors, { nonEmpty: true });
+      validateTextArray(module?.exerciseTypes, `${modulePath}.exerciseTypes`, errors, {
+        nonEmpty: true,
+        unique: true
+      });
+      module?.exerciseTypes?.forEach((type, typeIndex) => {
+        if (hasText(type) && !ALLOWED_EXERCISE_TYPES.includes(type)) {
+          errors.push(`${modulePath}.exerciseTypes[${typeIndex}]: unsupported exercise type "${type}"`);
+        }
+      });
+    });
+  });
+}
+
 function validateObject(value, path, schema, errors) {
   if (!isObject(value)) {
     errors.push(`${path}: expected an object`);
@@ -244,6 +362,16 @@ function requireArray(object, field, path, errors) {
 function validateLevel(level, path, errors) {
   if (hasText(level) && !ALLOWED_LEVELS.includes(level)) {
     errors.push(`${path}: unsupported level "${level}"`);
+  }
+}
+
+function validateHttpUrl(value, path, errors) {
+  if (!hasText(value)) return;
+  try {
+    const url = new URL(value);
+    if (!["http:", "https:"].includes(url.protocol)) errors.push(`${path}: expected http(s) URL`);
+  } catch {
+    errors.push(`${path}: invalid URL`);
   }
 }
 

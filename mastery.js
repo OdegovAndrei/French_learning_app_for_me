@@ -1,4 +1,19 @@
-const OPEN_EXERCISE_TYPES = new Set(["writing", "speaking", "substitution"]);
+const OPEN_EXERCISE_TYPES = new Set([
+  "writing",
+  "speaking",
+  "substitution",
+  "controlled-production",
+  "conversation-prompt",
+  "debate-roleplay",
+  "guided-writing",
+  "message-reply",
+  "recorded-monologue",
+  "mediation",
+  "roleplay",
+  "rubric-writing",
+  "sentence-transform",
+  "summarize-for-a-friend"
+]);
 
 export function evaluateLessonReadiness(lesson, attempts = []) {
   const exercises = Array.isArray(lesson?.exercises)

@@ -238,6 +238,7 @@ function renderLessons() {
           </section>`).join("")}
       </div>
     </section>
+    ${renderCourseRoadmap()}
     <div id="selected-lesson" class="lesson-layout with-top-gap"></div>`;
   document.querySelectorAll(".lesson-tile").forEach((button) => {
     button.addEventListener("click", () => {
@@ -479,7 +480,7 @@ function renderExercise(lesson, exercise, index) {
   const result = attempt.result;
   const modelVisible = attempt.showModel;
   const hintVisible = attempt.showHint;
-  const canSelfReview = ["writing", "speaking", "substitution"].includes(exercise.type)
+  const canSelfReview = isSelfReviewExercise(exercise)
     && modelVisible
     && result?.needsReview === true
     && result?.coverageComplete === true;
@@ -487,7 +488,8 @@ function renderExercise(lesson, exercise, index) {
     <div class="exercise" data-exercise-id="${escapeHtml(id)}">
       <div class="exercise-header"><span class="tag">${escapeHtml(exercise.type)}</span>${result ? `<span class="result-badge ${escapeHtml(result.status)}">${resultLabel(result.status)}</span>` : ""}</div>
       <p><strong>${escapeHtml(exercise.prompt)}</strong></p>
-      <textarea placeholder="Напиши свой ответ здесь...">${escapeHtml(attempt.answer || "")}</textarea>
+      ${renderExerciseSupport(exercise, modelVisible)}
+      <textarea placeholder="${escapeHtml(exercisePlaceholder(exercise))}">${escapeHtml(attempt.answer || "")}</textarea>
       <div class="control-row">
         <button class="primary-button compact-button" type="button" data-check-exercise>Проверить</button>
         <button class="pill-button" type="button" data-show-hint>Подсказка</button>
@@ -498,6 +500,58 @@ function renderExercise(lesson, exercise, index) {
       ${modelVisible ? `<div class="model-answer"><strong>Возможный ответ</strong><p>${nl2br(exercise.modelAnswer || exercise.acceptedAnswers?.[0] || "Ответ зависит от твоей ситуации.")}</p>${exercise.explanation ? `<span>${escapeHtml(exercise.explanation)}</span>` : ""}</div>` : ""}
       ${canSelfReview ? `<button class="secondary-button self-review-button" type="button" data-self-review ${attempt.selfReviewed ? "disabled" : ""}>${attempt.selfReviewed ? "Сравнение подтверждено" : "Я сравнил и исправил"}</button>` : ""}
     </div>`;
+}
+
+function renderExerciseSupport(exercise, modelVisible) {
+  const parts = [];
+  if (exercise.sourceText) {
+    parts.push(`<div class="exercise-source"><strong>Материал</strong><p>${nl2br(exercise.sourceText)}</p></div>`);
+  }
+  if (exercise.listenText || (["listening-comprehension", "dictation"].includes(exercise.type) && exercise.transcript)) {
+    const listenText = exercise.listenText || exercise.transcript;
+    parts.push(`<button class="pill-button exercise-listen" type="button" data-speak="${escapeHtml(listenText)}">Прослушать</button>`);
+  }
+  if (Array.isArray(exercise.options) && exercise.options.length) {
+    parts.push(`<ul class="exercise-options">${exercise.options.map((option) => `<li>${escapeHtml(option)}</li>`).join("")}</ul>`);
+  }
+  if (Array.isArray(exercise.rubric) && exercise.rubric.length) {
+    parts.push(`<div class="exercise-rubric"><strong>Критерии</strong><ul>${exercise.rubric.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>`);
+  }
+  if (modelVisible && exercise.transcript) {
+    parts.push(`<div class="exercise-transcript"><strong>Транскрипт</strong><p>${nl2br(exercise.transcript)}</p></div>`);
+  }
+  return parts.join("");
+}
+
+function exercisePlaceholder(exercise) {
+  if (exercise.type === "dictation") return "Запиши услышанную фразу...";
+  if (["speaking", "roleplay", "conversation-prompt", "debate-roleplay", "recorded-monologue"].includes(exercise.type)) {
+    return "Напиши план ответа или произнесённую фразу...";
+  }
+  if (["rubric-writing", "guided-writing", "message-reply"].includes(exercise.type)) {
+    return "Напиши связный ответ по критериям...";
+  }
+  if (["mediation", "summarize-for-a-friend"].includes(exercise.type)) return "Передай смысл своими словами...";
+  return "Напиши свой ответ здесь...";
+}
+
+function isSelfReviewExercise(exercise) {
+  return [
+    "writing",
+    "speaking",
+    "substitution",
+    "controlled-production",
+    "conversation-prompt",
+    "debate-roleplay",
+    "guided-writing",
+    "message-reply",
+    "recorded-monologue",
+    "mediation",
+    "roleplay",
+    "rubric-writing",
+    "sentence-transform",
+    "summarize-for-a-friend"
+  ].includes(exercise.type);
 }
 
 function bindExercise(box, lesson) {
@@ -1077,6 +1131,60 @@ function renderVoiceLab(target, key) {
       <audio controls hidden></audio>
       <p class="note transcript-output">STT необязателен: окончательное сравнение делается по эталону и сохранённой записи.</p>
     </div>`;
+}
+
+function renderCourseRoadmap() {
+  const roadmap = state.data.courseRoadmap;
+  if (!roadmap?.levels?.length) return "";
+  const sources = Array.isArray(roadmap.sources) ? roadmap.sources : [];
+  return `
+    <section class="section-band with-top-gap" aria-labelledby="roadmap-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Масштабирование A1-A2-B1-B2</p>
+          <h4 id="roadmap-title">Roadmap курса: что должно появиться до заявления уровня</h4>
+          <p class="note">${escapeHtml(roadmap.claimPolicy || "")}</p>
+        </div>
+      </div>
+      <div class="roadmap-grid">
+        ${roadmap.levels.map((level) => `
+          <article class="roadmap-card">
+            <div class="tag-row">
+              <span class="tag">${escapeHtml(level.cefrLevel)}</span>
+              <span class="tag ${level.status === "planned" ? "amber" : "rose"}">${escapeHtml(roadmapStatusLabel(level.status))}</span>
+            </div>
+            <h5 class="compact-title">${escapeHtml(level.title)}</h5>
+            <p class="note">${escapeHtml(level.claim)}</p>
+            <p class="roadmap-card-label">Модули</p>
+            <ul class="roadmap-module-list">
+              ${(level.modules || []).map((module) => `
+                <li>
+                  <strong>${escapeHtml(module.title)}</strong>
+                  <span>${escapeHtml((module.skillFocus || []).join(", "))}</span>
+                </li>`).join("")}
+            </ul>
+            <p class="roadmap-card-label">Exit evidence</p>
+            <ul class="example-list">
+              ${(level.exitEvidence || []).slice(0, 3).map((evidence) => `
+                <li><span class="tag">${escapeHtml(evidence.skill)}</span> ${escapeHtml(evidence.evidence)}</li>`).join("")}
+              ${(level.exitEvidence || []).length > 3 ? `<li class="note">Ещё ${(level.exitEvidence || []).length - 3} skill axes проверяются валидатором.</li>` : ""}
+            </ul>
+          </article>`).join("")}
+      </div>
+      ${sources.length ? `
+        <p class="note roadmap-sources">
+          Источники roadmap:
+          ${sources.map((source) => `<a href="${escapeHtml(safeExternalUrl(source.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.name)}</a>`).join(" · ")}
+        </p>` : ""}
+    </section>`;
+}
+
+function roadmapStatusLabel(status) {
+  return {
+    "in-progress": "в работе",
+    planned: "план",
+    published: "опубликовано"
+  }[status] || status || "план";
 }
 
 function renderResources() {

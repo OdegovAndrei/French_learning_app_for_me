@@ -23,6 +23,52 @@ assert.ok(data.modules.length >= 3, "Starter content must be grouped into scalab
 assert.ok(data.lessons.length > 0, "The course needs at least one lesson");
 assert.ok(data.pronunciationTopics.length > 0, "The course needs pronunciation topics");
 assert.ok(data.grammarTopics.length > 0, "The course needs grammar topics");
+assert.ok(data.courseRoadmap, "The catalog needs an explicit roadmap before scaling beyond Starter");
+assert.equal(data.courseRoadmap.status, "draft");
+assert.match(
+  data.courseRoadmap.claimPolicy,
+  /Starter.+не равен полному A1, A2, B1 или B2/,
+  "The roadmap must keep level claims honest"
+);
+assert.ok(data.courseRoadmap.sources.length >= 3, "Roadmap needs official/public source links");
+assert.ok(
+  data.courseRoadmap.sources.some((source) => source.url.includes("coe.int")),
+  "Roadmap needs a Council of Europe CEFR source"
+);
+assert.ok(
+  data.courseRoadmap.sources.some((source) => source.url.includes("france-education-international.fr")),
+  "Roadmap needs a France Education International DELF source"
+);
+
+const roadmapLevels = new Map(data.courseRoadmap.levels.map((level) => [level.cefrLevel, level]));
+for (const level of ["A1", "A2", "B1", "B2"]) {
+  assert.ok(roadmapLevels.has(level), `Roadmap must include ${level}`);
+  assert.ok(roadmapLevels.get(level).modules.length >= 3, `${level} roadmap needs multiple modules`);
+}
+assert.equal(roadmapLevels.get("A1").status, "in-progress");
+assert.equal(roadmapLevels.get("B2").status, "planned");
+assert.ok(
+  data.courseRoadmap.levels.every((level) => level.status !== "published"),
+  "No future CEFR level should be published before real lessons/evidence exist"
+);
+const roadmapSkillAxes = data.courseRoadmap.skillAxes.map((axis) => axis.id);
+for (const axis of [
+  "listening",
+  "reading",
+  "spoken-interaction",
+  "spoken-production",
+  "written-production",
+  "mediation",
+  "language-system"
+]) {
+  assert.ok(roadmapSkillAxes.includes(axis), `Roadmap must track ${axis}`);
+  for (const level of data.courseRoadmap.levels) {
+    assert.ok(
+      level.exitEvidence.some((evidence) => evidence.skill === axis),
+      `${level.cefrLevel} must define exit evidence for ${axis}`
+    );
+  }
+}
 
 const exercises = data.lessons.flatMap((lesson) => lesson.exercises);
 assert.ok(exercises.length >= data.lessons.length, "Every lesson needs assessable practice");
@@ -35,6 +81,47 @@ for (const exercise of exercises) {
   assert.ok(Array.isArray(exercise.objectiveIds) && exercise.objectiveIds.length > 0);
   assert.ok(exercise.explanation);
 }
+
+const publishedExerciseTypes = new Set(exercises.map((exercise) => exercise.type));
+for (const type of [
+  "reading-comprehension",
+  "listening-comprehension",
+  "dictation",
+  "gap-fill",
+  "roleplay",
+  "summarize-for-a-friend"
+]) {
+  assert.ok(publishedExerciseTypes.has(type), `Third-wave Starter content must exercise ${type}`);
+}
+
+assert.equal(
+  checkExercise(exerciseById(data, "l09-e1"), "trois euros").status,
+  "correct",
+  "Reading comprehension should accept the model answer"
+);
+assert.equal(checkExercise(exerciseById(data, "l09-e2"), "ça").status, "correct");
+assert.deepEqual(
+  pickCheckState(checkExercise(exerciseById(data, "l09-e3"), "Combien ça coûte ? Je voudrais payer par carte.")),
+  { status: "open", needsReview: true, coverageComplete: true },
+  "Roleplay must stay self-reviewed even when all support tokens are present"
+);
+assert.equal(
+  checkExercise(exerciseById(data, "l10-e1"), "de neuf heures à midi").status,
+  "correct",
+  "Listening comprehension should accept the target information"
+);
+assert.equal(checkExercise(exerciseById(data, "l10-e2"), "Le magasin est ouvert de neuf heures à midi.").status, "correct");
+assert.deepEqual(
+  pickCheckState(checkExercise(exerciseById(data, "l10-e3"), "Le magasin est ouvert de neuf heures à midi. Aujourd'hui, il est fermé l'après-midi.")),
+  { status: "open", needsReview: true, coverageComplete: true },
+  "Message replies must require self-review instead of pretending to auto-grade meaning"
+);
+assert.deepEqual(
+  pickCheckState(checkExercise(exerciseById(data, "l11-e1"), "Le café coûte deux euros. Le métro est à gauche. J'ai besoin d'aide.")),
+  { status: "open", needsReview: true, coverageComplete: true },
+  "Summarize-for-a-friend tasks must require self-review instead of pretending to auto-grade meaning"
+);
+
 for (const lesson of data.lessons) {
   assert.ok(lesson.moduleId, "Every lesson needs a module reference");
   assert.ok(Number.isInteger(lesson.order) && lesson.order > 0);
@@ -240,6 +327,57 @@ assert.ok(
   "Unknown level labels must be rejected"
 );
 
+const unsupportedExerciseType = structuredClone(data);
+exerciseById(unsupportedExerciseType, "l09-e2").type = "telepathy-drill";
+assert.ok(
+  collectCourseValidationErrors(unsupportedExerciseType).some((error) => error.includes("unsupported exercise type")),
+  "Unsupported exercise types must be rejected"
+);
+
+const missingReadingSource = structuredClone(data);
+delete exerciseById(missingReadingSource, "l09-e1").sourceText;
+assert.ok(
+  collectCourseValidationErrors(missingReadingSource).some((error) => error.includes("sourceText")),
+  "Reading comprehension must include source text"
+);
+
+const missingListeningTranscript = structuredClone(data);
+delete exerciseById(missingListeningTranscript, "l10-e1").transcript;
+assert.ok(
+  collectCourseValidationErrors(missingListeningTranscript).some((error) => error.includes("transcript")),
+  "Listening comprehension must include a transcript for after-attempt review"
+);
+
+const missingRoleplayRubric = structuredClone(data);
+delete exerciseById(missingRoleplayRubric, "l09-e3").rubric;
+assert.ok(
+  collectCourseValidationErrors(missingRoleplayRubric).some((error) => error.includes("requires review criteria")),
+  "Open roleplay must include self-review criteria"
+);
+
+const unsupportedRoadmapLevel = structuredClone(data);
+unsupportedRoadmapLevel.courseRoadmap.levels[0].cefrLevel = "C3";
+assert.ok(
+  collectCourseValidationErrors(unsupportedRoadmapLevel).some((error) => error.includes("unsupported level")),
+  "Roadmap must not introduce unsupported CEFR levels"
+);
+
+const brokenRoadmapSkill = structuredClone(data);
+brokenRoadmapSkill.courseRoadmap.levels[0].modules[0].skillFocus = ["telepathy"];
+assert.ok(
+  collectCourseValidationErrors(brokenRoadmapSkill).some((error) => error.includes("unknown skill axis")),
+  "Roadmap modules must reference declared skill axes"
+);
+
+const missingRoadmapEvidence = structuredClone(data);
+missingRoadmapEvidence.courseRoadmap.levels[0].exitEvidence = missingRoadmapEvidence.courseRoadmap.levels[0].exitEvidence.filter(
+  (evidence) => evidence.skill !== "listening"
+);
+assert.ok(
+  collectCourseValidationErrors(missingRoadmapEvidence).some((error) => error.includes("missing evidence")),
+  "Every roadmap level must define exit evidence for every tracked skill axis"
+);
+
 const unsupportedSchema = structuredClone(data);
 unsupportedSchema.meta.catalogSchemaVersion += 1;
 assert.ok(
@@ -352,4 +490,18 @@ function cardIdentityMap(cardList) {
       .map((card) => [card.id, `${card.noteId}|${card.kind}|${card.front}|${card.back}`])
       .sort(([left], [right]) => left.localeCompare(right))
   );
+}
+
+function exerciseById(catalog, id) {
+  const exercise = catalog.lessons.flatMap((lesson) => lesson.exercises).find((item) => item.id === id);
+  assert.ok(exercise, `Missing exercise fixture: ${id}`);
+  return exercise;
+}
+
+function pickCheckState(result) {
+  return {
+    status: result.status,
+    needsReview: result.needsReview,
+    coverageComplete: result.coverageComplete
+  };
 }

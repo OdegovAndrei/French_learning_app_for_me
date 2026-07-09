@@ -4,7 +4,22 @@ export function checkExercise(exercise, input) {
     return { status: "empty", message: "Сначала напиши или произнеси свой вариант." };
   }
 
-  const isOpenEnded = ["writing", "speaking", "substitution"].includes(exercise.type);
+  const isOpenEnded = [
+    "writing",
+    "speaking",
+    "substitution",
+    "controlled-production",
+    "conversation-prompt",
+    "debate-roleplay",
+    "guided-writing",
+    "message-reply",
+    "recorded-monologue",
+    "mediation",
+    "roleplay",
+    "rubric-writing",
+    "sentence-transform",
+    "summarize-for-a-friend"
+  ].includes(exercise.type);
   if (isOpenEnded || (exercise.type === "substitution" && exercise.requiredTokens?.length)) {
     const required = exercise.requiredTokens || [];
     const normalized = normalizeAnswer(value);

@@ -2,6 +2,31 @@ export const COURSE_SCHEMA_VERSION = 2;
 
 export const ALLOWED_LEVELS = Object.freeze(["A0", "A1", "A2", "B1", "B2"]);
 
+export const ALLOWED_EXERCISE_TYPES = Object.freeze([
+  "translate",
+  "speaking",
+  "writing",
+  "substitution",
+  "reading-comprehension",
+  "listening-comprehension",
+  "dictation",
+  "gap-fill",
+  "matching",
+  "order-dialogue",
+  "controlled-production",
+  "conversation-prompt",
+  "debate-roleplay",
+  "guided-writing",
+  "message-reply",
+  "recorded-monologue",
+  "mediation",
+  "roleplay",
+  "rubric-writing",
+  "sentence-transform",
+  "summarize-for-a-friend"
+]);
+export const ROADMAP_LEVEL_STATUSES = Object.freeze(["in-progress", "planned", "published"]);
+
 export const COURSE_SCHEMA = Object.freeze({
   meta: Object.freeze({
     requiredText: Object.freeze(["title", "contentVersion", "dailyMinutes", "method"]),
@@ -16,6 +41,28 @@ export const COURSE_SCHEMA = Object.freeze({
     requiredText: Object.freeze(["id", "levelId", "title", "description"]),
     requiredInteger: Object.freeze(["order"]),
     requiredArrays: Object.freeze(["prerequisites"])
+  }),
+  courseRoadmap: Object.freeze({
+    requiredText: Object.freeze(["status", "claimPolicy"]),
+    requiredArrays: Object.freeze(["sources", "skillAxes", "levels"])
+  }),
+  roadmapSource: Object.freeze({
+    requiredText: Object.freeze(["name", "url", "note"])
+  }),
+  roadmapSkillAxis: Object.freeze({
+    requiredText: Object.freeze(["id", "title"]),
+    requiredArrays: Object.freeze(["evidenceTypes"])
+  }),
+  roadmapLevel: Object.freeze({
+    requiredText: Object.freeze(["id", "cefrLevel", "title", "status", "claim"]),
+    requiredArrays: Object.freeze(["prerequisites", "targetOutcomes", "modules", "exitEvidence"])
+  }),
+  roadmapModule: Object.freeze({
+    requiredText: Object.freeze(["id", "title"]),
+    requiredArrays: Object.freeze(["skillFocus", "outcomes", "grammar", "exerciseTypes"])
+  }),
+  roadmapExitEvidence: Object.freeze({
+    requiredText: Object.freeze(["skill", "evidence"])
   }),
   pronunciationTopic: Object.freeze({
     requiredText: Object.freeze(["id", "title", "level", "target", "cue"]),
