@@ -626,6 +626,13 @@
       "level": "A1",
       "rule": "Дни недели (lundi...dimanche) идут без артикля для одного конкретного дня, но с le для повторяющегося события: le lundi = по понедельникам. Prochain/prochaine — следующий/следующая.",
       "examples": ["Lundi, je travaille.", "Le lundi, je fais du sport.", "On se voit la semaine prochaine ?"]
+    },
+    {
+      "id": "possessives",
+      "title": "Притяжательные mon/ma/mes",
+      "level": "A1",
+      "rule": "Mon/ton/son — перед мужским родом и перед гласной у женского; ma/ta/sa — перед женским согласным; mes/tes/ses — множественное число независимо от рода.",
+      "examples": ["mon père", "ma mère", "mes parents"]
     }
   ],
   "lessons": [
@@ -3086,6 +3093,108 @@
         {"id": "phrase:l19:0", "front": "Холодно. Я надеваю пальто.", "back": "Il fait froid. Je mets un manteau.", "type": "phrase"},
         {"id": "phrase:l19:1", "front": "Идёт дождь.", "back": "Il pleut.", "type": "phrase"},
         {"id": "phrase:l19:2", "front": "Il fait {{c1::froid}}, je mets un manteau.", "back": "Холодно, я надеваю пальто.", "type": "cloze"}
+      ]
+    },
+    {
+      "id": "l20",
+      "level": "A1",
+      "title": "Семья и дом",
+      "goal": "Письменно описать свою семью и жильё, и пересказать по-русски чужое описание семьи.",
+      "scenario": "family-and-home",
+      "targetPhrase": "Voici ma famille : mon père, ma mère et mon frère.",
+      "pronunciationTopic": "r",
+      "grammarTopic": "possessives",
+      "moduleId": "module:a1:everyday-life",
+      "order": 3,
+      "prerequisites": ["l19"],
+      "tags": ["family", "home", "mediation"],
+      "objectives": [
+        {
+          "id": "obj:l20:describe-family",
+          "skill": "written-production",
+          "cefrCanDo": "Может письменно описать свою семью простыми фразами с mon/ma/mes.",
+          "required": true
+        },
+        {
+          "id": "obj:l20:explain-family-to-friend",
+          "skill": "mediation",
+          "cefrCanDo": "Может передать другу основную информацию о чужой семье из короткого текста.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Toi",
+          "fr": "Voici une photo de ma famille.",
+          "ipa": "/vwa.si yn fɔ.to də ma fa.mij/",
+          "ru": "Вот фото моей семьи."
+        },
+        {
+          "speaker": "Ami",
+          "fr": "Qui est-ce ?",
+          "ipa": "/ki ɛs/",
+          "ru": "Кто это?"
+        },
+        {
+          "speaker": "Toi",
+          "fr": "C'est mon père, ma mère et mon frère. Nous habitons dans un appartement.",
+          "ipa": "/sɛ mɔ̃ pɛʁ ma mɛʁ e mɔ̃ fʁɛʁ nu.z‿a.bi.tɔ̃ dɑ̃.z‿ɛ̃.n‿a.paʁ.tə.mɑ̃/",
+          "ru": "Это мой отец, моя мать и мой брат. Мы живём в квартире."
+        }
+      ],
+      "vocabulary": [
+        {"id": "vocab:l20:0", "fr": "le père", "ipa": "/lə pɛʁ/", "ru": "отец", "note": "Финальное r звучит, e не звучит."},
+        {"id": "vocab:l20:1", "fr": "la mère", "ipa": "/la mɛʁ/", "ru": "мать", "note": "Та же модель, что père."},
+        {"id": "vocab:l20:2", "fr": "le frère", "ipa": "/lə fʁɛʁ/", "ru": "брат", "note": "Два r подряд — хорошая тренировка звука."},
+        {"id": "vocab:l20:3", "fr": "la sœur", "ipa": "/la sœʁ/", "ru": "сестра", "note": "œu — закрытый звук, как в fleur."},
+        {"id": "vocab:l20:4", "fr": "les parents", "ipa": "/le pa.ʁɑ̃/", "ru": "родители", "note": "Множественное число, t не звучит."},
+        {"id": "vocab:l20:5", "fr": "les enfants", "ipa": "/le.z‿ɑ̃.fɑ̃/", "ru": "дети", "note": "Liaison между les и enfants."},
+        {"id": "vocab:l20:6", "fr": "un appartement", "ipa": "/ɛ̃.n‿a.paʁ.tə.mɑ̃/", "ru": "квартира", "note": "Носовой звук в конце."},
+        {"id": "vocab:l20:7", "fr": "une maison", "ipa": "/yn mɛ.zɔ̃/", "ru": "дом", "note": "S между гласными звучит как z."},
+        {"id": "vocab:l20:8", "fr": "la chambre", "ipa": "/la ʃɑ̃bʁ/", "ru": "комната/спальня", "note": "Не путать с une salle (зал)."},
+        {"id": "vocab:l20:9", "fr": "habiter dans", "ipa": "/a.bi.te dɑ̃/", "ru": "жить в (помещении)", "note": "Dans для помещения, à для города (сравни l13)."}
+      ],
+      "exercises": [
+        {
+          "id": "l20-e1",
+          "type": "guided-writing",
+          "prompt": "Опиши свою семью и жильё: кто есть в семье и где вы живёте. Используй mon/ma/mes и nous habitons.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Voici ma famille : mon père, ma mère et ma sœur. Nous habitons dans un appartement.",
+          "hints": ["Минимум два члена семьи и тип жилья."],
+          "requiredTokens": ["mon", "ma", "nous habitons"],
+          "objectiveIds": ["obj:l20:describe-family"],
+          "rubric": ["Названы минимум два члена семьи.", "Использованы mon/ma перед ними правильно.", "Сказано, где семья живёт."],
+          "explanation": "Mon/ma здесь — не грамматическое упражнение, а естественная часть описания семьи."
+        },
+        {
+          "id": "l20-e2",
+          "type": "summarize-for-a-friend",
+          "prompt": "Прочитай и перескажи по-русски: «Voici la famille de Julie : son père, sa mère et son frère. Ils habitent dans une maison.» Кто в семье Жюли и где они живут?",
+          "acceptedAnswers": [],
+          "modelAnswer": "У Жюли есть отец, мать и брат. Они живут в доме.",
+          "hints": ["Son/sa здесь значит «её», не «его» — Julie женского рода."],
+          "requiredTokens": ["отец", "мать", "дом"],
+          "objectiveIds": ["obj:l20:explain-family-to-friend"],
+          "rubric": ["Названы все три члена семьи.", "Названо жильё (дом).", "Пересказ на русском, не дословный перевод."],
+          "explanation": "Son/sa/ses согласуются с предметом обладания, а не с полом обладателя — важная деталь для правильного понимания текста."
+        },
+        {
+          "id": "l20-e3",
+          "type": "gap-fill",
+          "prompt": "Заполни: Voici ___ mère. (о своей матери)",
+          "acceptedAnswers": ["ma"],
+          "modelAnswer": "Voici ma mère.",
+          "hints": ["Mère — женский род, единственное число."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l20:describe-family"],
+          "explanation": "Ma перед mère — обычный случай, без перехода в mon (mère начинается с согласной)."
+        }
+      ],
+      "cards": [
+        {"id": "phrase:l20:0", "front": "Это мой отец, моя мать и мой брат.", "back": "C'est mon père, ma mère et mon frère.", "type": "phrase"},
+        {"id": "phrase:l20:1", "front": "Мы живём в квартире.", "back": "Nous habitons dans un appartement.", "type": "phrase"},
+        {"id": "phrase:l20:2", "front": "C'est {{c1::mon}} père.", "back": "Это мой отец.", "type": "cloze"}
       ]
     }
   ]
