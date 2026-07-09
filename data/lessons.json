@@ -2985,6 +2985,108 @@
         {"id": "phrase:l18:1", "front": "Бутылка воды и хлеб.", "back": "Une bouteille d'eau et du pain.", "type": "phrase"},
         {"id": "phrase:l18:2", "front": "Je voudrais un kilo {{c1::de}} pommes.", "back": "Я бы хотел килограмм яблок.", "type": "cloze"}
       ]
+    },
+    {
+      "id": "l19",
+      "level": "A1",
+      "title": "Одежда и погода",
+      "goal": "Понять короткий прогноз погоды на слух и сказать, какая погода и что надеть.",
+      "scenario": "weather-and-clothes",
+      "targetPhrase": "Il fait froid. Je mets un manteau.",
+      "pronunciationTopic": "nasals",
+      "grammarTopic": "fixed-phrases",
+      "moduleId": "module:a1:everyday-life",
+      "order": 2,
+      "prerequisites": ["l18"],
+      "tags": ["weather", "clothes", "listening"],
+      "objectives": [
+        {
+          "id": "obj:l19:understand-forecast",
+          "skill": "listening",
+          "cefrCanDo": "Может понять короткий медленный прогноз погоды с знакомыми словами.",
+          "required": true
+        },
+        {
+          "id": "obj:l19:describe-weather-and-clothes",
+          "skill": "spoken-production",
+          "cefrCanDo": "Может сказать, какая погода, и что он(а) надевает.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Météo",
+          "fr": "Aujourd'hui, il fait froid et il pleut.",
+          "ipa": "/o.ʒuʁ.dɥi il fɛ fʁwa e il plø/",
+          "ru": "Сегодня холодно и идёт дождь."
+        },
+        {
+          "speaker": "Météo",
+          "fr": "Demain, il fait beau et il fait soleil.",
+          "ipa": "/də.mɛ̃ il fɛ bo e il fɛ sɔ.lɛj/",
+          "ru": "Завтра хорошая погода и солнечно."
+        },
+        {
+          "speaker": "Toi",
+          "fr": "Alors aujourd'hui, je mets un manteau.",
+          "ipa": "/a.lɔʁ o.ʒuʁ.dɥi ʒə mɛ ɛ̃ mɑ̃.to/",
+          "ru": "Тогда сегодня я надену пальто."
+        }
+      ],
+      "vocabulary": [
+        {"id": "vocab:l19:0", "fr": "il fait froid", "ipa": "/il fɛ fʁwa/", "ru": "холодно", "note": "Погода всегда с il fait, не être."},
+        {"id": "vocab:l19:1", "fr": "il fait beau", "ipa": "/il fɛ bo/", "ru": "хорошая погода", "note": "Дословно «делает красиво»."},
+        {"id": "vocab:l19:2", "fr": "il fait chaud", "ipa": "/il fɛ ʃo/", "ru": "жарко", "note": "Тот же паттерн il fait + прилагательное."},
+        {"id": "vocab:l19:3", "fr": "il pleut", "ipa": "/il plø/", "ru": "идёт дождь", "note": "Особый безличный глагол pleuvoir."},
+        {"id": "vocab:l19:4", "fr": "un manteau", "ipa": "/ɛ̃ mɑ̃.to/", "ru": "пальто", "note": "Множественное число manteaux."},
+        {"id": "vocab:l19:5", "fr": "des chaussures", "ipa": "/de ʃo.syʁ/", "ru": "обувь", "note": "Обычно используется во множественном числе."},
+        {"id": "vocab:l19:6", "fr": "un pantalon", "ipa": "/ɛ̃ pɑ̃.ta.lɔ̃/", "ru": "брюки", "note": "В единственном числе, в отличие от русского."},
+        {"id": "vocab:l19:7", "fr": "une robe", "ipa": "/yn ʁɔb/", "ru": "платье", "note": "Женский род."},
+        {"id": "vocab:l19:8", "fr": "mettre", "ipa": "/mɛtʁ/", "ru": "надевать", "note": "Je mets — неправильный глагол, частый в этой теме."},
+        {"id": "vocab:l19:9", "fr": "le parapluie", "ipa": "/lə pa.ʁa.plɥi/", "ru": "зонт", "note": "Полезно вместе с il pleut."}
+      ],
+      "exercises": [
+        {
+          "id": "l19-e1",
+          "type": "listening-comprehension",
+          "prompt": "Прослушай прогноз погоды. Какая погода сегодня и завтра?",
+          "transcript": "Aujourd'hui, il fait froid et il pleut. Demain, il fait beau et il fait soleil.",
+          "listenText": "Aujourd'hui, il fait froid et il pleut. Demain, il fait beau et il fait soleil.",
+          "acceptedAnswers": ["сегодня холодно и дождь, завтра хорошая погода и солнце", "aujourd'hui froid et pluie, demain beau et soleil"],
+          "modelAnswer": "Aujourd'hui il fait froid et il pleut, demain il fait beau.",
+          "hints": ["Два дня — два разных описания погоды."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l19:understand-forecast"],
+          "explanation": "Прогноз погоды — классический пример короткого, предсказуемого по структуре аудио для A1."
+        },
+        {
+          "id": "l19-e2",
+          "type": "speaking",
+          "prompt": "Скажи: какая сегодня погода и что ты наденешь.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Aujourd'hui il fait froid. Je mets un manteau et des chaussures.",
+          "hints": ["Сначала погода через il fait/il pleut, потом je mets + одежда."],
+          "requiredTokens": ["il fait", "je mets"],
+          "objectiveIds": ["obj:l19:describe-weather-and-clothes"],
+          "explanation": "Связка погода→одежда — естественная логика этой темы."
+        },
+        {
+          "id": "l19-e3",
+          "type": "gap-fill",
+          "prompt": "Заполни: Il ___ froid, je mets un manteau.",
+          "acceptedAnswers": ["fait"],
+          "modelAnswer": "Il fait froid, je mets un manteau.",
+          "hints": ["Погода всегда с fait, не с est."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l19:describe-weather-and-clothes"],
+          "explanation": "Частая ошибка новичков — сказать il est froid вместо il fait froid."
+        }
+      ],
+      "cards": [
+        {"id": "phrase:l19:0", "front": "Холодно. Я надеваю пальто.", "back": "Il fait froid. Je mets un manteau.", "type": "phrase"},
+        {"id": "phrase:l19:1", "front": "Идёт дождь.", "back": "Il pleut.", "type": "phrase"},
+        {"id": "phrase:l19:2", "front": "Il fait {{c1::froid}}, je mets un manteau.", "back": "Холодно, я надеваю пальто.", "type": "cloze"}
+      ]
     }
   ]
 }
