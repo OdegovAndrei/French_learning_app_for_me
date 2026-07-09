@@ -854,7 +854,7 @@
         },
         {
           "id": "obj:l03:adapt-name-question-register",
-          "skill": "sociolinguistic",
+          "skill": "spoken-interaction",
           "cefrCanDo": "Может выбрать знакомую или вежливую форму простого вопроса об имени.",
           "required": true
         }
@@ -1682,7 +1682,7 @@
       "objectives": [
         {
           "id": "obj:l09:read-simple-menu",
-          "skill": "reading-reception",
+          "skill": "reading",
           "cefrCanDo": "Может найти конкретную цену в очень коротком меню с знакомыми словами.",
           "required": true
         },
@@ -1834,7 +1834,7 @@
       "objectives": [
         {
           "id": "obj:l10:understand-hours",
-          "skill": "listening-reception",
+          "skill": "listening",
           "cefrCanDo": "Может понять очень короткое медленное объявление о времени работы, если можно переслушать.",
           "required": true
         },

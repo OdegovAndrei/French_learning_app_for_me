@@ -34,7 +34,7 @@ export function collectCourseValidationErrors(catalog) {
       errors
     );
   });
-  validateCourseRoadmap(catalog.courseRoadmap, errors);
+  const skillAxisIds = validateCourseRoadmap(catalog.courseRoadmap, errors);
 
   const levelIds = new Set();
   const moduleIds = new Set();
@@ -144,6 +144,9 @@ export function collectCourseValidationErrors(catalog) {
       registerId(objective?.id, `${objectivePath}.id`, objectiveIds, errors, "obj:");
       registerId(objective?.id, `${objectivePath}.id`, localObjectiveIds, errors, "obj:");
       if (objective?.required === true && hasText(objective?.id)) requiredObjectiveIds.add(objective.id);
+      if (hasText(objective?.skill) && !skillAxisIds.has(objective.skill)) {
+        errors.push(`${objectivePath}.skill: unknown skill axis "${objective.skill}"`);
+      }
     });
 
     const dialogue = Array.isArray(lesson?.dialogue) ? lesson.dialogue : [];
@@ -248,7 +251,8 @@ export function validateCourseCatalog(catalog) {
 }
 
 function validateCourseRoadmap(roadmap, errors) {
-  if (roadmap === undefined) return;
+  const skillAxisIds = new Set();
+  if (roadmap === undefined) return skillAxisIds;
   validateObject(roadmap, "courseRoadmap", COURSE_SCHEMA.courseRoadmap, errors);
 
   const sources = Array.isArray(roadmap?.sources) ? roadmap.sources : [];
@@ -257,8 +261,6 @@ function validateCourseRoadmap(roadmap, errors) {
     validateObject(source, path, COURSE_SCHEMA.roadmapSource, errors);
     validateHttpUrl(source?.url, `${path}.url`, errors);
   });
-
-  const skillAxisIds = new Set();
   const skillAxes = Array.isArray(roadmap?.skillAxes) ? roadmap.skillAxes : [];
   skillAxes.forEach((axis, index) => {
     const path = `courseRoadmap.skillAxes[${index}]`;
@@ -330,6 +332,8 @@ function validateCourseRoadmap(roadmap, errors) {
       });
     });
   });
+
+  return skillAxisIds;
 }
 
 function validateObject(value, path, schema, errors) {

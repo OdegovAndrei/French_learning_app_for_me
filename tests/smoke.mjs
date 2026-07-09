@@ -207,6 +207,13 @@ assert.ok(
   "Orphan module-to-level references must be rejected"
 );
 
+const unknownObjectiveSkillAxis = structuredClone(data);
+unknownObjectiveSkillAxis.lessons[0].objectives[0].skill = "telepathy";
+assert.ok(
+  collectCourseValidationErrors(unknownObjectiveSkillAxis).some((error) => error.includes("unknown skill axis")),
+  "Lesson objectives must reference a declared courseRoadmap skill axis"
+);
+
 const unknownModulePrerequisite = structuredClone(data);
 unknownModulePrerequisite.modules[0].prerequisites = ["module:missing"];
 assert.ok(
