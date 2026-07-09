@@ -1,5 +1,5 @@
 const DB_NAME = "FrenchStudyDB";
-const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export const STORE_NAMES = [
   "kv",
@@ -10,6 +10,10 @@ export const STORE_NAMES = [
   "recordings"
 ];
 
+export const CACHE_STORE_NAMES = ["ttsAudio"];
+
+export const ALL_STORE_NAMES = [...STORE_NAMES, ...CACHE_STORE_NAMES];
+
 let databasePromise;
 
 export function openDatabase() {
@@ -18,7 +22,7 @@ export function openDatabase() {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
       request.addEventListener("upgradeneeded", () => {
         const database = request.result;
-        for (const name of STORE_NAMES) {
+        for (const name of ALL_STORE_NAMES) {
           if (!database.objectStoreNames.contains(name)) {
             database.createObjectStore(name, { keyPath: name === "kv" ? "key" : "id" });
           }
@@ -322,8 +326,8 @@ export async function importDatabase(snapshot) {
 
 export async function clearDatabase() {
   const database = await openDatabase();
-  const transaction = database.transaction(STORE_NAMES, "readwrite");
-  for (const name of STORE_NAMES) transaction.objectStore(name).clear();
+  const transaction = database.transaction(ALL_STORE_NAMES, "readwrite");
+  for (const name of ALL_STORE_NAMES) transaction.objectStore(name).clear();
   await transactionDone(transaction);
 }
 

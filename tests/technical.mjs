@@ -1,11 +1,23 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { STORE_NAMES, normalizeCompletionModel, validateBackup } from "../storage.js";
+import {
+  ALL_STORE_NAMES,
+  CACHE_STORE_NAMES,
+  DB_VERSION,
+  STORE_NAMES,
+  normalizeCompletionModel,
+  validateBackup
+} from "../storage.js";
 import {
   checkLessonPrerequisites,
   evaluateLessonReadiness,
   getIntroducedLessonIds
 } from "../mastery.js";
+
+assert.deepEqual(CACHE_STORE_NAMES, ["ttsAudio"], "ttsAudio is the only cache-only store");
+assert.ok(!STORE_NAMES.includes("ttsAudio"), "ttsAudio must never be part of the backup contract");
+assert.deepEqual(ALL_STORE_NAMES, [...STORE_NAMES, ...CACHE_STORE_NAMES], "ALL_STORE_NAMES = backup stores + cache stores");
+assert.equal(DB_VERSION, 2, "DB_VERSION must be bumped so existing users get the new store");
 
 function emptyBackup() {
   return {
