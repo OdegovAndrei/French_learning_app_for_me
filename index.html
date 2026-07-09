@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>French Study A1-A2</title>
+    <title>French Study Starter</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -12,7 +12,7 @@
         <div class="brand">
           <div class="brand-mark" aria-hidden="true">FR</div>
           <div>
-            <p class="eyebrow">A1-A2</p>
+            <p class="eyebrow" id="course-stage">Starter</p>
             <h1>French Study</h1>
           </div>
         </div>
@@ -59,8 +59,12 @@
             <p class="eyebrow lesson-level"></p>
             <h3 class="lesson-title"></h3>
             <p class="lesson-goal"></p>
+            <ul class="lesson-objectives example-list"></ul>
           </div>
-          <button class="primary-button complete-lesson" type="button">Отметить урок пройденным</button>
+          <div class="completion-actions">
+            <button class="primary-button complete-lesson" type="button">Отметить урок пройденным</button>
+            <p class="completion-status note" aria-live="polite"></p>
+          </div>
         </header>
 
         <section class="section-band">

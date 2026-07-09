@@ -1,7 +1,7 @@
 export function buildVocabularyNotes(data, customNotes = []) {
   const builtIn = data.lessons.flatMap((lesson) =>
-    lesson.vocabulary.map((item, index) => ({
-      id: `vocab:${lesson.id}:${index}`,
+    lesson.vocabulary.map((item) => ({
+      id: item.id,
       source: "builtIn",
       lessonId: lesson.id,
       lessonTitle: lesson.title,
@@ -23,10 +23,10 @@ export function buildCards(data, customNotes = []) {
   const phraseCards = [];
 
   for (const lesson of data.lessons) {
-    lesson.cards.forEach((card, index) => {
+    lesson.cards.forEach((card) => {
       const candidate = {
-        id: `phrase:${lesson.id}:${index}`,
-        noteId: `phrase-note:${lesson.id}:${index}`,
+        id: card.id,
+        noteId: card.noteId || phraseNoteId(card.id),
         source: "builtIn",
         kind: card.type === "cloze" || card.front.includes("{{c1::") ? "cloze" : "phrase",
         front: card.front,
@@ -45,6 +45,12 @@ export function buildCards(data, customNotes = []) {
   }
 
   return [...vocabularyCards, ...phraseCards];
+}
+
+function phraseNoteId(cardId) {
+  return cardId.startsWith("phrase:")
+    ? `phrase-note:${cardId.slice("phrase:".length)}`
+    : `phrase-note:${cardId}`;
 }
 
 export function cardsFromVocabularyNote(note) {

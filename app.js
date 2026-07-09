@@ -8,6 +8,8 @@ import {
   revealCloze
 } from "./cards.js";
 import { checkExercise } from "./exercises.js";
+import { validateCourseCatalog } from "./course-validator.js";
+import * as mastery from "./mastery.js";
 import {
   buildReviewQueue,
   createSchedule,
@@ -54,8 +56,12 @@ const state = {
   mediaRecorder: null,
   audioChunks: [],
   recordingContext: null,
+  recordingPending: false,
+  recordingRequestId: 0,
   audioUrls: new Set(),
-  saveTimers: new Map()
+  saveTimers: new Map(),
+  pendingSaves: new Map(),
+  activeSaveCount: 0
 };
 
 const viewTitles = {
@@ -69,6 +75,9 @@ const viewTitles = {
   settings: "Настройки"
 };
 
+const MAX_BACKUP_FILE_BYTES = 250 * 1024 * 1024;
+const { evaluateLessonReadiness, getIntroducedLessonIds } = mastery;
+
 init();
 
 async function init() {
@@ -76,6 +85,9 @@ async function init() {
     const response = await fetch("data/lessons.json");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     state.data = await response.json();
+    validateCourseCatalog(state.data);
+    const catalogTitle = state.data.meta?.title || "French Study";
+    document.title = /starter/i.test(catalogTitle) ? catalogTitle : `${catalogTitle} · Starter`;
     state.appState = await migrateLegacyProgress(defaultAppState());
     state.settings = { ...defaultSettings(), ...(await getValue("settings", {})) };
     state.customNotes = await getAllRecords("vocabulary");
@@ -85,8 +97,16 @@ async function init() {
     await migrateLegacySchedules();
 
     state.view = viewTitles[state.appState.currentView] ? state.appState.currentView : "today";
+    const savedLesson = state.data.lessons.find((lesson) => lesson.id === state.appState.currentLessonId);
     state.currentLessonId =
-      state.appState.currentLessonId || getNextLesson()?.id || state.data.lessons[0]?.id;
+      (savedLesson
+        && !state.appState.completedLessons.includes(savedLesson.id)
+        && getLessonPrerequisites(savedLesson).met
+        ? savedLesson.id
+        : null)
+      || getNextLesson()?.id
+      || savedLesson?.id
+      || state.data.lessons[0]?.id;
 
     bindGlobalActions();
     refreshVoices();
@@ -110,9 +130,17 @@ function bindGlobalActions() {
     }, 180);
   });
   window.addEventListener("keydown", handleReviewKeyboard);
+  window.addEventListener("pagehide", () => {
+    stopRecording();
+    flushPendingSaves();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushPendingSaves();
+  });
 }
 
 function switchView(view) {
+  stopRecording();
   state.appState.scrollPositions[state.view] = window.scrollY;
   state.view = view;
   state.appState.currentView = view;
@@ -147,8 +175,13 @@ function render() {
 }
 
 function renderToday() {
-  const lesson = getLesson(state.currentLessonId) || getNextLesson() || state.data.lessons[0];
-  setCurrentLesson(lesson.id, false);
+  const current = state.data.lessons.find((lesson) => lesson.id === state.currentLessonId);
+  const lesson = current
+    && !state.appState.completedLessons.includes(current.id)
+    && getLessonPrerequisites(current).met
+    ? current
+    : getNextLesson() || current || state.data.lessons[0];
+  if (state.currentLessonId !== lesson.id) setCurrentLesson(lesson.id);
   const reviewInfo = getReviewSummary();
   app.innerHTML = `
     <div class="metrics-grid today-metrics">
@@ -177,7 +210,8 @@ function renderToday() {
         </ol>
         <button class="secondary-button full-button" type="button" data-go-review>Начать повторение</button>
       </aside>
-    </div>`;
+    </div>
+    ${renderResources()}`;
   renderLessonInto(document.querySelector("#today-lesson"), lesson);
   document.querySelectorAll("[data-go-review]").forEach((button) => {
     button.addEventListener("click", () => switchView("review"));
@@ -185,20 +219,40 @@ function renderToday() {
 }
 
 function renderLessons() {
+  const groups = buildLessonGroups();
   app.innerHTML = `
     <section class="section-band">
-      <div class="section-heading"><div><p class="eyebrow">Сценарии A1-A2</p><h4>Выбери урок</h4></div></div>
-      <div class="lesson-grid">${state.data.lessons.map(renderLessonTile).join("")}</div>
+      <div class="section-heading"><div><p class="eyebrow">Starter · путь по модулям</p><h4>Выбери доступный урок</h4></div></div>
+      <div class="course-map">
+        ${groups.map((levelGroup) => `
+          <section class="course-level-group" aria-labelledby="level-${escapeHtml(levelGroup.id)}">
+            <header class="course-group-heading">
+              <span class="tag">${escapeHtml(levelGroup.id)}</span>
+              <div><h4 id="level-${escapeHtml(levelGroup.id)}">${escapeHtml(levelGroup.title)}</h4>${levelGroup.description ? `<p class="note">${escapeHtml(levelGroup.description)}</p>` : ""}</div>
+            </header>
+            ${levelGroup.modules.map((module) => `
+              <section class="course-module" aria-labelledby="module-${escapeHtml(module.id)}">
+                <div class="section-heading"><div><p class="eyebrow">Модуль</p><h5 id="module-${escapeHtml(module.id)}" class="compact-title">${escapeHtml(module.title)}</h5>${module.description ? `<p class="note">${escapeHtml(module.description)}</p>` : ""}</div></div>
+                <div class="lesson-grid">${module.lessons.map(renderLessonTile).join("")}</div>
+              </section>`).join("")}
+          </section>`).join("")}
+      </div>
     </section>
     <div id="selected-lesson" class="lesson-layout with-top-gap"></div>`;
   document.querySelectorAll(".lesson-tile").forEach((button) => {
     button.addEventListener("click", () => {
-      setCurrentLesson(button.dataset.lessonId);
+      const lesson = getLesson(button.dataset.lessonId);
+      if (!getLessonPrerequisites(lesson).met) return;
+      setCurrentLesson(lesson.id);
       state.appState.scrollPositions.lessons = 0;
       renderLessons();
     });
   });
-  renderLessonInto(document.querySelector("#selected-lesson"), getLesson(state.currentLessonId));
+  const selected = getLesson(state.currentLessonId);
+  const prerequisites = getLessonPrerequisites(selected);
+  const container = document.querySelector("#selected-lesson");
+  if (prerequisites.met) renderLessonInto(container, selected);
+  else container.innerHTML = renderLockedLessonNotice(selected, prerequisites);
 }
 
 function renderPronunciation() {
@@ -271,7 +325,9 @@ function renderVocabulary() {
 }
 
 function renderReview() {
+  const allCards = getAllCards();
   const allActive = getActiveCards();
+  const suspendedCards = allCards.filter((card) => state.appState.suspendedCardIds.includes(card.id));
   const deckCards = filterCards(allActive, state.reviewDeck);
   const queue = buildReviewQueue({
     cards: deckCards,
@@ -302,6 +358,7 @@ function renderReview() {
         <span><strong>${queue.length}</strong> в этой сессии</span>
       </div>
       ${card ? renderReviewCard(card) : renderReviewEmpty(summary)}
+      ${renderSuspendedCards(suspendedCards)}
     </section>`;
 
   bindReviewToolbar();
@@ -310,12 +367,15 @@ function renderReview() {
 
 function renderProgress() {
   const completed = state.appState.completedLessons.length;
+  const legacyCompleted = state.appState.legacyCompletedLessons.length;
   const cards = getAllCards();
+  const activeCards = getActiveCards();
   const reviewed = new Set(state.reviewLogs.map((log) => log.cardId)).size;
-  const due = cards.filter((card) => isDueSchedule(state.schedules.get(card.id))).length;
+  const due = activeCards.filter((card) => isDueSchedule(state.schedules.get(card.id))).length;
   app.innerHTML = `
     <div class="metrics-grid">
       ${renderMetric("Пройдено уроков", `${completed}/${state.data.lessons.length}`, "Разговорные сценарии")}
+      ${renderMetric("Старый прогресс", legacyCompleted, "Сохранён; уроки нужно подтвердить по новой модели")}
       ${renderMetric("Карточки", cards.length, `${reviewed} уже изучались`)}
       ${renderMetric("Нужно повторить", due, "По расписанию FSRS")}
       ${renderMetric("Свои слова", state.customNotes.length, "Хранятся только на этом устройстве")}
@@ -376,14 +436,23 @@ function renderSettings() {
 }
 
 function renderLessonInto(container, lesson) {
+  const prerequisites = getLessonPrerequisites(lesson);
+  if (!prerequisites.met) {
+    container.innerHTML = renderLockedLessonNotice(lesson, prerequisites);
+    return;
+  }
   const template = document.querySelector("#lesson-template").content.cloneNode(true);
   template.querySelector(".lesson-level").textContent = `${lesson.level} · ${lesson.scenario}`;
   template.querySelector(".lesson-title").textContent = lesson.title;
   template.querySelector(".lesson-goal").textContent = lesson.goal;
-  const completeButton = template.querySelector(".complete-lesson");
-  const isDone = state.appState.completedLessons.includes(lesson.id);
-  completeButton.textContent = isDone ? "Урок пройден" : "Отметить урок пройденным";
-  completeButton.addEventListener("click", () => markLessonComplete(lesson.id));
+  const objectives = template.querySelector(".lesson-objectives");
+  objectives.innerHTML = (lesson.objectives || []).map((objective) => {
+    if (typeof objective === "string") return `<li>${escapeHtml(objective)}</li>`;
+    const canDo = objective?.canDo || objective?.cefrCanDo || objective?.text || objective?.id || "Учебная цель";
+    return `<li>${objective?.skill ? `<span class="tag">${escapeHtml(objective.skill)}</span> ` : ""}${escapeHtml(canDo)}</li>`;
+  }).join("");
+  objectives.hidden = !lesson.objectives?.length;
+  template.querySelector(".complete-lesson").addEventListener("click", () => markLessonComplete(lesson.id));
   template.querySelector(".dialogue-list").innerHTML = lesson.dialogue.map(renderDialogueLine).join("");
   template.querySelector(".pronunciation-target").innerHTML = renderPronunciationForLesson(lesson);
   template.querySelector(".grammar-note").innerHTML = renderGrammarForLesson(lesson);
@@ -392,6 +461,7 @@ function renderLessonInto(container, lesson) {
     .join("");
   template.querySelector(".voice-lab").innerHTML = renderVoiceLab(lesson.targetPhrase, `lesson:${lesson.id}`);
   container.replaceChildren(template);
+  updateLessonCompletionUI(container, lesson);
   bindLessonActions(container, lesson);
   bindVoiceLabs(container);
 }
@@ -409,6 +479,10 @@ function renderExercise(lesson, exercise, index) {
   const result = attempt.result;
   const modelVisible = attempt.showModel;
   const hintVisible = attempt.showHint;
+  const canSelfReview = ["writing", "speaking", "substitution"].includes(exercise.type)
+    && modelVisible
+    && result?.needsReview === true
+    && result?.coverageComplete === true;
   return `
     <div class="exercise" data-exercise-id="${escapeHtml(id)}">
       <div class="exercise-header"><span class="tag">${escapeHtml(exercise.type)}</span>${result ? `<span class="result-badge ${escapeHtml(result.status)}">${resultLabel(result.status)}</span>` : ""}</div>
@@ -422,6 +496,7 @@ function renderExercise(lesson, exercise, index) {
       ${result ? `<div class="exercise-feedback ${escapeHtml(result.status)}">${escapeHtml(result.message)}${result.missing?.length ? `<br><strong>Добавь:</strong> ${result.missing.map(escapeHtml).join(", ")}` : ""}</div>` : ""}
       ${hintVisible ? `<div class="exercise-help"><strong>Подсказка:</strong> ${escapeHtml(exercise.hints?.join(" ") || "Вернись к диалогу и найди нужную конструкцию.")}</div>` : ""}
       ${modelVisible ? `<div class="model-answer"><strong>Возможный ответ</strong><p>${nl2br(exercise.modelAnswer || exercise.acceptedAnswers?.[0] || "Ответ зависит от твоей ситуации.")}</p>${exercise.explanation ? `<span>${escapeHtml(exercise.explanation)}</span>` : ""}</div>` : ""}
+      ${canSelfReview ? `<button class="secondary-button self-review-button" type="button" data-self-review ${attempt.selfReviewed ? "disabled" : ""}>${attempt.selfReviewed ? "Сравнение подтверждено" : "Я сравнил и исправил"}</button>` : ""}
     </div>`;
 }
 
@@ -431,15 +506,22 @@ function bindExercise(box, lesson) {
   const textarea = box.querySelector("textarea");
   textarea.addEventListener("input", () => {
     const attempt = getExerciseAttempt(id, lesson.id);
+    if (attempt.answer !== textarea.value) {
+      delete attempt.result;
+      delete attempt.checkedAt;
+      attempt.selfReviewed = false;
+    }
     attempt.answer = textarea.value;
     attempt.updatedAt = new Date().toISOString();
     state.exerciseAttempts.set(id, attempt);
     debounceSave(`exercise:${id}`, () => putRecord("exercises", attempt));
+    updateLessonCompletionUI(box.closest(".lesson-layout"), lesson);
   });
   box.querySelector("[data-check-exercise]").addEventListener("click", async () => {
     const attempt = getExerciseAttempt(id, lesson.id);
     attempt.answer = textarea.value;
     attempt.result = checkExercise(exercise, textarea.value);
+    attempt.selfReviewed = false;
     attempt.checkedAt = new Date().toISOString();
     state.exerciseAttempts.set(id, attempt);
     await putRecord("exercises", attempt);
@@ -459,11 +541,22 @@ function bindExercise(box, lesson) {
     await putRecord("exercises", attempt);
     preserveScrollAndRender();
   });
+  box.querySelector("[data-self-review]")?.addEventListener("click", async () => {
+    const attempt = getExerciseAttempt(id, lesson.id);
+    if (!attempt.showModel || attempt.result?.needsReview !== true || attempt.result?.coverageComplete !== true) return;
+    attempt.selfReviewed = true;
+    attempt.updatedAt = new Date().toISOString();
+    state.exerciseAttempts.set(id, attempt);
+    await putRecord("exercises", attempt);
+    preserveScrollAndRender();
+  });
 }
 
 function renderReviewCard(card) {
   const schedule = state.schedules.get(card.id) || createSchedule(card.id);
-  const preview = previewSchedule(schedule);
+  const preview = state.reviewMode === "cram"
+    ? Object.fromEntries(["again", "hard", "good", "easy"].map((rating) => [rating, { interval: "без изменения графика" }]))
+    : previewSchedule(schedule);
   const front = card.kind === "cloze" ? renderClozeFront(card.front) : card.front;
   return `
     <article class="review-card" data-card-id="${escapeHtml(card.id)}">
@@ -509,6 +602,15 @@ function bindReviewToolbar() {
     renderReview();
   });
   document.querySelector("#review-add-word").addEventListener("click", () => openWordDialog());
+  document.querySelectorAll("[data-card-resume]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      state.appState.suspendedCardIds = state.appState.suspendedCardIds.filter(
+        (id) => id !== button.dataset.cardResume
+      );
+      await saveAppState();
+      renderReview();
+    });
+  });
 }
 
 function bindReviewCard(card) {
@@ -545,6 +647,12 @@ function bindReviewCard(card) {
 }
 
 async function gradeReviewCard(card, rating) {
+  if (state.reviewMode === "cram") {
+    state.reviewSeen.add(card.id);
+    state.reviewAnswerVisible = false;
+    renderReview();
+    return;
+  }
   const schedule = state.schedules.get(card.id) || createSchedule(card.id);
   const { schedule: nextSchedule, log } = reviewSchedule(schedule, rating);
   log.id = `${card.id}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
@@ -648,7 +756,7 @@ function bindSettingsActions() {
   rate.addEventListener("input", () => {
     state.settings.voiceRate = Number(rate.value);
     document.querySelector("#voice-rate-output").textContent = Number(rate.value).toFixed(2);
-    debounceSave("settings", saveSettings);
+    debounceSave("settings", () => setValue("settings", state.settings));
   });
   document.querySelector("#test-voice").addEventListener("click", () => speakFrench("Bonjour, je voudrais un café, s'il vous plaît."));
   document.querySelector("#backup-light").addEventListener("click", () => downloadBackup(false));
@@ -684,40 +792,97 @@ async function startRecording(context) {
     context.status.textContent = "Запись недоступна в этом браузере.";
     return;
   }
+  if (state.recordingPending || state.recordingContext?.recorder?.state === "recording") {
+    context.status.textContent = "Сначала останови текущую запись.";
+    return;
+  }
+  const requestId = ++state.recordingRequestId;
+  state.recordingPending = true;
+  let stream;
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    state.audioChunks = [];
-    state.recordingContext = { ...context, stream };
-    state.mediaRecorder = new MediaRecorder(stream);
-    state.mediaRecorder.addEventListener("dataavailable", (event) => {
-      if (event.data.size > 0) state.audioChunks.push(event.data);
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (requestId !== state.recordingRequestId) {
+      stopMediaStream(stream);
+      return;
+    }
+    const recorder = new MediaRecorder(stream);
+    const recording = { ...context, stream, recorder, chunks: [] };
+    state.audioChunks = recording.chunks;
+    state.recordingContext = recording;
+    state.mediaRecorder = recorder;
+    state.recordingPending = false;
+    recorder.addEventListener("dataavailable", (event) => {
+      if (event.data.size > 0) recording.chunks.push(event.data);
     });
-    state.mediaRecorder.addEventListener("stop", saveFinishedRecording);
-    state.mediaRecorder.start();
+    recorder.addEventListener("stop", () => saveFinishedRecording(recording));
+    recorder.start();
+    setRecordingButtonsDisabled(true, context.startButton);
     context.status.textContent = "Идёт запись...";
     context.startButton.disabled = true;
     context.stopButton.disabled = false;
   } catch (error) {
+    stopMediaStream(stream);
+    if (requestId === state.recordingRequestId) {
+      state.recordingPending = false;
+      clearRecordingContext();
+    }
     context.status.textContent = `Нет доступа к микрофону: ${error.message}`;
   }
 }
 
 function stopRecording() {
-  if (state.mediaRecorder?.state !== "recording") return;
-  state.mediaRecorder.stop();
+  state.recordingRequestId += 1;
+  state.recordingPending = false;
+  const recording = state.recordingContext;
+  if (!recording) return;
+  if (recording.recorder?.state === "recording") recording.recorder.stop();
+  stopMediaStream(recording.stream);
+  if (recording.startButton?.isConnected) recording.startButton.disabled = true;
+  if (recording.stopButton?.isConnected) recording.stopButton.disabled = true;
+  if (recording.status?.isConnected) recording.status.textContent = "Останавливаем и сохраняем запись...";
 }
 
-async function saveFinishedRecording() {
-  const context = state.recordingContext;
-  const blob = new Blob(state.audioChunks, { type: state.mediaRecorder.mimeType || "audio/webm" });
-  context.stream.getTracks().forEach((track) => track.stop());
-  const record = { id: context.key, blob, updatedAt: new Date().toISOString(), size: blob.size };
-  await putRecord("recordings", record);
-  setAudioSource(context.audio, blob);
-  context.status.textContent = "Запись сохранена локально. Можно перезагрузить страницу и продолжить.";
-  context.startButton.disabled = false;
-  context.stopButton.disabled = true;
-  showSaved();
+async function saveFinishedRecording(recording) {
+  stopMediaStream(recording.stream);
+  const blob = new Blob(recording.chunks, { type: recording.recorder.mimeType || "audio/webm" });
+  try {
+    showSaving();
+    const record = { id: recording.key, blob, updatedAt: new Date().toISOString(), size: blob.size };
+    await putRecord("recordings", record);
+    if (recording.audio?.isConnected) setAudioSource(recording.audio, blob);
+    if (recording.status?.isConnected) {
+      recording.status.textContent = "Запись сохранена локально. Можно перезагрузить страницу и продолжить.";
+    }
+    showSaved();
+  } catch (error) {
+    if (recording.status?.isConnected) recording.status.textContent = `Не удалось сохранить запись: ${error.message}`;
+    showSaveError(error);
+  } finally {
+    if (recording.startButton?.isConnected) recording.startButton.disabled = false;
+    if (recording.stopButton?.isConnected) recording.stopButton.disabled = true;
+    if (state.recordingContext === recording) clearRecordingContext();
+    const currentRecording = state.recordingContext;
+    setRecordingButtonsDisabled(
+      currentRecording?.recorder?.state === "recording",
+      currentRecording?.startButton || null
+    );
+  }
+}
+
+function stopMediaStream(stream) {
+  stream?.getTracks().forEach((track) => track.stop());
+}
+
+function clearRecordingContext() {
+  state.mediaRecorder = null;
+  state.recordingContext = null;
+  state.audioChunks = [];
+}
+
+function setRecordingButtonsDisabled(disabled, activeButton = null) {
+  document.querySelectorAll("[data-record-start]").forEach((button) => {
+    button.disabled = disabled && button !== activeButton;
+  });
 }
 
 async function restoreRecording(key, audio, status) {
@@ -782,19 +947,33 @@ function speakFrench(text) {
 
 async function downloadBackup(includeRecordings) {
   const snapshot = await exportDatabase({ includeRecordings });
-  downloadBlob(
-    new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" }),
-    `french-study-${includeRecordings ? "full" : "light"}-${new Date().toISOString().slice(0, 10)}.json`
-  );
+  const blob = createBackupBlob(snapshot);
+  if (blob.size > MAX_BACKUP_FILE_BYTES) {
+    window.alert(includeRecordings
+      ? "Полная копия превышает 250 МБ и не сможет быть восстановлена. Создай лёгкую копию без аудио."
+      : "Резервная копия превышает 250 МБ и не может быть безопасно восстановлена.");
+    return false;
+  }
+  downloadBlob(blob, `french-study-${includeRecordings ? "full" : "light"}-${new Date().toISOString().slice(0, 10)}.json`);
+  return true;
 }
 
 async function restoreBackup(event) {
   const file = event.target.files[0];
   if (!file) return;
   try {
+    if (file.size > MAX_BACKUP_FILE_BYTES) {
+      throw new Error("Файл резервной копии больше 250 МБ. Раздели архив или восстанови лёгкую копию без аудио.");
+    }
     const snapshot = JSON.parse(await file.text());
     validateBackup(snapshot);
     if (!window.confirm("Заменить текущие локальные данные содержимым резервной копии?")) return;
+    const safetySnapshot = await exportDatabase({ includeRecordings: true });
+    const safetyBlob = createBackupBlob(safetySnapshot);
+    if (safetyBlob.size > MAX_BACKUP_FILE_BYTES) {
+      throw new Error("Текущая полная защитная копия превышает 250 МБ. Восстановление отменено; сначала сохрани или удали большие аудиозаписи.");
+    }
+    downloadBlob(safetyBlob, `french-study-before-restore-${new Date().toISOString().slice(0, 10)}.json`);
     await importDatabase(snapshot);
     window.location.reload();
   } catch (error) {
@@ -802,6 +981,10 @@ async function restoreBackup(event) {
   } finally {
     event.target.value = "";
   }
+}
+
+function createBackupBlob(snapshot) {
+  return new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" });
 }
 
 function exportAnki() {
@@ -831,9 +1014,17 @@ function getAllCards() {
 }
 
 function getActiveCards() {
-  return getAllCards().filter((card) =>
-    !state.appState.suspendedCardIds.includes(card.id) && !state.appState.suspendedNoteIds.includes(card.noteId)
-  );
+  const introducedLessons = new Set(getIntroducedLessonIds({
+    completedLessons: [...state.appState.completedLessons, ...state.appState.legacyCompletedLessons],
+    attempts: state.exerciseAttempts,
+    currentLessonId: state.currentLessonId
+  }));
+  return getAllCards().filter((card) => {
+    const introduced = card.source === "custom" || introducedLessons.has(card.lessonId);
+    return introduced
+      && !state.appState.suspendedCardIds.includes(card.id)
+      && !state.appState.suspendedNoteIds.includes(card.noteId);
+  });
 }
 
 function getReviewSummary(cards = getActiveCards()) {
@@ -888,16 +1079,139 @@ function renderVoiceLab(target, key) {
     </div>`;
 }
 
+function renderResources() {
+  if (!state.data.resources?.length) return "";
+  return `
+    <section class="section-band with-top-gap" aria-labelledby="resources-title">
+      <div class="section-heading"><div><p class="eyebrow">Открытые материалы</p><h4 id="resources-title">Бесплатные ресурсы для практики</h4></div></div>
+      <div class="resource-grid">
+        ${state.data.resources.map((resource) => `
+          <article class="resource-row">
+            <span class="tag">${escapeHtml(resource.type)}</span>
+            <a href="${escapeHtml(safeExternalUrl(resource.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(resource.name)}</a>
+            <p class="note">${escapeHtml(resource.note)}</p>
+          </article>`).join("")}
+      </div>
+    </section>`;
+}
+
+function buildLessonGroups() {
+  const levelDefinitions = new Map((state.data.levels || []).map((level, index) => {
+    const definition = typeof level === "string" ? { id: level, title: level } : level;
+    return [definition.id, {
+      ...definition,
+      description: definition.description || definition.claim,
+      order: definition.order ?? index
+    }];
+  }));
+  const moduleDefinitions = new Map((state.data.modules || []).map((module, index) => [
+    module.id,
+    { ...module, level: module.level || module.levelId, order: module.order ?? index }
+  ]));
+
+  for (const lesson of state.data.lessons) {
+    if (!levelDefinitions.has(lesson.level)) {
+      levelDefinitions.set(lesson.level, { id: lesson.level, title: `Уровень ${lesson.level}`, order: levelDefinitions.size });
+    }
+    const moduleId = lesson.moduleId || `level:${lesson.level}`;
+    if (!moduleDefinitions.has(moduleId)) {
+      moduleDefinitions.set(moduleId, {
+        id: moduleId,
+        level: lesson.level,
+        title: `Основы ${lesson.level}`,
+        order: moduleDefinitions.size
+      });
+    }
+  }
+
+  return [...levelDefinitions.values()]
+    .sort(compareOrder)
+    .map((level) => ({
+      ...level,
+      modules: [...moduleDefinitions.values()]
+        .filter((module) => module.level === level.id)
+        .sort(compareOrder)
+        .map((module) => ({
+          ...module,
+          lessons: state.data.lessons
+            .filter((lesson) => (lesson.moduleId || `level:${lesson.level}`) === module.id)
+            .sort(compareLessons)
+        }))
+        .filter((module) => module.lessons.length)
+    }))
+    .filter((level) => level.modules.length);
+}
+
+function renderLockedLessonNotice(lesson, prerequisites) {
+  return `
+    <section class="empty-state locked-notice" role="status">
+      <span class="tag amber">Недоступно</span>
+      <h3>${escapeHtml(lesson.title)}</h3>
+      <p>${escapeHtml(prerequisiteMessage(prerequisites))}</p>
+    </section>`;
+}
+
+function prerequisiteMessage(prerequisites) {
+  const titles = prerequisites.missing.map((id) => state.data.lessons.find((lesson) => lesson.id === id)?.title || id);
+  return `Сначала заверши: ${titles.join(", ")}.`;
+}
+
 function renderLessonTile(lesson) {
   const done = state.appState.completedLessons.includes(lesson.id);
-  return `<button class="lesson-tile ${done ? "done" : ""}" type="button" data-lesson-id="${lesson.id}"><div class="tag-row"><span class="tag">${lesson.level}</span>${done ? `<span class="tag rose">пройден</span>` : ""}</div><h4 class="compact-title">${escapeHtml(lesson.title)}</h4><p class="note">${escapeHtml(lesson.goal)}</p></button>`;
+  const prerequisites = getLessonPrerequisites(lesson);
+  const locked = !prerequisites.met;
+  const lockDescriptionId = `lesson-lock-${lesson.id}`;
+  return `
+    <button class="lesson-tile ${done ? "done" : ""} ${locked ? "locked" : ""}" type="button"
+      data-lesson-id="${escapeHtml(lesson.id)}" aria-disabled="${locked}" ${locked ? `aria-describedby="${escapeHtml(lockDescriptionId)}"` : ""}>
+      <div class="tag-row"><span class="tag">${escapeHtml(lesson.level)}</span>${done ? `<span class="tag rose">пройден</span>` : ""}${locked ? `<span class="tag amber">заблокирован</span>` : ""}</div>
+      <h4 class="compact-title">${escapeHtml(lesson.title)}</h4>
+      <p class="note">${escapeHtml(lesson.goal)}</p>
+      ${locked ? `<p class="lock-reason" id="${escapeHtml(lockDescriptionId)}">${escapeHtml(prerequisiteMessage(prerequisites))}</p>` : ""}
+    </button>`;
+}
+
+function compareLessons(first, second) {
+  const levels = new Map((state.data.levels || []).map((level, index) => {
+    const definition = typeof level === "string" ? { id: level } : level;
+    return [definition.id, definition.order ?? index];
+  }));
+  const modules = new Map((state.data.modules || []).map((module, index) => [module.id, {
+    levelId: module.levelId || module.level,
+    order: module.order ?? index
+  }]));
+  const firstModule = modules.get(first.moduleId);
+  const secondModule = modules.get(second.moduleId);
+  return (levels.get(firstModule?.levelId || first.level) ?? 999) - (levels.get(secondModule?.levelId || second.level) ?? 999)
+    || (firstModule?.order ?? 999) - (secondModule?.order ?? 999)
+    || (first.order ?? state.data.lessons.indexOf(first)) - (second.order ?? state.data.lessons.indexOf(second));
+}
+
+function compareOrder(first, second) {
+  return (first.order ?? 999) - (second.order ?? 999) || String(first.id).localeCompare(String(second.id));
+}
+
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "#";
+  } catch {
+    return "#";
+  }
 }
 
 function renderDeckOptions() {
+  const introduced = new Set(getIntroducedLessonIds({
+    completedLessons: [...state.appState.completedLessons, ...state.appState.legacyCompletedLessons],
+    attempts: state.exerciseAttempts,
+    currentLessonId: state.currentLessonId
+  }));
   const options = [
     ["all", "Все карточки"], ["vocabulary", "Слова"], ["phrases", "Фразы"], ["custom", "Свои"]
   ];
-  state.data.lessons.forEach((lesson) => options.push([lesson.id, `${lesson.level} · ${lesson.title}`]));
+  state.data.lessons
+    .filter((lesson) => introduced.has(lesson.id))
+    .forEach((lesson) => options.push([lesson.id, `${lesson.level} · ${lesson.title}`]));
   return options.map(([value, label]) => `<option value="${value}" ${state.reviewDeck === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("");
 }
 
@@ -909,15 +1223,76 @@ function renderReviewEmpty(summary) {
   return `<div class="empty-state"><strong>${state.reviewMode === "cram" ? "Колода закончилась" : "На сегодня всё"}</strong><p>${summary.newCount ? "Новые карточки появятся завтра или после увеличения дневного лимита." : "Добавь своё слово или продолжай урок."}</p></div>`;
 }
 
+function renderSuspendedCards(cards) {
+  if (!cards.length) return "";
+  return `
+    <details class="with-top-gap">
+      <summary>Приостановленные карточки (${cards.length})</summary>
+      <div class="history-list with-top-gap">
+        ${cards.map((card) => `
+          <div class="history-row">
+            <strong>${escapeHtml(card.front)}</strong>
+            <span>${escapeHtml(card.lessonTitle)}</span>
+            <button class="secondary-button" type="button" data-card-resume="${escapeHtml(card.id)}">Вернуть</button>
+          </div>`).join("")}
+      </div>
+    </details>`;
+}
+
 function renderMetric(label, value, note) {
   return `<div class="metric"><p class="eyebrow">${escapeHtml(label)}</p><strong>${escapeHtml(value)}</strong><span>${escapeHtml(note)}</span></div>`;
 }
 
 async function markLessonComplete(lessonId) {
+  const lesson = getLesson(lessonId);
+  const prerequisites = getLessonPrerequisites(lesson);
+  const readiness = evaluateLessonReadiness(lesson, state.exerciseAttempts);
+  if (!prerequisites.met || !readiness.canComplete) {
+    const lessonRoot = document.querySelector(".lesson-layout");
+    updateLessonCompletionUI(lessonRoot, lesson);
+    lessonRoot?.querySelector(".completion-status")?.focus?.();
+    return;
+  }
+  const previousCompletedLessons = [...state.appState.completedLessons];
+  const previousCurrentLessonId = state.currentLessonId;
+  const previousStoredLessonId = state.appState.currentLessonId;
   if (!state.appState.completedLessons.includes(lessonId)) state.appState.completedLessons.push(lessonId);
-  if (state.view === "today") setCurrentLesson(getNextLesson()?.id || lessonId, false);
-  await saveAppState();
+  state.appState.completionModelVersion = 1;
+  if (state.currentLessonId === lessonId) setCurrentLesson(getNextLesson()?.id || lessonId, false);
+  if (!(await saveAppState())) {
+    state.appState.completedLessons = previousCompletedLessons;
+    state.currentLessonId = previousCurrentLessonId;
+    state.appState.currentLessonId = previousStoredLessonId;
+    updateLessonCompletionUI(document.querySelector(".lesson-layout"), lesson);
+    return;
+  }
   render();
+}
+
+function updateLessonCompletionUI(scope, lesson) {
+  if (!scope) return;
+  const button = scope.querySelector(".complete-lesson");
+  const status = scope.querySelector(".completion-status");
+  if (!button || !status) return;
+  const isDone = state.appState.completedLessons.includes(lesson.id);
+  const prerequisites = getLessonPrerequisites(lesson);
+  const readiness = evaluateLessonReadiness(lesson, state.exerciseAttempts);
+  const disabled = isDone || !prerequisites.met || !readiness.canComplete;
+  button.disabled = disabled;
+  button.setAttribute("aria-disabled", String(disabled));
+  button.textContent = isDone ? "Урок пройден" : "Отметить урок пройденным";
+  status.tabIndex = -1;
+  if (isDone) {
+    status.textContent = "Все обязательные задания подтверждены.";
+  } else if (!prerequisites.met) {
+    status.textContent = prerequisiteMessage(prerequisites);
+  } else if (!readiness.total) {
+    status.textContent = "В уроке пока нет обязательных заданий, поэтому завершение недоступно.";
+  } else if (readiness.needsReview) {
+    status.textContent = `${readiness.mastered}/${readiness.total} готово. Сравни открытые ответы с примером и подтверди исправления.`;
+  } else {
+    status.textContent = `${readiness.mastered}/${readiness.total} обязательных заданий готово.`;
+  }
 }
 
 function setCurrentLesson(lessonId, save = true) {
@@ -927,7 +1302,16 @@ function setCurrentLesson(lessonId, save = true) {
 }
 
 function getNextLesson() {
-  return state.data.lessons.find((lesson) => !state.appState.completedLessons.includes(lesson.id));
+  return [...state.data.lessons]
+    .sort(compareLessons)
+    .find((lesson) =>
+      !state.appState.completedLessons.includes(lesson.id)
+      && getLessonPrerequisites(lesson).met
+    );
+}
+
+function getLessonPrerequisites(lesson) {
+  return mastery.checkCatalogLessonPrerequisites(state.data, lesson, state.appState.completedLessons);
 }
 
 function getLesson(id) {
@@ -986,27 +1370,68 @@ async function migrateLegacySchedules() {
 }
 
 async function saveAppState() {
-  await setValue("appState", state.appState);
-  showSaved();
+  return runSave(() => setValue("appState", state.appState));
 }
 
 async function saveSettings() {
-  await setValue("settings", state.settings);
-  showSaved();
+  return runSave(() => setValue("settings", state.settings));
 }
 
 function debounceSave(key, callback) {
   window.clearTimeout(state.saveTimers.get(key));
-  state.saveTimers.set(key, window.setTimeout(async () => {
+  state.pendingSaves.set(key, callback);
+  showSaving();
+  state.saveTimers.set(key, window.setTimeout(() => flushPendingSave(key), 250));
+}
+
+async function flushPendingSave(key) {
+  window.clearTimeout(state.saveTimers.get(key));
+  state.saveTimers.delete(key);
+  const callback = state.pendingSaves.get(key);
+  if (!callback) return true;
+  state.pendingSaves.delete(key);
+  return runSave(callback);
+}
+
+function flushPendingSaves() {
+  return Promise.all([...state.pendingSaves.keys()].map(flushPendingSave));
+}
+
+async function runSave(callback) {
+  state.activeSaveCount += 1;
+  showSaving();
+  try {
     await callback();
-    showSaved();
-  }, 250));
+    return true;
+  } catch (error) {
+    showSaveError(error);
+    return false;
+  } finally {
+    state.activeSaveCount = Math.max(0, state.activeSaveCount - 1);
+    if (state.activeSaveCount === 0 && saveIndicator.dataset.saveError !== "true") showSaved();
+  }
+}
+
+function showSaving() {
+  saveIndicator.dataset.saveError = "false";
+  saveIndicator.removeAttribute("title");
+  saveIndicator.textContent = "Сохраняем…";
+  saveIndicator.classList.remove("saved-flash");
 }
 
 function showSaved() {
+  saveIndicator.dataset.saveError = "false";
+  saveIndicator.removeAttribute("title");
   saveIndicator.textContent = "Сохранено локально";
   saveIndicator.classList.add("saved-flash");
   window.setTimeout(() => saveIndicator.classList.remove("saved-flash"), 700);
+}
+
+function showSaveError(error) {
+  saveIndicator.dataset.saveError = "true";
+  saveIndicator.textContent = "Ошибка сохранения";
+  saveIndicator.title = error?.message || "Локальные данные не удалось сохранить";
+  console.error("French Study save failed", error);
 }
 
 function releaseAudioUrls() {
@@ -1017,6 +1442,8 @@ function releaseAudioUrls() {
 function defaultAppState() {
   return {
     completedLessons: [],
+    legacyCompletedLessons: [],
+    completionModelVersion: 1,
     currentView: "today",
     currentLessonId: null,
     scrollPositions: {},

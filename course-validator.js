@@ -1,0 +1,334 @@
+import { ALLOWED_LEVELS, COURSE_SCHEMA, COURSE_SCHEMA_VERSION } from "./course-schema.js";
+
+const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9:._-]*$/;
+
+export function collectCourseValidationErrors(catalog) {
+  const errors = [];
+  if (!isObject(catalog)) return ["catalog: expected an object"];
+
+  validateObject(catalog.meta, "meta", COURSE_SCHEMA.meta, errors);
+  if (catalog.meta?.catalogSchemaVersion !== COURSE_SCHEMA_VERSION) {
+    errors.push(
+      `meta.catalogSchemaVersion: expected ${COURSE_SCHEMA_VERSION}, got ${String(catalog.meta?.catalogSchemaVersion)}`
+    );
+  }
+
+  const resources = requireArray(catalog, "resources", "catalog", errors);
+  const levels = requireArray(catalog, "levels", "catalog", errors);
+  const modules = requireArray(catalog, "modules", "catalog", errors);
+  const pronunciationTopics = requireArray(catalog, "pronunciationTopics", "catalog", errors);
+  const grammarTopics = requireArray(catalog, "grammarTopics", "catalog", errors);
+  const lessons = requireArray(catalog, "lessons", "catalog", errors);
+
+  resources.forEach((resource, index) => {
+    validateObject(
+      resource,
+      `resources[${index}]`,
+      { requiredText: ["name", "type", "url", "note"] },
+      errors
+    );
+  });
+
+  const levelIds = new Set();
+  const moduleIds = new Set();
+  const pronunciationIds = new Set();
+  const grammarIds = new Set();
+  const lessonIds = new Set();
+  const objectiveIds = new Set();
+  const vocabularyIds = new Set();
+  const exerciseIds = new Set();
+  const lessonCardIds = new Set();
+
+  levels.forEach((level, index) => {
+    const path = `levels[${index}]`;
+    validateObject(level, path, COURSE_SCHEMA.level, errors);
+    registerId(level?.id, `${path}.id`, levelIds, errors);
+    validatePositiveOrder(level?.order, `${path}.order`, errors);
+    validateTextArray(level?.cefrLevels, `${path}.cefrLevels`, errors, { nonEmpty: true, unique: true });
+    level?.cefrLevels?.forEach((cefrLevel, cefrIndex) =>
+      validateLevel(cefrLevel, `${path}.cefrLevels[${cefrIndex}]`, errors)
+    );
+    validateTextArray(level?.prerequisites, `${path}.prerequisites`, errors, { unique: true });
+  });
+
+  modules.forEach((module, index) => {
+    const path = `modules[${index}]`;
+    validateObject(module, path, COURSE_SCHEMA.module, errors);
+    registerId(module?.id, `${path}.id`, moduleIds, errors);
+    validatePositiveOrder(module?.order, `${path}.order`, errors);
+    validateTextArray(module?.prerequisites, `${path}.prerequisites`, errors, { unique: true });
+  });
+
+  levels.forEach((level, index) => {
+    validateReferenceArray(level?.prerequisites, `levels[${index}].prerequisites`, levelIds, errors, {
+      selfId: level?.id
+    });
+  });
+  modules.forEach((module, index) => {
+    const path = `modules[${index}]`;
+    if (hasText(module?.levelId) && !levelIds.has(module.levelId)) {
+      errors.push(`${path}.levelId: unknown id "${module.levelId}"`);
+    }
+    validateReferenceArray(module?.prerequisites, `${path}.prerequisites`, moduleIds, errors, {
+      selfId: module?.id
+    });
+  });
+  validateAcyclic(levels, "levels", errors);
+  validateAcyclic(modules, "modules", errors);
+  validateUniqueOrders(levels, () => "catalog", "levels", errors);
+  validateUniqueOrders(modules, (module) => module?.levelId, "modules", errors);
+
+  pronunciationTopics.forEach((topic, index) => {
+    const path = `pronunciationTopics[${index}]`;
+    validateObject(topic, path, COURSE_SCHEMA.pronunciationTopic, errors);
+    validateLevel(topic?.level, `${path}.level`, errors);
+    registerId(topic?.id, `${path}.id`, pronunciationIds, errors);
+    validateTextArray(topic?.minimalPairs, `${path}.minimalPairs`, errors, { nonEmpty: true });
+  });
+
+  grammarTopics.forEach((topic, index) => {
+    const path = `grammarTopics[${index}]`;
+    validateObject(topic, path, COURSE_SCHEMA.grammarTopic, errors);
+    validateLevel(topic?.level, `${path}.level`, errors);
+    registerId(topic?.id, `${path}.id`, grammarIds, errors);
+    validateTextArray(topic?.examples, `${path}.examples`, errors, { nonEmpty: true });
+  });
+
+  lessons.forEach((lesson, lessonIndex) => {
+    registerId(lesson?.id, `lessons[${lessonIndex}].id`, lessonIds, errors);
+  });
+
+  lessons.forEach((lesson, lessonIndex) => {
+    const path = `lessons[${lessonIndex}]`;
+    validateObject(lesson, path, COURSE_SCHEMA.lesson, errors);
+    validateLevel(lesson?.level, `${path}.level`, errors);
+    validatePositiveOrder(lesson?.order, `${path}.order`, errors);
+    validateTextArray(lesson?.prerequisites, `${path}.prerequisites`, errors, { unique: true });
+    validateReferenceArray(lesson?.prerequisites, `${path}.prerequisites`, lessonIds, errors, {
+      selfId: lesson?.id
+    });
+    validateTextArray(lesson?.tags, `${path}.tags`, errors);
+
+    const module = modules.find((item) => item?.id === lesson?.moduleId);
+    if (hasText(lesson?.moduleId) && !moduleIds.has(lesson.moduleId)) {
+      errors.push(`${path}.moduleId: unknown id "${lesson.moduleId}"`);
+    } else if (module) {
+      const level = levels.find((item) => item?.id === module.levelId);
+      if (level && hasText(lesson?.level) && !level.cefrLevels?.includes(lesson.level)) {
+        errors.push(`${path}.level: "${lesson.level}" is outside level track "${level.id}"`);
+      }
+    }
+
+    if (hasText(lesson?.pronunciationTopic) && !pronunciationIds.has(lesson.pronunciationTopic)) {
+      errors.push(`${path}.pronunciationTopic: unknown id "${lesson.pronunciationTopic}"`);
+    }
+    if (hasText(lesson?.grammarTopic) && !grammarIds.has(lesson.grammarTopic)) {
+      errors.push(`${path}.grammarTopic: unknown id "${lesson.grammarTopic}"`);
+    }
+
+    const objectives = Array.isArray(lesson?.objectives) ? lesson.objectives : [];
+    if (objectives.length === 0) errors.push(`${path}.objectives: expected at least one item`);
+    const localObjectiveIds = new Set();
+    const requiredObjectiveIds = new Set();
+    const coveredObjectiveIds = new Set();
+    objectives.forEach((objective, index) => {
+      const objectivePath = `${path}.objectives[${index}]`;
+      validateObject(objective, objectivePath, COURSE_SCHEMA.objective, errors);
+      registerId(objective?.id, `${objectivePath}.id`, objectiveIds, errors, "obj:");
+      registerId(objective?.id, `${objectivePath}.id`, localObjectiveIds, errors, "obj:");
+      if (objective?.required === true && hasText(objective?.id)) requiredObjectiveIds.add(objective.id);
+    });
+
+    const dialogue = Array.isArray(lesson?.dialogue) ? lesson.dialogue : [];
+    if (dialogue.length === 0) errors.push(`${path}.dialogue: expected at least one item`);
+    dialogue.forEach((line, index) => {
+      validateObject(line, `${path}.dialogue[${index}]`, COURSE_SCHEMA.dialogueLine, errors);
+    });
+
+    const vocabulary = Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : [];
+    if (vocabulary.length === 0) errors.push(`${path}.vocabulary: expected at least one item`);
+    vocabulary.forEach((item, index) => {
+      const itemPath = `${path}.vocabulary[${index}]`;
+      validateObject(item, itemPath, COURSE_SCHEMA.vocabularyItem, errors);
+      registerId(item?.id, `${itemPath}.id`, vocabularyIds, errors, "vocab:");
+    });
+
+    const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
+    if (exercises.length === 0) errors.push(`${path}.exercises: expected at least one item`);
+    exercises.forEach((exercise, index) => {
+      const exercisePath = `${path}.exercises[${index}]`;
+      validateObject(exercise, exercisePath, COURSE_SCHEMA.exercise, errors);
+      registerId(exercise?.id, `${exercisePath}.id`, exerciseIds, errors);
+      validateTextArray(exercise?.acceptedAnswers, `${exercisePath}.acceptedAnswers`, errors);
+      validateTextArray(exercise?.hints, `${exercisePath}.hints`, errors, { nonEmpty: true });
+      validateTextArray(exercise?.requiredTokens, `${exercisePath}.requiredTokens`, errors);
+      validateTextArray(exercise?.objectiveIds, `${exercisePath}.objectiveIds`, errors, {
+        nonEmpty: true,
+        unique: true
+      });
+      validateReferenceArray(exercise?.objectiveIds, `${exercisePath}.objectiveIds`, localObjectiveIds, errors);
+      if (exercise?.required !== false) {
+        exercise?.objectiveIds?.forEach((objectiveId) => coveredObjectiveIds.add(objectiveId));
+      }
+    });
+
+    requiredObjectiveIds.forEach((objectiveId) => {
+      if (!coveredObjectiveIds.has(objectiveId)) {
+        errors.push(`${path}.objectives: required objective "${objectiveId}" is not covered by an exercise`);
+      }
+    });
+
+    const cards = Array.isArray(lesson?.cards) ? lesson.cards : [];
+    if (cards.length === 0) errors.push(`${path}.cards: expected at least one item`);
+    cards.forEach((card, index) => {
+      const cardPath = `${path}.cards[${index}]`;
+      validateObject(card, cardPath, COURSE_SCHEMA.lessonCard, errors);
+      registerId(card?.id, `${cardPath}.id`, lessonCardIds, errors, "phrase:");
+    });
+  });
+
+  validateAcyclic(lessons, "lessons", errors);
+  validateUniqueOrders(lessons, (lesson) => lesson?.moduleId, "lessons", errors);
+
+  modules.forEach((module, index) => {
+    if (hasText(module?.id) && !lessons.some((lesson) => lesson?.moduleId === module.id)) {
+      errors.push(`modules[${index}]: module "${module.id}" has no lessons`);
+    }
+  });
+  levels.forEach((level, index) => {
+    if (hasText(level?.id) && !modules.some((module) => module?.levelId === level.id)) {
+      errors.push(`levels[${index}]: level "${level.id}" has no modules`);
+    }
+  });
+
+  return errors;
+}
+
+export function validateCourseCatalog(catalog) {
+  const errors = collectCourseValidationErrors(catalog);
+  if (errors.length) {
+    const error = new Error(`Invalid course catalog:\n- ${errors.join("\n- ")}`);
+    error.validationErrors = errors;
+    throw error;
+  }
+  return true;
+}
+
+function validateObject(value, path, schema, errors) {
+  if (!isObject(value)) {
+    errors.push(`${path}: expected an object`);
+    return;
+  }
+  for (const field of schema.requiredText || []) {
+    if (!hasText(value[field])) errors.push(`${path}.${field}: expected a non-empty string`);
+  }
+  for (const field of schema.requiredInteger || []) {
+    if (!Number.isInteger(value[field])) errors.push(`${path}.${field}: expected an integer`);
+  }
+  for (const field of schema.requiredBoolean || []) {
+    if (typeof value[field] !== "boolean") errors.push(`${path}.${field}: expected a boolean`);
+  }
+  for (const field of schema.requiredArrays || []) {
+    if (!Array.isArray(value[field])) errors.push(`${path}.${field}: expected an array`);
+  }
+}
+
+function requireArray(object, field, path, errors) {
+  if (!Array.isArray(object[field])) {
+    errors.push(`${path}.${field}: expected an array`);
+    return [];
+  }
+  return object[field];
+}
+
+function validateLevel(level, path, errors) {
+  if (hasText(level) && !ALLOWED_LEVELS.includes(level)) {
+    errors.push(`${path}: unsupported level "${level}"`);
+  }
+}
+
+function registerId(id, path, seen, errors, requiredPrefix = "") {
+  if (!hasText(id)) return;
+  if (!ID_PATTERN.test(id)) errors.push(`${path}: invalid id "${id}"`);
+  if (requiredPrefix && !id.startsWith(requiredPrefix)) {
+    errors.push(`${path}: expected prefix "${requiredPrefix}"`);
+  }
+  if (seen.has(id)) errors.push(`${path}: duplicate id "${id}"`);
+  seen.add(id);
+}
+
+function validateTextArray(value, path, errors, { nonEmpty = false, unique = false } = {}) {
+  if (!Array.isArray(value)) return;
+  if (nonEmpty && value.length === 0) errors.push(`${path}: expected at least one item`);
+  const seen = new Set();
+  value.forEach((item, index) => {
+    if (!hasText(item)) errors.push(`${path}[${index}]: expected a non-empty string`);
+    if (unique && seen.has(item)) errors.push(`${path}[${index}]: duplicate reference "${item}"`);
+    seen.add(item);
+  });
+}
+
+function validateReferenceArray(value, path, knownIds, errors, { selfId } = {}) {
+  if (!Array.isArray(value)) return;
+  value.forEach((id, index) => {
+    if (!hasText(id)) return;
+    if (id === selfId) errors.push(`${path}[${index}]: self prerequisite "${id}"`);
+    else if (!knownIds.has(id)) errors.push(`${path}[${index}]: unknown id "${id}"`);
+  });
+}
+
+function validatePositiveOrder(value, path, errors) {
+  if (Number.isInteger(value) && value < 1) errors.push(`${path}: expected a positive integer`);
+}
+
+function validateUniqueOrders(items, groupBy, label, errors) {
+  const groups = new Map();
+  items.forEach((item, index) => {
+    if (!Number.isInteger(item?.order)) return;
+    const group = groupBy(item) || "unknown";
+    if (!groups.has(group)) groups.set(group, new Map());
+    const orders = groups.get(group);
+    if (orders.has(item.order)) {
+      errors.push(`${label}[${index}].order: duplicate order ${item.order} in "${group}"`);
+    } else {
+      orders.set(item.order, index);
+    }
+  });
+}
+
+function validateAcyclic(items, label, errors) {
+  const byId = new Map(items.filter((item) => hasText(item?.id)).map((item) => [item.id, item]));
+  const state = new Map();
+  const reported = new Set();
+
+  function visit(id, trail) {
+    if (state.get(id) === 2) return;
+    if (state.get(id) === 1) {
+      const cycleStart = trail.indexOf(id);
+      const cycle = [...trail.slice(cycleStart), id];
+      const signature = [...new Set(cycle)].sort().join("|");
+      if (!reported.has(signature)) {
+        reported.add(signature);
+        errors.push(`${label}: prerequisite cycle ${cycle.join(" -> ")}`);
+      }
+      return;
+    }
+
+    state.set(id, 1);
+    const item = byId.get(id);
+    for (const prerequisite of item?.prerequisites || []) {
+      if (byId.has(prerequisite)) visit(prerequisite, [...trail, id]);
+    }
+    state.set(id, 2);
+  }
+
+  byId.forEach((_, id) => visit(id, []));
+}
+
+function hasText(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}

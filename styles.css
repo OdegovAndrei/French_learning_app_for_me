@@ -278,6 +278,26 @@ button {
   line-height: 1.25;
 }
 
+.completion-actions {
+  flex: 0 0 min(280px, 100%);
+  display: grid;
+  gap: 8px;
+}
+
+.completion-status {
+  margin: 0;
+  max-width: 300px;
+}
+
+.lesson-objectives {
+  margin-top: 14px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
 .section-heading {
   display: flex;
   align-items: end;
@@ -356,6 +376,60 @@ button {
 .lesson-tile.done {
   border-color: var(--accent);
   background: var(--accent-soft);
+}
+
+.lesson-tile.locked {
+  border-style: dashed;
+  background: var(--surface-strong);
+  cursor: not-allowed;
+}
+
+.lesson-tile.locked:hover {
+  border-color: var(--line);
+}
+
+.lock-reason {
+  margin: 0;
+  color: var(--amber);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.course-map,
+.course-level-group,
+.course-module {
+  display: grid;
+  gap: 16px;
+}
+
+.course-level-group {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.course-group-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.course-group-heading h4,
+.course-module h5,
+.resource-row p,
+.locked-notice h3 {
+  margin: 0;
+}
+
+.course-module {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.self-review-button {
+  margin-top: 12px;
 }
 
 .tag-row {
