@@ -2536,6 +2536,112 @@
         {"id": "phrase:l14:1", "front": "Десять человек.", "back": "Il y a dix personnes.", "type": "phrase"},
         {"id": "phrase:l14:2", "front": "Il y a {{c1::vingt}} chaises.", "back": "Есть двадцать стульев.", "type": "cloze"}
       ]
+    },
+    {
+      "id": "l15",
+      "level": "A1",
+      "title": "Часы работы: читаем и объясняем другу",
+      "goal": "Найти несколько конкретных данных в объявлении о часах работы и объяснить их по-русски другу.",
+      "scenario": "opening-hours-notice",
+      "targetPhrase": "La pharmacie est ouverte tous les jours, sauf le dimanche.",
+      "pronunciationTopic": "silent-endings",
+      "grammarTopic": "announcements",
+      "moduleId": "module:a1:daily-services",
+      "order": 2,
+      "prerequisites": ["l14"],
+      "tags": ["reading", "mediation", "hours"],
+      "objectives": [
+        {
+          "id": "obj:l15:read-notice-details",
+          "skill": "reading",
+          "cefrCanDo": "Может найти несколько конкретных данных (часы, дни) в коротком объявлении.",
+          "required": true
+        },
+        {
+          "id": "obj:l15:explain-to-friend",
+          "skill": "mediation",
+          "cefrCanDo": "Может по-русски объяснить другу главную практическую информацию из объявления.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Amie",
+          "fr": "Tu sais à quelle heure la pharmacie ferme ?",
+          "ipa": "/ty sɛ a kɛ.lœʁ la faʁ.ma.si fɛʁm/",
+          "ru": "Ты знаешь, во сколько закрывается аптека?"
+        },
+        {
+          "speaker": "Toi",
+          "fr": "Attends, je regarde. Elle ferme à dix-neuf heures.",
+          "ipa": "/a.tɑ̃ ʒə ʁə.ɡaʁd ɛl fɛʁm a diz.nœ.v‿œʁ/",
+          "ru": "Подожди, я смотрю. Она закрывается в девятнадцать часов."
+        },
+        {
+          "speaker": "Amie",
+          "fr": "Et le dimanche ?",
+          "ipa": "/e lə di.mɑ̃ʃ/",
+          "ru": "А в воскресенье?"
+        },
+        {
+          "speaker": "Toi",
+          "fr": "Fermé. Sauf le dimanche, c'est ouvert tous les jours.",
+          "ipa": "/fɛʁ.me sof lə di.mɑ̃ʃ sɛ.t‿u.vɛʁ tu le ʒuʁ/",
+          "ru": "Закрыто. Кроме воскресенья открыто каждый день."
+        }
+      ],
+      "vocabulary": [
+        {"id": "vocab:l15:0", "fr": "la pharmacie", "ipa": "/la faʁ.ma.si/", "ru": "аптека", "note": "Ударение на последнем слоге, как обычно во французском."},
+        {"id": "vocab:l15:1", "fr": "fermer", "ipa": "/fɛʁ.me/", "ru": "закрываться/закрывать", "note": "Elle ferme — регулярный -er глагол."},
+        {"id": "vocab:l15:2", "fr": "tous les jours", "ipa": "/tu le ʒuʁ/", "ru": "каждый день", "note": "S в tous перед les не звучит."},
+        {"id": "vocab:l15:3", "fr": "sauf", "ipa": "/sof/", "ru": "кроме", "note": "Полезно для исключений в расписании."},
+        {"id": "vocab:l15:4", "fr": "le dimanche", "ipa": "/lə di.mɑ̃ʃ/", "ru": "воскресенье", "note": "Дни недели пишутся с маленькой буквы."},
+        {"id": "vocab:l15:5", "fr": "attends", "ipa": "/a.tɑ̃/", "ru": "подожди", "note": "От attendre, разговорная реплика."},
+        {"id": "vocab:l15:6", "fr": "je regarde", "ipa": "/ʒə ʁə.ɡaʁd/", "ru": "я смотрю", "note": "Полезно, когда ищешь информацию вслух."},
+        {"id": "vocab:l15:7", "fr": "dix-neuf heures", "ipa": "/diz.nœ.v‿œʁ/", "ru": "девятнадцать часов", "note": "Официальное время часто 24-часовое."}
+      ],
+      "exercises": [
+        {
+          "id": "l15-e1",
+          "type": "reading-comprehension",
+          "prompt": "Прочитай объявление аптеки. Во сколько она открывается по будням и что необычного в расписании?",
+          "sourceText": "Pharmacie du Centre\nOuvert : tous les jours, 8h30 - 19h00\nSauf le dimanche : fermé\nLe samedi : fermeture à 13h00",
+          "acceptedAnswers": ["8h30, закрыто по воскресеньям, в субботу закрывается в 13h00", "huit heures trente, fermé le dimanche, treize heures le samedi"],
+          "modelAnswer": "Elle ouvre à huit heures trente. Elle est fermée le dimanche, et le samedi elle ferme à treize heures.",
+          "hints": ["В тексте три отдельные детали: обычные часы, воскресенье, суббота."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l15:read-notice-details"],
+          "explanation": "Реальные объявления часто содержат исключения — их нужно вычленять отдельно от общего правила."
+        },
+        {
+          "id": "l15-e2",
+          "type": "summarize-for-a-friend",
+          "prompt": "Объясни по-русски другу, который не знает французский: когда работает эта аптека?",
+          "acceptedAnswers": [],
+          "modelAnswer": "Аптека открыта каждый день с 8:30 до 19:00, кроме воскресенья — тогда закрыто. По субботам закрывается раньше, в час дня.",
+          "hints": ["Медиация — это не перевод слово в слово, а передача сути на понятном языке."],
+          "requiredTokens": ["воскресень", "суббот"],
+          "objectiveIds": ["obj:l15:explain-to-friend"],
+          "rubric": ["Названы обычные часы работы.", "Названо исключение (воскресенье).", "Названа особенность субботы."],
+          "explanation": "Именно так выглядит mediation-evidence по roadmap: практическая информация, пересказанная для другого человека."
+        },
+        {
+          "id": "l15-e3",
+          "type": "gap-fill",
+          "prompt": "Заполни: Ouvert tous les jours, ___ le dimanche.",
+          "acceptedAnswers": ["sauf"],
+          "modelAnswer": "Ouvert tous les jours, sauf le dimanche.",
+          "hints": ["Слово для исключения из общего правила."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l15:read-notice-details"],
+          "explanation": "Sauf — ключевое слово, которое меняет смысл всего объявления."
+        }
+      ],
+      "cards": [
+        {"id": "phrase:l15:0", "front": "Кроме воскресенья.", "back": "Sauf le dimanche.", "type": "phrase"},
+        {"id": "phrase:l15:1", "front": "Открыто каждый день.", "back": "Ouvert tous les jours.", "type": "phrase"},
+        {"id": "phrase:l15:2", "front": "Ouvert tous les jours, {{c1::sauf}} le dimanche.", "back": "Открыто каждый день, кроме воскресенья.", "type": "cloze"}
+      ]
     }
   ]
 }
