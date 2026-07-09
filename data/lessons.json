@@ -574,6 +574,13 @@
       "level": "A1",
       "rule": "В объявлениях важны ключевые слова: кто/что, место, время. Сначала ловим смысл, потом проверяем транскрипт.",
       "examples": ["Le train part à dix heures.", "Le train est quai deux.", "Attention, le magasin est fermé."]
+    },
+    {
+      "id": "avoir",
+      "title": "Avoir: иметь",
+      "level": "A1",
+      "rule": "J'ai, tu as, il/elle a, nous avons, vous avez, ils/elles ont. Avoir нужен не только для обладания, но и для возраста (j'ai ... ans) и устойчивых конструкций (avoir besoin de, avoir faim).",
+      "examples": ["J'ai vingt-cinq ans.", "Tu as une minute ?", "Nous avons une pause à midi."]
     }
   ],
   "lessons": [
@@ -2301,6 +2308,110 @@
           "back": "Я русская/русский.",
           "type": "cloze"
         }
+      ]
+    },
+    {
+      "id": "l13",
+      "level": "A1",
+      "title": "Коротко о себе",
+      "goal": "Понять короткий рассказ о себе на слух и кратко рассказать о своём возрасте и городе.",
+      "scenario": "self-intro-audio",
+      "targetPhrase": "J'ai vingt-cinq ans. J'habite à Lyon.",
+      "pronunciationTopic": "nasals",
+      "grammarTopic": "avoir",
+      "moduleId": "module:a1:social-identity",
+      "order": 2,
+      "prerequisites": ["l12"],
+      "tags": ["numbers", "age", "listening"],
+      "objectives": [
+        {
+          "id": "obj:l13:understand-self-intro",
+          "skill": "listening",
+          "cefrCanDo": "Может понять короткий медленный рассказ о себе: имя, возраст, город.",
+          "required": true
+        },
+        {
+          "id": "obj:l13:say-age-and-city",
+          "skill": "spoken-production",
+          "cefrCanDo": "Может кратко рассказать о себе: возраст и город, используя J'ai...ans и J'habite à...",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Léo",
+          "fr": "Bonjour, je m'appelle Léo.",
+          "ipa": "/bɔ̃.ʒuʁ ʒə ma.pɛl le.o/",
+          "ru": "Здравствуйте, меня зовут Лео."
+        },
+        {
+          "speaker": "Léo",
+          "fr": "J'ai vingt-cinq ans.",
+          "ipa": "/ʒe vɛ̃t.sɛ̃k ɑ̃/",
+          "ru": "Мне двадцать пять лет."
+        },
+        {
+          "speaker": "Léo",
+          "fr": "J'habite à Lyon.",
+          "ipa": "/ʒa.bit a ljɔ̃/",
+          "ru": "Я живу в Лионе."
+        }
+      ],
+      "vocabulary": [
+        {"id": "vocab:l13:0", "fr": "zéro", "ipa": "/ze.ʁo/", "ru": "ноль", "note": "Начало счёта."},
+        {"id": "vocab:l13:1", "fr": "un", "ipa": "/ɛ̃/", "ru": "один", "note": "Носовой звук, как в un café."},
+        {"id": "vocab:l13:2", "fr": "deux", "ipa": "/dø/", "ru": "два", "note": "eu — закрытый звук, губы округлены."},
+        {"id": "vocab:l13:3", "fr": "trois", "ipa": "/tʁwa/", "ru": "три", "note": "oi = /wa/."},
+        {"id": "vocab:l13:4", "fr": "quatre", "ipa": "/katʁ/", "ru": "четыре", "note": "Финальное e не звучит."},
+        {"id": "vocab:l13:5", "fr": "cinq", "ipa": "/sɛ̃k/", "ru": "пять", "note": "q обычно звучит, если дальше пауза."},
+        {"id": "vocab:l13:6", "fr": "dix", "ipa": "/dis/", "ru": "десять", "note": "Перед паузой x звучит как s."},
+        {"id": "vocab:l13:7", "fr": "vingt", "ipa": "/vɛ̃/", "ru": "двадцать", "note": "t не звучит в одиночном vingt."},
+        {"id": "vocab:l13:8", "fr": "un an / des ans", "ipa": "/ɛ̃.n‿ɑ̃/", "ru": "год (возраст)", "note": "J'ai vingt ans — дословно «я имею двадцать лет»."},
+        {"id": "vocab:l13:9", "fr": "j'ai ... ans", "ipa": "/ʒe ... ɑ̃/", "ru": "мне ... лет", "note": "Возраст называют через avoir, не être."},
+        {"id": "vocab:l13:10", "fr": "habiter à", "ipa": "/a.bi.te a/", "ru": "жить в (городе)", "note": "À перед названием города."}
+      ],
+      "exercises": [
+        {
+          "id": "l13-e1",
+          "type": "listening-comprehension",
+          "prompt": "Прослушай рассказ о Лео. Сколько ему лет и где он живёт?",
+          "transcript": "Bonjour, je m'appelle Léo. J'ai vingt-cinq ans. J'habite à Lyon.",
+          "listenText": "Bonjour, je m'appelle Léo. J'ai vingt-cinq ans. J'habite à Lyon.",
+          "acceptedAnswers": ["vingt-cinq ans, Lyon", "25 лет, Лион", "Il a vingt-cinq ans et il habite à Lyon.", "vingt-cinq ans à Lyon"],
+          "modelAnswer": "Léo a vingt-cinq ans et il habite à Lyon.",
+          "hints": ["Числа на слух: vingt-cinq = 20+5."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l13:understand-self-intro"],
+          "explanation": "Возраст и город — два факта, которые чаще всего спрашивают при первом знакомстве."
+        },
+        {
+          "id": "l13-e2",
+          "type": "gap-fill",
+          "prompt": "Заполни: J'___ vingt-cinq ans.",
+          "acceptedAnswers": ["ai"],
+          "modelAnswer": "J'ai vingt-cinq ans.",
+          "hints": ["Возраст — с avoir, а не être."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l13:say-age-and-city"],
+          "explanation": "J'ai (avoir) — стандартная конструкция для возраста во французском."
+        },
+        {
+          "id": "l13-e3",
+          "type": "recorded-monologue",
+          "prompt": "Запиши голосом (или напиши план): имя, возраст, город.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Je m'appelle Anna. J'ai vingt-cinq ans. J'habite à Lyon.",
+          "hints": ["Три коротких предложения, как в примере."],
+          "requiredTokens": ["je m'appelle", "j'ai", "ans", "j'habite à"],
+          "objectiveIds": ["obj:l13:say-age-and-city"],
+          "rubric": ["Есть имя.", "Есть возраст через j'ai ... ans.", "Есть город через j'habite à."],
+          "explanation": "Устная мини-презентация о себе — базовый can-do A1 для spoken-production."
+        }
+      ],
+      "cards": [
+        {"id": "phrase:l13:0", "front": "Мне двадцать пять лет.", "back": "J'ai vingt-cinq ans.", "type": "phrase"},
+        {"id": "phrase:l13:1", "front": "Я живу в Лионе.", "back": "J'habite à Lyon.", "type": "phrase"},
+        {"id": "phrase:l13:2", "front": "J'ai {{c1::vingt-cinq}} ans.", "back": "Мне двадцать пять лет.", "type": "cloze"}
       ]
     }
   ]
