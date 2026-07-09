@@ -7,7 +7,7 @@
 ## Запуск
 
 ```bash
-python3 -m http.server 5173
+python3 server.py
 ```
 
 Открой:
@@ -18,6 +18,8 @@ http://localhost:5173
 
 `localhost` нужен, чтобы браузер разрешил запись с микрофона. Прогресс, ответы, свои слова, расписание FSRS и последние голосовые записи хранятся локально в IndexedDB.
 
+Своя озвучка française использует бесплатные neural-голоса через `edge-tts` (`pip install edge-tts`, необязательно). Без установленного пакета фразы из уроков всё равно звучат — они озвучены заранее и лежат в `data/audio/`; без сети/пакета озвучиваются на лету только свои слова, и делает это временно браузерный голос вместо neural.
+
 Важно открывать кабинет по одному и тому же адресу. `localhost:5173` и `127.0.0.1:5173` считаются браузером разными локальными хранилищами.
 
 ## Структура
@@ -26,6 +28,10 @@ http://localhost:5173
 - `styles.css` - интерфейс.
 - `app.js` - интерфейс кабинета, запись голоса и учебные сценарии.
 - `storage.js` - IndexedDB, миграция старого прогресса и JSON backup/restore.
+- `server.py` - локальный сервер: отдаёт статику и эндпоинт `/tts` (бесплатный neural TTS через `edge-tts`, с дисковым кэшем).
+- `tts.js` - озвучка на фронтенде: заранее сгенерированные файлы урока, кэш в IndexedDB для остального, откат на браузерный голос при недоступности сервера.
+- `scripts/prewarm_tts.py` - разовая генерация `data/audio/*.mp3` и `data/audio/manifest.json` из `data/lessons.json`.
+- `data/audio/` - заранее озвученные фразы уроков (голос Denise, коммитится в git).
 - `cards.js` - словарные, двусторонние, фразовые и cloze-карточки.
 - `srs.js` - локальная обёртка над FSRS.
 - `course-schema.js` и `course-validator.js` - schema/validator курса, стабильных ссылок и roadmap.
@@ -67,6 +73,9 @@ node tests/exercises.mjs
 node tests/mastery.mjs
 node tests/technical.mjs
 node tests/card-manifest.mjs
+node tests/tts-cache.mjs
+python3 tests/test_server.py
+python3 tests/test_prewarm.py
 ```
 
 ## Бесплатные источники
