@@ -80,6 +80,14 @@
       "description": "Числа 0-100, il y a, чтение и объяснение объявлений/расписаний.",
       "order": 2,
       "prerequisites": ["module:a1:social-identity"]
+    },
+    {
+      "id": "module:a1:routines-plans",
+      "levelId": "a1",
+      "title": "Распорядок дня и планы на неделю",
+      "description": "avoir, повседневные глаголы, дни недели, договорённости письмом.",
+      "order": 3,
+      "prerequisites": ["module:a1:daily-services"]
     }
   ],
   "resources": [
@@ -596,6 +604,13 @@
       "level": "A1",
       "rule": "Il y a не меняется по числам и родам: одна форма для 'есть один стул' и 'есть двадцать стульев'. Отрицание — il n'y a pas de.",
       "examples": ["Il y a dix personnes.", "Il y a vingt chaises.", "Il n'y a pas de café."]
+    },
+    {
+      "id": "daily-routine-present",
+      "title": "Распорядок дня: возвратные глаголы и настоящее время",
+      "level": "A1",
+      "rule": "Действия распорядка дня часто возвратные: je me lève, je me couche. Местоимение me/te/se стоит перед глаголом. Обычные действия (travailler, manger, dîner) спрягаются как обычные -er глаголы.",
+      "examples": ["Je me lève à sept heures.", "Je travaille le matin.", "Je me couche à onze heures."]
     }
   ],
   "lessons": [
@@ -2641,6 +2656,111 @@
         {"id": "phrase:l15:0", "front": "Кроме воскресенья.", "back": "Sauf le dimanche.", "type": "phrase"},
         {"id": "phrase:l15:1", "front": "Открыто каждый день.", "back": "Ouvert tous les jours.", "type": "phrase"},
         {"id": "phrase:l15:2", "front": "Ouvert tous les jours, {{c1::sauf}} le dimanche.", "back": "Открыто каждый день, кроме воскресенья.", "type": "cloze"}
+      ]
+    },
+    {
+      "id": "l16",
+      "level": "A1",
+      "title": "Мой обычный день",
+      "goal": "Связно описать свой обычный день, используя возвратные глаголы в настоящем времени.",
+      "scenario": "daily-routine",
+      "targetPhrase": "Je me lève à sept heures et je vais travailler.",
+      "pronunciationTopic": "silent-endings",
+      "grammarTopic": "daily-routine-present",
+      "moduleId": "module:a1:routines-plans",
+      "order": 1,
+      "prerequisites": ["l15"],
+      "tags": ["routine", "reflexive-verbs", "daily-life"],
+      "objectives": [
+        {
+          "id": "obj:l16:describe-routine",
+          "skill": "spoken-production",
+          "cefrCanDo": "Может связно описать свой обычный день тремя-четырьмя простыми фразами.",
+          "required": true
+        },
+        {
+          "id": "obj:l16:use-reflexive-present",
+          "skill": "language-system",
+          "cefrCanDo": "Может использовать возвратные глаголы se lever/se coucher в настоящем времени.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Ami",
+          "fr": "Tu te lèves à quelle heure ?",
+          "ipa": "/ty tə lɛv a kɛ.lœʁ/",
+          "ru": "Во сколько ты встаёшь?"
+        },
+        {
+          "speaker": "Toi",
+          "fr": "Je me lève à sept heures. Je travaille le matin.",
+          "ipa": "/ʒə mə lɛv a sɛ.t‿œʁ ʒə tʁa.vaj lə ma.tɛ̃/",
+          "ru": "Я встаю в семь. Работаю утром."
+        },
+        {
+          "speaker": "Ami",
+          "fr": "Et le soir ?",
+          "ipa": "/e lə swaʁ/",
+          "ru": "А вечером?"
+        },
+        {
+          "speaker": "Toi",
+          "fr": "Je dîne à huit heures et je me couche à onze heures.",
+          "ipa": "/ʒə din a ɥi.t‿œʁ e ʒə mə kuʃ a ɔ̃.z‿œʁ/",
+          "ru": "Ужинаю в восемь и ложусь в одиннадцать."
+        }
+      ],
+      "vocabulary": [
+        {"id": "vocab:l16:0", "fr": "se lever", "ipa": "/sə lə.ve/", "ru": "вставать", "note": "Je me lève — è открывается в спряжении."},
+        {"id": "vocab:l16:1", "fr": "se coucher", "ipa": "/sə ku.ʃe/", "ru": "ложиться спать", "note": "Je me couche — обычный возвратный -er глагол."},
+        {"id": "vocab:l16:2", "fr": "travailler", "ipa": "/tʁa.va.je/", "ru": "работать", "note": "Обычный -er глагол."},
+        {"id": "vocab:l16:3", "fr": "dîner", "ipa": "/di.ne/", "ru": "ужинать", "note": "^ над i — просто орфография, не меняет звук."},
+        {"id": "vocab:l16:4", "fr": "le matin", "ipa": "/lə ma.tɛ̃/", "ru": "утро", "note": "Le matin = утром, без предлога."},
+        {"id": "vocab:l16:5", "fr": "le soir", "ipa": "/lə swaʁ/", "ru": "вечер", "note": "Le soir = вечером."},
+        {"id": "vocab:l16:6", "fr": "prendre le petit-déjeuner", "ipa": "/pʁɑ̃dʁ lə pə.ti de.ʒœ.ne/", "ru": "завтракать", "note": "Дословно: брать маленький обед."},
+        {"id": "vocab:l16:7", "fr": "rentrer", "ipa": "/ʁɑ̃.tʁe/", "ru": "возвращаться домой", "note": "Je rentre à la maison."}
+      ],
+      "exercises": [
+        {
+          "id": "l16-e1",
+          "type": "sentence-transform",
+          "prompt": "Преврати в вопрос: Tu te lèves à sept heures. → ?",
+          "acceptedAnswers": [],
+          "modelAnswer": "Tu te lèves à quelle heure ?",
+          "hints": ["Замени время на вопросительное слово quelle heure."],
+          "requiredTokens": ["te lèves", "quelle heure"],
+          "objectiveIds": ["obj:l16:use-reflexive-present"],
+          "explanation": "Возвратное местоимение te остаётся на месте, меняется только конец фразы."
+        },
+        {
+          "id": "l16-e2",
+          "type": "gap-fill",
+          "prompt": "Заполни: Je ___ couche à onze heures.",
+          "acceptedAnswers": ["me"],
+          "modelAnswer": "Je me couche à onze heures.",
+          "hints": ["Возвратное местоимение для je."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l16:use-reflexive-present"],
+          "explanation": "Me стоит перед спрягаемым глаголом couche."
+        },
+        {
+          "id": "l16-e3",
+          "type": "recorded-monologue",
+          "prompt": "Запиши голосом (или напиши план): расскажи свой обычный день в 3-4 фразах.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Je me lève à sept heures. Je travaille le matin. Je dîne à huit heures et je me couche à onze heures.",
+          "hints": ["Используй порядок: подъём → день → вечер → сон."],
+          "requiredTokens": ["je me lève", "je me couche"],
+          "objectiveIds": ["obj:l16:describe-routine"],
+          "rubric": ["Есть время подъёма.", "Есть хотя бы одно дневное действие.", "Есть время отхода ко сну."],
+          "explanation": "Это ключевое spoken-production evidence модуля routines-plans."
+        }
+      ],
+      "cards": [
+        {"id": "phrase:l16:0", "front": "Я встаю в семь.", "back": "Je me lève à sept heures.", "type": "phrase"},
+        {"id": "phrase:l16:1", "front": "Я ложусь спать в одиннадцать.", "back": "Je me couche à onze heures.", "type": "phrase"},
+        {"id": "phrase:l16:2", "front": "Je {{c1::me lève}} à sept heures.", "back": "Я встаю в семь.", "type": "cloze"}
       ]
     }
   ]
