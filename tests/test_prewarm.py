@@ -43,6 +43,29 @@ class CollectTextsTests(unittest.TestCase):
         }
         self.assertEqual(prewarm_tts.collect_texts(data), ["bonjour"])
 
+    def test_collects_exercise_listen_text_and_transcript(self):
+        data = {
+            "lessons": [{
+                "targetPhrase": "Bonjour.",
+                "dialogue": [],
+                "vocabulary": [],
+                "exercises": [
+                    {
+                        "type": "listening-comprehension",
+                        "listenText": "Le train part à dix heures.",
+                        "transcript": "Le train part à dix heures."
+                    },
+                    {"type": "dictation", "transcript": "Le magasin est ouvert."}
+                ]
+            }],
+            "pronunciationTopics": []
+        }
+        texts = prewarm_tts.collect_texts(data)
+        self.assertEqual(
+            texts,
+            sorted({"Bonjour.", "Le train part à dix heures.", "Le magasin est ouvert."})
+        )
+
 
 class PrewarmManifestTests(unittest.TestCase):
     def test_writes_manifest_matching_cache_key(self):

@@ -23,6 +23,11 @@ def collect_texts(data):
             texts.add(line["fr"])
         for item in lesson["vocabulary"]:
             texts.add(item["fr"])
+        for exercise in lesson.get("exercises", []):
+            if exercise.get("listenText"):
+                texts.add(exercise["listenText"])
+            if exercise.get("transcript"):
+                texts.add(exercise["transcript"])
     for topic in data["pronunciationTopics"]:
         texts.add(topic["target"])
     return sorted(text for text in texts if text.strip())
