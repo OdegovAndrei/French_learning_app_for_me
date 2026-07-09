@@ -14,6 +14,14 @@
       "cefrLevels": ["A0", "A1"],
       "prerequisites": [],
       "claim": "Вводный трек Pre-A1/A1. Он создаёт разговорную основу, но не заявляет полного владения A1, A2, B1 или B2."
+    },
+    {
+      "id": "a1",
+      "title": "A1: устойчивые бытовые сценарии",
+      "order": 2,
+      "cefrLevels": ["A1"],
+      "prerequisites": ["starter"],
+      "claim": "Практический A1 по courseRoadmap.levels[0]: анкеты, числа, распорядок дня, планы на неделю и расширенный бытовой словарь. Не заменяет отдельную проверку по CEFR/DELF."
     }
   ],
   "modules": [
@@ -56,6 +64,14 @@
       "description": "Чтение меню, понимание короткого объявления, диктант и мини-медиация.",
       "order": 5,
       "prerequisites": ["module:starter:help"]
+    },
+    {
+      "id": "module:a1:social-identity",
+      "levelId": "a1",
+      "title": "Контакт, личная информация и анкеты",
+      "description": "Анкеты, национальности, языки, простой рассказ о себе.",
+      "order": 1,
+      "prerequisites": []
     }
   ],
   "resources": [
@@ -2117,6 +2133,172 @@
           "id": "phrase:l11:2",
           "front": "{{c1::J'ai besoin d'aide}}.",
           "back": "Мне нужна помощь.",
+          "type": "cloze"
+        }
+      ]
+    },
+    {
+      "id": "l12",
+      "level": "A1",
+      "title": "Анкета: имя, страна, язык",
+      "goal": "Заполнить простую анкету и прочитать чужую анкету, чтобы найти имя, страну и язык.",
+      "scenario": "form-registration",
+      "targetPhrase": "Je suis russe. Je parle russe et un peu français.",
+      "pronunciationTopic": "nasals",
+      "grammarTopic": "etre",
+      "moduleId": "module:a1:social-identity",
+      "order": 1,
+      "prerequisites": ["l11"],
+      "tags": ["identity", "nationality", "form"],
+      "objectives": [
+        {
+          "id": "obj:l12:fill-simple-form",
+          "skill": "written-production",
+          "cefrCanDo": "Может заполнить простую анкету с именем, страной и языком.",
+          "required": true
+        },
+        {
+          "id": "obj:l12:read-filled-form",
+          "skill": "reading",
+          "cefrCanDo": "Может найти в заполненной анкете имя, страну и язык.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Employé",
+          "fr": "Bonjour. Votre nom, s'il vous plaît ?",
+          "ipa": "/bɔ̃.ʒuʁ vɔ.tʁə nɔ̃ sil vu plɛ/",
+          "ru": "Здравствуйте. Ваше имя, пожалуйста?"
+        },
+        {
+          "speaker": "Cliente",
+          "fr": "Je m'appelle Anna. Je suis russe.",
+          "ipa": "/ʒə ma.pɛl a.na ʒə sɥi ʁys/",
+          "ru": "Меня зовут Анна. Я русская."
+        },
+        {
+          "speaker": "Employé",
+          "fr": "Quelle langue parlez-vous ?",
+          "ipa": "/kɛl lɑ̃ɡ paʁ.le vu/",
+          "ru": "На каком языке вы говорите?"
+        },
+        {
+          "speaker": "Cliente",
+          "fr": "Je parle russe et un peu français.",
+          "ipa": "/ʒə paʁl ʁys e ɛ̃ pø fʁɑ̃.sɛ/",
+          "ru": "Я говорю по-русски и немного по-французски."
+        }
+      ],
+      "vocabulary": [
+        {
+          "id": "vocab:l12:0",
+          "fr": "le nom",
+          "ipa": "/lə nɔ̃/",
+          "ru": "фамилия/имя",
+          "note": "В анкетах: nom = фамилия, prénom = имя."
+        },
+        {
+          "id": "vocab:l12:1",
+          "fr": "le pays",
+          "ipa": "/lə pe.i/",
+          "ru": "страна",
+          "note": "Финальное s в pays не читается."
+        },
+        {
+          "id": "vocab:l12:2",
+          "fr": "la langue",
+          "ipa": "/la lɑ̃ɡ/",
+          "ru": "язык",
+          "note": "Носовой звук в конце — как в français."
+        },
+        {
+          "id": "vocab:l12:3",
+          "fr": "russe",
+          "ipa": "/ʁys/",
+          "ru": "русский/русская",
+          "note": "Одна форма для мужского и женского рода."
+        },
+        {
+          "id": "vocab:l12:4",
+          "fr": "français / française",
+          "ipa": "/fʁɑ̃.sɛ/ /fʁɑ̃.sɛz/",
+          "ru": "французский/французская",
+          "note": "В женском роде добавляется -e и звучит z."
+        },
+        {
+          "id": "vocab:l12:5",
+          "fr": "un peu",
+          "ipa": "/ɛ̃ pø/",
+          "ru": "немного",
+          "note": "Полезно перед прилагательным или после глагола."
+        },
+        {
+          "id": "vocab:l12:6",
+          "fr": "parler",
+          "ipa": "/paʁ.le/",
+          "ru": "говорить",
+          "note": "Je parle, vous parlez — регулярный -er глагол."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "l12-e1",
+          "type": "guided-writing",
+          "prompt": "Заполни анкету о себе: имя, страна, язык. Используй Je m'appelle..., Je suis..., Je parle...",
+          "acceptedAnswers": [],
+          "modelAnswer": "Je m'appelle Anna. Je suis russe. Je parle russe et un peu français.",
+          "hints": ["Три предложения: имя, страна/национальность, язык(и)."],
+          "requiredTokens": ["je m'appelle", "je suis", "je parle"],
+          "objectiveIds": ["obj:l12:fill-simple-form"],
+          "rubric": [
+            "Есть имя (je m'appelle).",
+            "Есть национальность (je suis).",
+            "Есть хотя бы один язык (je parle)."
+          ],
+          "explanation": "Это управляемое письмо: три опоры обязательны, содержание — твоё."
+        },
+        {
+          "id": "l12-e2",
+          "type": "reading-comprehension",
+          "prompt": "Прочитай заполненную анкету. Из какой страны Marco?",
+          "sourceText": "Fiche d'inscription\nNom : Rossi\nPrénom : Marco\nPays : Italie\nLangue : italien et un peu français",
+          "acceptedAnswers": ["Italie", "d'Italie", "Il est italien.", "Italie."],
+          "modelAnswer": "Marco est d'Italie. Il est italien.",
+          "hints": ["Ищи строку Pays."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l12:read-filled-form"],
+          "explanation": "Рецептивное задание: найти конкретное поле в анкете."
+        },
+        {
+          "id": "l12-e3",
+          "type": "gap-fill",
+          "prompt": "Заполни пропуск: Quelle ___ parlez-vous ?",
+          "acceptedAnswers": ["langue"],
+          "modelAnswer": "Quelle langue parlez-vous ?",
+          "hints": ["Слово из словаря урока, женский род."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l12:fill-simple-form"],
+          "explanation": "Langue — женский род, поэтому quelle, а не quel."
+        }
+      ],
+      "cards": [
+        {
+          "id": "phrase:l12:0",
+          "front": "Как вас зовут? (анкета)",
+          "back": "Votre nom, s'il vous plaît ?",
+          "type": "phrase"
+        },
+        {
+          "id": "phrase:l12:1",
+          "front": "Я говорю по-русски и немного по-французски.",
+          "back": "Je parle russe et un peu français.",
+          "type": "phrase"
+        },
+        {
+          "id": "phrase:l12:2",
+          "front": "Je suis {{c1::russe}}.",
+          "back": "Я русская/русский.",
           "type": "cloze"
         }
       ]

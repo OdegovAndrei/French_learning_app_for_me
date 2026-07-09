@@ -18,7 +18,7 @@ const data = JSON.parse(raw);
 
 assert.equal(validateCourseCatalog(data), true);
 assert.match(data.meta.title, /Starter/);
-assert.equal(data.levels.length, 1, "The current catalog must expose one honest Starter track");
+assert.equal(data.levels.length, 2, "The catalog must expose exactly the Starter and a1 tracks once A1 content ships");
 assert.ok(data.modules.length >= 3, "Starter content must be grouped into scalable modules");
 assert.ok(data.lessons.length > 0, "The course needs at least one lesson");
 assert.ok(data.pronunciationTopics.length > 0, "The course needs pronunciation topics");
@@ -311,7 +311,7 @@ futureLevel.levels.push({
   id: "future-b2",
   title: "Future B2 track",
   claim: "Schema compatibility fixture",
-  order: 2,
+  order: 3,
   cefrLevels: ["B2"],
   prerequisites: ["starter"]
 });
