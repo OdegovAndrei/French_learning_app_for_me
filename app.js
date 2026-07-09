@@ -32,6 +32,7 @@ import {
   setValue,
   validateBackup
 } from "./storage.js";
+import { speakFrench as synthesizeFrench } from "./tts.js";
 
 const app = document.querySelector("#app");
 const title = document.querySelector("#view-title");
@@ -48,7 +49,6 @@ const state = {
   schedules: new Map(),
   reviewLogs: [],
   exerciseAttempts: new Map(),
-  voices: [],
   reviewMode: "review",
   reviewDeck: "all",
   reviewSeen: new Set(),
@@ -76,6 +76,10 @@ const viewTitles = {
 };
 
 const MAX_BACKUP_FILE_BYTES = 250 * 1024 * 1024;
+const VOICE_OPTIONS = [
+  { id: "fr-FR-DeniseNeural", label: "Denise (женский)" },
+  { id: "fr-FR-HenriNeural", label: "Henri (мужской)" }
+];
 const { evaluateLessonReadiness, getIntroducedLessonIds } = mastery;
 
 init();
@@ -90,6 +94,9 @@ async function init() {
     document.title = /starter/i.test(catalogTitle) ? catalogTitle : `${catalogTitle} · Starter`;
     state.appState = await migrateLegacyProgress(defaultAppState());
     state.settings = { ...defaultSettings(), ...(await getValue("settings", {})) };
+    if (!VOICE_OPTIONS.some((option) => option.id === state.settings.voiceURI)) {
+      state.settings.voiceURI = defaultSettings().voiceURI;
+    }
     state.customNotes = await getAllRecords("vocabulary");
     state.schedules = new Map((await getAllRecords("schedules")).map((item) => [item.id, item]));
     state.reviewLogs = await getAllRecords("reviewLogs");
@@ -109,8 +116,6 @@ async function init() {
       || state.data.lessons[0]?.id;
 
     bindGlobalActions();
-    refreshVoices();
-    window.speechSynthesis?.addEventListener?.("voiceschanged", refreshVoices);
     render();
   } catch (error) {
     app.innerHTML = `<div class="empty-state">Не удалось загрузить кабинет: ${escapeHtml(error.message)}</div>`;
@@ -392,9 +397,9 @@ function renderProgress() {
 }
 
 function renderSettings() {
-  const voiceOptions = state.voices.map((voice) => `
-    <option value="${escapeHtml(voice.voiceURI)}" ${voice.voiceURI === state.settings.voiceURI ? "selected" : ""}>
-      ${escapeHtml(voice.name)} · ${escapeHtml(voice.lang)}${voice.localService ? " · локальный" : ""}
+  const voiceOptions = VOICE_OPTIONS.map((voice) => `
+    <option value="${escapeHtml(voice.id)}" ${voice.id === state.settings.voiceURI ? "selected" : ""}>
+      ${escapeHtml(voice.label)}
     </option>`).join("");
   app.innerHTML = `
     <div class="settings-layout">
@@ -402,14 +407,14 @@ function renderSettings() {
         <div class="section-heading"><div><p class="eyebrow">Произношение</p><h4>Французский голос</h4></div></div>
         <label class="field-label">Голос
           <select class="select-control full-control" id="voice-select">
-            ${voiceOptions || `<option value="">Французские голоса пока не найдены</option>`}
+            ${voiceOptions}
           </select>
         </label>
         <label class="field-label">Скорость: <output id="voice-rate-output">${state.settings.voiceRate.toFixed(2)}</output>
           <input id="voice-rate" type="range" min="0.55" max="1.1" step="0.05" value="${state.settings.voiceRate}" />
         </label>
         <button class="secondary-button" type="button" id="test-voice">Прослушать пример</button>
-        <p class="note">Кабинет использует выбранный голос macOS. Дополнительные французские голоса можно бесплатно установить в системных настройках Mac.</p>
+        <p class="note">Голос синтезируется локальным TTS-сервером (бесплатные neural-голоса). После первого прослушивания фраза или своё слово играются из кэша без обращения к сети.</p>
       </section>
 
       <section class="section-band">
@@ -971,32 +976,8 @@ function transcribeTarget(target, output) {
   recognition.start();
 }
 
-function refreshVoices() {
-  if (!window.speechSynthesis) return;
-  state.voices = window.speechSynthesis.getVoices()
-    .filter((voice) => voice.lang.toLocaleLowerCase().startsWith("fr"))
-    .sort((a, b) => voicePriority(b) - voicePriority(a) || a.name.localeCompare(b.name));
-  if (!state.voices.some((voice) => voice.voiceURI === state.settings.voiceURI)) {
-    state.settings.voiceURI = state.voices[0]?.voiceURI || "";
-    if (state.settings.voiceURI) saveSettings();
-  }
-  if (state.view === "settings" && state.data) renderSettings();
-}
-
-function voicePriority(voice) {
-  const preferredNames = ["Thomas", "Amélie", "Amelie", "Audrey", "Marie"];
-  const nameScore = preferredNames.findIndex((name) => voice.name.includes(name));
-  return (voice.localService ? 100 : 0) + (voice.lang.toLowerCase() === "fr-fr" ? 20 : 0) + (nameScore >= 0 ? 10 - nameScore : 0);
-}
-
 function speakFrench(text) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(String(text).replace(/\n.*$/s, ""));
-  utterance.lang = "fr-FR";
-  utterance.rate = state.settings.voiceRate;
-  utterance.voice = state.voices.find((voice) => voice.voiceURI === state.settings.voiceURI) || state.voices[0] || null;
-  window.speechSynthesis.speak(utterance);
+  return synthesizeFrench(text, { voice: state.settings.voiceURI, rate: state.settings.voiceRate });
 }
 
 async function downloadBackup(includeRecordings) {
@@ -1563,7 +1544,7 @@ function defaultAppState() {
 }
 
 function defaultSettings() {
-  return { voiceURI: "", voiceRate: 0.82, newCardsPerDay: 10 };
+  return { voiceURI: "fr-FR-DeniseNeural", voiceRate: 0.82, newCardsPerDay: 10 };
 }
 
 function resultLabel(status) {
