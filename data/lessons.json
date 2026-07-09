@@ -88,6 +88,14 @@
       "description": "avoir, повседневные глаголы, дни недели, договорённости письмом.",
       "order": 3,
       "prerequisites": ["module:a1:daily-services"]
+    },
+    {
+      "id": "module:a1:everyday-life",
+      "levelId": "a1",
+      "title": "Расширенный бытовой словарь (бонус)",
+      "description": "Еда, одежда и погода, семья и дом, внешность и характер — сверх обязательного минимума roadmap:a1, для более уверенного словарного запаса. Завершается mini-bilan A1.",
+      "order": 4,
+      "prerequisites": ["module:a1:routines-plans"]
     }
   ],
   "resources": [
@@ -2875,6 +2883,107 @@
         {"id": "phrase:l17:0", "front": "Ты свободен в следующий понедельник?", "back": "Tu es libre lundi prochain ?", "type": "phrase"},
         {"id": "phrase:l17:1", "front": "Я занят, но свободен в среду.", "back": "Je suis occupé, mais je suis libre mercredi.", "type": "phrase"},
         {"id": "phrase:l17:2", "front": "Tu es {{c1::libre}} mercredi ?", "back": "Ты свободен в среду?", "type": "cloze"}
+      ]
+    },
+    {
+      "id": "l18",
+      "level": "A1",
+      "title": "Еда и напитки: рынок",
+      "goal": "Понять короткий список покупок и назвать нужное количество продукта на рынке.",
+      "scenario": "market-shopping",
+      "targetPhrase": "Je voudrais un kilo de pommes et une bouteille d'eau.",
+      "pronunciationTopic": "liaison",
+      "grammarTopic": "articles",
+      "moduleId": "module:a1:everyday-life",
+      "order": 1,
+      "prerequisites": ["l17"],
+      "tags": ["food", "market", "quantities"],
+      "objectives": [
+        {
+          "id": "obj:l18:read-shopping-list",
+          "skill": "reading",
+          "cefrCanDo": "Может понять короткий список покупок или ценник на рынке.",
+          "required": true
+        },
+        {
+          "id": "obj:l18:ask-for-quantity",
+          "skill": "language-system",
+          "cefrCanDo": "Может назвать нужное количество продукта через un kilo de / une bouteille de.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Cliente",
+          "fr": "Bonjour, je voudrais un kilo de pommes.",
+          "ipa": "/bɔ̃.ʒuʁ ʒə vu.dʁɛ ɛ̃ ki.lo də pɔm/",
+          "ru": "Здравствуйте, я бы хотела килограмм яблок."
+        },
+        {
+          "speaker": "Vendeur",
+          "fr": "Voilà. Autre chose ?",
+          "ipa": "/vwa.la otʁ ʃoz/",
+          "ru": "Пожалуйста. Что-то ещё?"
+        },
+        {
+          "speaker": "Cliente",
+          "fr": "Une bouteille d'eau et du pain, s'il vous plaît.",
+          "ipa": "/yn bu.tɛj do e dy pɛ̃ sil vu plɛ/",
+          "ru": "Бутылку воды и хлеб, пожалуйста."
+        }
+      ],
+      "vocabulary": [
+        {"id": "vocab:l18:0", "fr": "une pomme", "ipa": "/yn pɔm/", "ru": "яблоко", "note": "Женский род, как большинство фруктов на -e."},
+        {"id": "vocab:l18:1", "fr": "le pain", "ipa": "/lə pɛ̃/", "ru": "хлеб", "note": "Носовой звук, как в vin."},
+        {"id": "vocab:l18:2", "fr": "l'eau", "ipa": "/lo/", "ru": "вода", "note": "Женский род: de l'eau, une bouteille d'eau."},
+        {"id": "vocab:l18:3", "fr": "le fromage", "ipa": "/lə fʁɔ.maʒ/", "ru": "сыр", "note": "Частое слово для рынка/магазина."},
+        {"id": "vocab:l18:4", "fr": "le lait", "ipa": "/lə lɛ/", "ru": "молоко", "note": "Финальное t не звучит."},
+        {"id": "vocab:l18:5", "fr": "un kilo de", "ipa": "/ɛ̃ ki.lo də/", "ru": "килограмм (чего-то)", "note": "De не меняется на du/de la после количества."},
+        {"id": "vocab:l18:6", "fr": "une bouteille de", "ipa": "/yn bu.tɛj də/", "ru": "бутылка (чего-то)", "note": "Тот же паттерн, что и kilo de."},
+        {"id": "vocab:l18:7", "fr": "autre chose", "ipa": "/otʁ ʃoz/", "ru": "что-то ещё", "note": "Стандартный вопрос продавца."},
+        {"id": "vocab:l18:8", "fr": "voilà", "ipa": "/vwa.la/", "ru": "вот, пожалуйста", "note": "Универсальное слово при передаче предмета."}
+      ],
+      "exercises": [
+        {
+          "id": "l18-e1",
+          "type": "reading-comprehension",
+          "prompt": "Прочитай список покупок. Сколько нужно хлеба и что ещё есть в списке?",
+          "sourceText": "Liste de courses\nun kilo de pommes\nune bouteille d'eau\ndu pain\ndu fromage",
+          "acceptedAnswers": ["du pain — без точного количества; ещё pommes, eau, fromage", "хлеб без указания количества, плюс яблоки, вода, сыр"],
+          "modelAnswer": "Il y a du pain, sans quantité précise. Il y a aussi des pommes, de l'eau et du fromage.",
+          "hints": ["Не у каждого товара в списке есть число — иногда просто du/de l'."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l18:read-shopping-list"],
+          "explanation": "Списки покупок смешивают точные количества (un kilo de) и общие (du pain)."
+        },
+        {
+          "id": "l18-e2",
+          "type": "gap-fill",
+          "prompt": "Заполни: Je voudrais un kilo ___ pommes.",
+          "acceptedAnswers": ["de"],
+          "modelAnswer": "Je voudrais un kilo de pommes.",
+          "hints": ["После выражения количества всегда de, без артикля."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l18:ask-for-quantity"],
+          "explanation": "Un kilo de, une bouteille de, un peu de — количество + de, артикль исчезает."
+        },
+        {
+          "id": "l18-e3",
+          "type": "roleplay",
+          "prompt": "Ролевая сцена на рынке: попроси килограмм яблок и бутылку воды.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Bonjour, je voudrais un kilo de pommes et une bouteille d'eau, s'il vous plaît.",
+          "hints": ["Собери обе конструкции количества в одной фразе."],
+          "requiredTokens": ["un kilo de", "une bouteille de"],
+          "objectiveIds": ["obj:l18:ask-for-quantity"],
+          "rubric": ["Есть вежливое начало (Bonjour/je voudrais).", "Есть un kilo de + продукт.", "Есть une bouteille de + продукт."],
+          "explanation": "Практика двух параллельных конструкций количества в одной естественной просьбе."
+        }
+      ],
+      "cards": [
+        {"id": "phrase:l18:0", "front": "Килограмм яблок, пожалуйста.", "back": "Un kilo de pommes, s'il vous plaît.", "type": "phrase"},
+        {"id": "phrase:l18:1", "front": "Бутылка воды и хлеб.", "back": "Une bouteille d'eau et du pain.", "type": "phrase"},
+        {"id": "phrase:l18:2", "front": "Je voudrais un kilo {{c1::de}} pommes.", "back": "Я бы хотел килограмм яблок.", "type": "cloze"}
       ]
     }
   ]
