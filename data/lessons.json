@@ -633,6 +633,13 @@
       "level": "A1",
       "rule": "Mon/ton/son — перед мужским родом и перед гласной у женского; ma/ta/sa — перед женским согласным; mes/tes/ses — множественное число независимо от рода.",
       "examples": ["mon père", "ma mère", "mes parents"]
+    },
+    {
+      "id": "adjective-agreement",
+      "title": "Согласование прилагательных",
+      "level": "A1",
+      "rule": "Прилагательное согласуется в роде и числе с существительным: обычно +e в женском роде, +s во множественном. Некоторые формы неправильные (beau/belle).",
+      "examples": ["un petit garçon", "une petite fille", "des amis sympathiques"]
     }
   ],
   "lessons": [
@@ -3195,6 +3202,113 @@
         {"id": "phrase:l20:0", "front": "Это мой отец, моя мать и мой брат.", "back": "C'est mon père, ma mère et mon frère.", "type": "phrase"},
         {"id": "phrase:l20:1", "front": "Мы живём в квартире.", "back": "Nous habitons dans un appartement.", "type": "phrase"},
         {"id": "phrase:l20:2", "front": "C'est {{c1::mon}} père.", "back": "Это мой отец.", "type": "cloze"}
+      ]
+    },
+    {
+      "id": "l21",
+      "level": "A1",
+      "title": "Внешность и характер",
+      "goal": "Описать человека простыми прилагательными, правильно согласуя их с родом и числом.",
+      "scenario": "describing-people",
+      "targetPhrase": "Elle est grande et très sympathique.",
+      "pronunciationTopic": "silent-endings",
+      "grammarTopic": "adjective-agreement",
+      "moduleId": "module:a1:everyday-life",
+      "order": 4,
+      "prerequisites": ["l20"],
+      "tags": ["adjectives", "description", "character"],
+      "objectives": [
+        {
+          "id": "obj:l21:describe-person",
+          "skill": "spoken-interaction",
+          "cefrCanDo": "Может описать человека простыми прилагательными в разговоре.",
+          "required": true
+        },
+        {
+          "id": "obj:l21:apply-agreement",
+          "skill": "language-system",
+          "cefrCanDo": "Может правильно согласовать прилагательное с родом и числом существительного.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Ami",
+          "fr": "Comment est ta sœur ?",
+          "ipa": "/kɔ.mɑ̃.t‿ɛ ta sœʁ/",
+          "ru": "Какая твоя сестра?"
+        },
+        {
+          "speaker": "Toi",
+          "fr": "Elle est grande et très sympathique.",
+          "ipa": "/ɛl ɛ ɡʁɑ̃d e tʁɛ sɛ̃.pa.tik/",
+          "ru": "Она высокая и очень приятная."
+        },
+        {
+          "speaker": "Ami",
+          "fr": "Et ton frère ?",
+          "ipa": "/e tɔ̃ fʁɛʁ/",
+          "ru": "А твой брат?"
+        },
+        {
+          "speaker": "Toi",
+          "fr": "Il est petit, mais il est très gentil.",
+          "ipa": "/il ɛ pə.ti mɛ il ɛ tʁɛ ʒɑ̃.ti/",
+          "ru": "Он маленький, но очень добрый."
+        }
+      ],
+      "vocabulary": [
+        {"id": "vocab:l21:0", "fr": "grand / grande", "ipa": "/ɡʁɑ̃/ /ɡʁɑ̃d/", "ru": "высокий/высокая, большой/большая", "note": "В женском роде d начинает звучать."},
+        {"id": "vocab:l21:1", "fr": "petit / petite", "ipa": "/pə.ti/ /pə.tit/", "ru": "маленький/маленькая", "note": "Та же модель: немая согласная оживает в женском роде."},
+        {"id": "vocab:l21:2", "fr": "sympathique", "ipa": "/sɛ̃.pa.tik/", "ru": "приятный, симпатичный", "note": "Одна форма для обоих родов — оканчивается на -e."},
+        {"id": "vocab:l21:3", "fr": "gentil / gentille", "ipa": "/ʒɑ̃.ti/ /ʒɑ̃.tij/", "ru": "добрый/добрая", "note": "Женская форма звучит иначе, не только орфографически."},
+        {"id": "vocab:l21:4", "fr": "content / contente", "ipa": "/kɔ̃.tɑ̃/ /kɔ̃.tɑ̃t/", "ru": "довольный/довольная", "note": "Тот же паттерн немой→звучащей согласной."},
+        {"id": "vocab:l21:5", "fr": "fatigué / fatiguée", "ipa": "/fa.ti.ɡe/", "ru": "уставший/уставшая", "note": "Звучит одинаково, разница только на письме."},
+        {"id": "vocab:l21:6", "fr": "jeune", "ipa": "/ʒœn/", "ru": "молодой/молодая", "note": "Одна форма для обоих родов."},
+        {"id": "vocab:l21:7", "fr": "vieux / vieille", "ipa": "/vjø/ /vjɛj/", "ru": "старый/старая", "note": "Неправильная пара форм, нужно запомнить отдельно."},
+        {"id": "vocab:l21:8", "fr": "beau / belle", "ipa": "/bo/ /bɛl/", "ru": "красивый/красивая", "note": "Ещё одна неправильная пара, частая в речи."},
+        {"id": "vocab:l21:9", "fr": "très", "ipa": "/tʁɛ/", "ru": "очень", "note": "Усилитель перед прилагательным."}
+      ],
+      "exercises": [
+        {
+          "id": "l21-e1",
+          "type": "sentence-transform",
+          "prompt": "Поставь в женский род: Il est grand и gentil. → Elle est ___.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Elle est grande et gentille.",
+          "hints": ["Grand→grande (добавь d-звук), gentil→gentille (звук меняется сильнее)."],
+          "requiredTokens": ["grande", "gentille"],
+          "objectiveIds": ["obj:l21:apply-agreement"],
+          "explanation": "Sympathique/jeune не меняются — но grand и gentil меняются заметно, это и тренируем."
+        },
+        {
+          "id": "l21-e2",
+          "type": "roleplay",
+          "prompt": "Опиши другу члена своей семьи: рост и характер, минимум два прилагательных.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Ma sœur est petite mais très sympathique.",
+          "hints": ["Не забудь согласовать прилагательные с родом того, о ком говоришь."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l21:describe-person"],
+          "rubric": ["Названо, о ком идёт речь.", "Минимум два согласованных прилагательных.", "Есть хотя бы один усилитель (très)."],
+          "explanation": "Здесь согласование проверяется не отдельно, а внутри естественной устной реплики."
+        },
+        {
+          "id": "l21-e3",
+          "type": "gap-fill",
+          "prompt": "Заполни: Ma sœur est très ___. (симпатичная)",
+          "acceptedAnswers": ["sympathique"],
+          "modelAnswer": "Ma sœur est très sympathique.",
+          "hints": ["Это прилагательное не меняется между родами."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l21:apply-agreement"],
+          "explanation": "Полезно явно показать: не каждое прилагательное меняет форму в женском роде."
+        }
+      ],
+      "cards": [
+        {"id": "phrase:l21:0", "front": "Она высокая и очень приятная.", "back": "Elle est grande et très sympathique.", "type": "phrase"},
+        {"id": "phrase:l21:1", "front": "Он маленький, но очень добрый.", "back": "Il est petit, mais il est très gentil.", "type": "phrase"},
+        {"id": "phrase:l21:2", "front": "Elle est {{c1::grande}} et sympathique.", "back": "Она высокая и приятная.", "type": "cloze"}
       ]
     }
   ]
