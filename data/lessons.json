@@ -955,35 +955,102 @@
       "title": "Даты, месяцы и дедлайны",
       "level": "A1",
       "rule": "Для даты обычно говорят le + число + месяц; pour — срок к определённой дате.",
-      "examples": ["Nous sommes le 12 octobre.", "Le cours commence en septembre.", "C'est pour lundi."]
+      "examples": ["Nous sommes le 12 octobre.", "Le cours commence en septembre.", "C'est pour lundi."],
+      "paradigm": [
+        { "label": "формула даты", "form": "le 12 octobre" },
+        { "label": "первое число месяца (искл.)", "form": "le premier septembre" },
+        { "label": "месяц как период", "form": "en septembre" },
+        { "label": "срок к дате", "form": "pour lundi" }
+      ],
+      "commonMistakes": [
+        { "wrong": "используешь порядковые числительные для всех дат: le douzième octobre", "right": "для дат используются количественные числительные: le douze octobre", "note": "Порядковые (premier, deuxième...) используются только для первого числа месяца — le premier" },
+        { "wrong": "перед месяцем ставишь de: le cours commence de septembre", "right": "период времени внутри месяца выражается через en: en septembre", "note": "En — стандартный предлог для месяцев и годов: en 2026" }
+      ],
+      "exceptions": [
+        { "wrong": "первое число месяца тоже называется le un: le un octobre", "right": "первое число — исключение: le premier octobre, а не le un", "note": "Это единственный день месяца, для которого используется порядковое числительное вместо количественного" }
+      ]
     },
     {
       "id": "place-prepositions",
       "title": "Где это: à, dans, près de",
       "level": "A1",
       "rule": "À — место как точка, dans — внутри, près de — рядом. Сначала назови место, затем уточни ориентир.",
-      "examples": ["La salle est au premier étage.", "La bibliothèque est dans le bâtiment B.", "Le secrétariat est près de la cafétéria."]
+      "examples": ["La salle est au premier étage.", "La bibliothèque est dans le bâtiment B.", "Le secrétariat est près de la cafétéria."],
+      "paradigm": [
+        { "label": "точка / направление", "form": "à la bibliothèque" },
+        { "label": "внутри", "form": "dans le bâtiment B" },
+        { "label": "рядом", "form": "près de la cafétéria" },
+        { "label": "напротив", "form": "en face de l'entrée" }
+      ],
+      "commonMistakes": [
+        { "wrong": "используешь à вместо dans, когда речь про «внутри чего-то»", "right": "если предмет/место находится внутри объёма — нужен dans: dans le bâtiment", "note": "À указывает скорее на точку на карте, dans — на нахождение внутри пространства" },
+        { "wrong": "после près забываешь de: près la cafétéria", "right": "près всегда идёт с de перед следующим существительным: près de la cafétéria", "note": "Près — часть устойчивого сочетания près de, само по себе перед существительным не употребляется" }
+      ],
+      "exceptions": [
+        { "wrong": "à + le всегда остаётся как есть: à le premier étage", "right": "à + le сливается в au: au premier étage", "note": "Слияние предлога с определённым артиклем — обязательное грамматическое правило (à+le=au, à+les=aux)" }
+      ]
     },
     {
       "id": "high-frequency-present",
       "title": "Частотные глаголы в настоящем",
       "level": "A1",
       "rule": "Учи частые формы целыми кусками: je vais, je fais, je prends, je viens, je peux, je veux.",
-      "examples": ["Je vais en cours.", "Je prends le bus.", "Je peux imprimer ici ?"]
+      "examples": ["Je vais en cours.", "Je prends le bus.", "Je peux imprimer ici ?"],
+      "paradigm": [
+        { "label": "aller (идти/ехать)", "form": "je vais" },
+        { "label": "faire (делать)", "form": "je fais" },
+        { "label": "prendre (брать/ехать на)", "form": "je prends" },
+        { "label": "venir (приходить)", "form": "je viens" },
+        { "label": "pouvoir (мочь)", "form": "je peux" },
+        { "label": "vouloir (хотеть)", "form": "je veux" }
+      ],
+      "commonMistakes": [
+        { "wrong": "спрягаешь эти глаголы по регулярной модели -er/-re", "right": "все шесть — неправильные глаголы, формы нужно заучивать целиком, не выводить по правилу", "note": "Это одни из самых частотных глаголов языка — их нерегулярность встречается постоянно, поэтому учить нужно наизусть с первого урока" },
+        { "wrong": "путаешь je peux (могу) и je veux (хочу) на слух и по написанию", "right": "peux — от pouvoir (возможность), veux — от vouloir (желание), разные глаголы", "note": "Похожи по звучанию, но означают разное — важно не перепутать в просьбе" }
+      ],
+      "exceptions": [
+        { "wrong": "prendre всегда означает «брать в руки»", "right": "prendre le bus / prendre un café — «ехать на» и «выпить/съесть», а не только «взять рукой»", "note": "Prendre — многозначный глагол, значение зависит от дополнения" }
+      ]
     },
     {
       "id": "health-needs",
       "title": "Самочувствие и необходимость",
       "level": "A1",
       "rule": "Avoir mal à + часть тела описывает боль; je dois / je peux вежливо объясняют, что нужно сделать.",
-      "examples": ["J'ai mal à la tête.", "Je dois voir un médecin.", "Je peux aller à la pharmacie ?"]
+      "examples": ["J'ai mal à la tête.", "Je dois voir un médecin.", "Je peux aller à la pharmacie ?"],
+      "paradigm": [
+        { "label": "боль + часть тела (ж.р.)", "form": "j'ai mal à la tête" },
+        { "label": "боль + часть тела (м.р.)", "form": "j'ai mal au ventre" },
+        { "label": "обязанность", "form": "je dois voir un médecin" },
+        { "label": "разрешение/возможность (вопрос)", "form": "je peux aller à la pharmacie ?" }
+      ],
+      "commonMistakes": [
+        { "wrong": "после mal à используешь артикль без слияния: mal à le ventre", "right": "à + le сливается в au: j'ai mal au ventre", "note": "То же правило слияния предлога с артиклем, что и в теме place-prepositions (à+le=au)" },
+        { "wrong": "je dois понимаешь как отдельное существительное «долг»", "right": "je dois здесь — глагол devoir (должен что-то сделать), за ним идёт инфинитив: je dois partir", "note": "Devoir как глагол долженствования требует инфинитив следующего действия" }
+      ],
+      "exceptions": [
+        { "wrong": "часть тела всегда женского рода, поэтому всегда à la", "right": "род части тела разный: la tête (ж.р.) → à la, но le ventre (м.р.) → au", "note": "Нужно помнить род каждой части тела отдельно, чтобы выбрать правильное слияние предлога" }
+      ]
     },
     {
       "id": "likes-reasons",
       "title": "Предпочтения и причина",
       "level": "A1",
       "rule": "J'aime / je préfère + существительное или инфинитив; parce que коротко объясняет причину.",
-      "examples": ["J'aime faire du sport.", "Je préfère le cinéma.", "Je reste ici parce que je travaille."]
+      "examples": ["J'aime faire du sport.", "Je préfère le cinéma.", "Je reste ici parce que je travaille."],
+      "paradigm": [
+        { "label": "нравится + существительное", "form": "j'aime le cinéma" },
+        { "label": "нравится + инфинитив", "form": "j'aime faire du sport" },
+        { "label": "предпочтение", "form": "je préfère le cinéma" },
+        { "label": "причина", "form": "parce que je travaille" }
+      ],
+      "commonMistakes": [
+        { "wrong": "после j'aime используешь de перед инфинитивом: j'aime de faire du sport", "right": "j'aime + инфинитив без предлога: j'aime faire du sport", "note": "В отличие от некоторых других конструкций, aimer не требует de перед следующим глаголом" },
+        { "wrong": "путаешь parce que и pourquoi по смыслу", "right": "pourquoi — вопрос «почему», parce que — ответ «потому что»", "note": "Оба слова похожи по звучанию (que/quoi), но одно вопросительное, другое — для ответа" }
+      ],
+      "exceptions": [
+        { "wrong": "aimer всегда переводится как романтическая любовь", "right": "j'aime le cinéma — просто «нравится», без романтического оттенка", "note": "Для чувств к людям есть отдельные конструкции (aimer bien для дружеской симпатии), но на A1 aimer к предметам/занятиям — нейтральное «нравится»" }
+      ]
     }
   ],
   "lessons": [
