@@ -854,35 +854,101 @@
       "title": "Распорядок дня: возвратные глаголы и настоящее время",
       "level": "A1",
       "rule": "Действия распорядка дня часто возвратные: je me lève, je me couche. Местоимение me/te/se стоит перед глаголом. Обычные действия (travailler, manger, dîner) спрягаются как обычные -er глаголы.",
-      "examples": ["Je me lève à sept heures.", "Je travaille le matin.", "Je me couche à onze heures."]
+      "examples": ["Je me lève à sept heures.", "Je travaille le matin.", "Je me couche à onze heures."],
+      "paradigm": [
+        { "label": "je", "form": "je me lève" },
+        { "label": "tu", "form": "tu te lèves" },
+        { "label": "il / elle / on", "form": "il se lève" },
+        { "label": "nous", "form": "nous nous levons" },
+        { "label": "vous", "form": "vous vous levez" },
+        { "label": "ils / elles", "form": "ils se lèvent" }
+      ],
+      "commonMistakes": [
+        { "wrong": "пропускаешь возвратное местоимение: je lève à sept heures", "right": "je me lève à sept heures — местоимение me обязательно", "note": "Возвратный глагол без своего местоимения меняет смысл или становится грамматически неверным" },
+        { "wrong": "ставишь местоимение после глагола: je lève me", "right": "местоимение me/te/se всегда стоит перед спрягаемым глаголом", "note": "Порядок слов во французском для возвратных местоимений фиксированный" }
+      ],
+      "exceptions": [
+        { "wrong": "lever спрягается без изменения гласной во всех формах", "right": "je me lève, но nous nous levons — гласная e меняется на è в ударных формах", "note": "Это стандартное чередование e/è в глаголах на -ever/-eter при ударении на корне" }
+      ]
     },
     {
       "id": "time-expressions",
       "title": "Дни недели и время: планы",
       "level": "A1",
       "rule": "Дни недели (lundi...dimanche) идут без артикля для одного конкретного дня, но с le для повторяющегося события: le lundi = по понедельникам. Prochain/prochaine — следующий/следующая.",
-      "examples": ["Lundi, je travaille.", "Le lundi, je fais du sport.", "On se voit la semaine prochaine ?"]
+      "examples": ["Lundi, je travaille.", "Le lundi, je fais du sport.", "On se voit la semaine prochaine ?"],
+      "paradigm": [
+        { "label": "конкретный день (без артикля)", "form": "lundi, je travaille" },
+        { "label": "повторяющееся событие (с артиклем)", "form": "le lundi, je fais du sport" },
+        { "label": "следующий (м.р., после слова)", "form": "lundi prochain" },
+        { "label": "следующая (ж.р., после слова)", "form": "la semaine prochaine" }
+      ],
+      "commonMistakes": [
+        { "wrong": "добавляешь le перед днём недели, говоря про этот конкретный день: le lundi je travaille (в этот понедельник)", "right": "для одного конкретного дня артикль не нужен: lundi, je travaille", "note": "Le lundi без уточнения означает «по понедельникам» (регулярность), а не «в этот понедельник»" },
+        { "wrong": "ставишь prochain(e) перед словом без согласования: prochain semaine", "right": "prochain/prochaine согласуется в роде и стоит после слова: la semaine prochaine, lundi prochain", "note": "Род зависит от согласуемого существительного (semaine — ж.р., lundi — м.р.)" }
+      ],
+      "exceptions": [
+        { "wrong": "все дни недели ведут себя одинаково при уточнении части дня", "right": "уточнение части дня добавляется без предлога, просто следом за днём: lundi matin (в понедельник утром)", "note": "Конструкция одна для всех дней недели, предлог не нужен" }
+      ]
     },
     {
       "id": "possessives",
       "title": "Притяжательные mon/ma/mes",
       "level": "A1",
       "rule": "Mon/ton/son — перед мужским родом и перед гласной у женского; ma/ta/sa — перед женским согласным; mes/tes/ses — множественное число независимо от рода.",
-      "examples": ["mon père", "ma mère", "mes parents"]
+      "examples": ["mon père", "ma mère", "mes parents"],
+      "paradigm": [
+        { "label": "м.р. ед.ч.", "form": "mon père" },
+        { "label": "ж.р. ед.ч.", "form": "ma mère" },
+        { "label": "мн.ч. (любой род)", "form": "mes parents" },
+        { "label": "ж.р. перед гласной", "form": "mon amie (не ma amie)" }
+      ],
+      "commonMistakes": [
+        { "wrong": "выбираешь mon/ma по полу владельца, как в английском his/her", "right": "mon/ma/mes согласуются с родом и числом предмета обладания, а не с полом говорящего", "note": "Русскоговорящим и англоговорящим особенно легко перепутать логику — во французском важен род существительного после" },
+        { "wrong": "перед гласной оставляешь ma: ma amie", "right": "перед гласной или немым h форма мужского рода mon используется даже для женского слова: mon amie", "note": "Это фонетическое исключение — избегает зияния двух гласных подряд, как l' у артиклей" }
+      ],
+      "exceptions": [
+        { "wrong": "во множественном числе род тоже влияет на форму: mes/tes/ses различаются по роду", "right": "mes/tes/ses — одна форма для мужского и женского рода во множественном числе", "note": "Различие по родам (mon/ma, ton/ta, son/sa) исчезает во множественном числе" }
+      ]
     },
     {
       "id": "adjective-agreement",
       "title": "Согласование прилагательных",
       "level": "A1",
       "rule": "Прилагательное согласуется в роде и числе с существительным: обычно +e в женском роде, +s во множественном. Некоторые формы неправильные (beau/belle).",
-      "examples": ["un petit garçon", "une petite fille", "des amis sympathiques"]
+      "examples": ["un petit garçon", "une petite fille", "des amis sympathiques"],
+      "paradigm": [
+        { "label": "м.р. ед.ч. (базовая форма)", "form": "un petit garçon" },
+        { "label": "ж.р. ед.ч. (+e)", "form": "une petite fille" },
+        { "label": "м.р. мн.ч. (+s)", "form": "des garçons sympathiques" },
+        { "label": "ж.р. мн.ч. (+es)", "form": "des filles sympathiques" }
+      ],
+      "commonMistakes": [
+        { "wrong": "оставляешь прилагательное в мужском роде для существительного женского рода: une fille petit", "right": "прилагательное должно совпасть в роде: une fille petite", "note": "Согласование обязательно для всех прилагательных, кроме неизменяемых (например marron)" },
+        { "wrong": "добавляешь лишнее e к прилагательным, уже оканчивающимся на -e", "right": "прилагательные на -e в мужском роде не меняются в женском: un livre rouge / une robe rouge", "note": "Финальное -e уже есть, второй раз его не добавляют" }
+      ],
+      "exceptions": [
+        { "wrong": "все прилагательные образуют женский род через +e", "right": "beau/belle, vieux/vieille, nouveau/nouvelle — отдельные неправильные формы", "note": "Небольшая группа частотных прилагательных меняет форму целиком, а не просто добавляет -e" }
+      ]
     },
     {
       "id": "spelling-contact",
       "title": "Буквы и контактные данные",
       "level": "A1",
       "rule": "Чтобы сообщить имя, email или номер, называй группы медленно: prénom, puis adresse email, puis numéro.",
-      "examples": ["Ça s'écrit L-E-A.", "Mon numéro est le zéro six…", "Mon adresse email est…"]
+      "examples": ["Ça s'écrit L-E-A.", "Mon numéro est le zéro six…", "Mon adresse email est…"],
+      "paradigm": [
+        { "label": "произнести имя по буквам", "form": "Ça s'écrit L-E-A" },
+        { "label": "email", "form": "Mon adresse email est marie point dupont arobase mail point fr" },
+        { "label": "номер телефона (по парам цифр)", "form": "zéro six, douze, trente-quatre..." }
+      ],
+      "commonMistakes": [
+        { "wrong": "диктуешь номер телефона по одной цифре подряд без пауз", "right": "французы группируют номер по парам: zéro six, douze, trente-quatre, cinquante-six", "note": "Так проще и воспринимать, и произносить — привычная система для носителя" },
+        { "wrong": "произносишь @ как английское at", "right": "@ по-французски arobase", "note": "Заимствованное английское at не используется в стандартной французской речи" }
+      ],
+      "exceptions": [
+        { "wrong": "буквы алфавита читаются побуквенно как в русском письме", "right": "французский алфавит читается по-своему: A = a, E = euh, I = i, W = double-vé", "note": "Особенно отличаются: W (double-vé), Y (i grec), и буквы с диакритикой (é = e accent aigu)" }
+      ]
     },
     {
       "id": "dates-deadlines",
