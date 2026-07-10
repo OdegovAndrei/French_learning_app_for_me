@@ -49,6 +49,7 @@ const state = {
   schedules: new Map(),
   reviewLogs: [],
   exerciseAttempts: new Map(),
+  recordings: new Map(),
   reviewMode: "review",
   reviewDeck: "all",
   reviewSeen: new Set(),
@@ -91,7 +92,7 @@ async function init() {
     state.data = await response.json();
     validateCourseCatalog(state.data);
     const catalogTitle = state.data.meta?.title || "French Study";
-    document.title = /starter/i.test(catalogTitle) ? catalogTitle : `${catalogTitle} · Starter`;
+    document.title = catalogTitle;
     state.appState = await migrateLegacyProgress(defaultAppState());
     state.settings = { ...defaultSettings(), ...(await getValue("settings", {})) };
     if (!VOICE_OPTIONS.some((option) => option.id === state.settings.voiceURI)) {
@@ -101,6 +102,7 @@ async function init() {
     state.schedules = new Map((await getAllRecords("schedules")).map((item) => [item.id, item]));
     state.reviewLogs = await getAllRecords("reviewLogs");
     state.exerciseAttempts = new Map((await getAllRecords("exercises")).map((item) => [item.id, item]));
+    state.recordings = new Map((await getAllRecords("recordings")).map((item) => [item.id, item]));
     await migrateLegacySchedules();
 
     state.view = viewTitles[state.appState.currentView] ? state.appState.currentView : "today";
@@ -261,18 +263,29 @@ function renderLessons() {
   else container.innerHTML = renderLockedLessonNotice(selected, prerequisites);
 }
 
+function renderParadigm(paradigm) {
+  return `<div class="paradigm-table">${paradigm.map((entry) => `<div class="paradigm-row"><span class="paradigm-label">${escapeHtml(entry.label)}</span><span class="paradigm-form">${escapeHtml(entry.form)}</span></div>`).join("")}</div>`;
+}
+
+function renderMistakeBlock(heading, items) {
+  return `<div class="mistake-list"><p class="mistake-list-heading">${escapeHtml(heading)}</p>${items.map((entry) => `<div class="mistake-row"><span class="mistake-wrong">${escapeHtml(entry.wrong)}</span><span class="mistake-arrow">→</span><span class="mistake-right">${escapeHtml(entry.right)}</span><span class="mistake-note">${escapeHtml(entry.note)}</span></div>`).join("")}</div>`;
+}
+
 function renderPronunciation() {
   app.innerHTML = `
     <section class="section-band">
       <div class="section-heading"><div><p class="eyebrow">Каждый день</p><h4>Звуки и правила чтения</h4></div></div>
       <div class="phrase-grid">
         ${state.data.pronunciationTopics.map((topic) => `
-          <article class="phrase-tile">
+          <article class="phrase-tile" id="topic-pronunciation-${escapeHtml(topic.id)}">
             <span class="tag rose">${escapeHtml(topic.level)}</span>
             <h5 class="compact-title">${escapeHtml(topic.title)}</h5>
             <p class="fr">${escapeHtml(topic.target)}</p>
             <p class="note">${escapeHtml(topic.cue)}</p>
             <p class="note"><strong>Мини-пары:</strong> ${topic.minimalPairs.map(escapeHtml).join(", ")}</p>
+            ${renderParadigm(topic.paradigm)}
+            ${renderMistakeBlock("Типичные ошибки", topic.commonMistakes)}
+            ${renderMistakeBlock("Исключения", topic.exceptions)}
             ${renderVoiceLab(topic.target, `pronunciation:${topic.id}`)}
           </article>`).join("")}
       </div>
@@ -286,11 +299,14 @@ function renderGrammar() {
       <div class="section-heading"><div><p class="eyebrow">Фокус на форме</p><h4>Грамматика как справочник</h4></div></div>
       <div class="phrase-grid">
         ${state.data.grammarTopics.map((topic) => `
-          <article class="phrase-tile">
+          <article class="phrase-tile" id="topic-grammar-${escapeHtml(topic.id)}">
             <span class="tag amber">${escapeHtml(topic.level)}</span>
             <h5 class="compact-title">${escapeHtml(topic.title)}</h5>
             <p class="grammar-rule">${escapeHtml(topic.rule)}</p>
             <ul class="example-list">${topic.examples.map((example) => `<li>${escapeHtml(example)}</li>`).join("")}</ul>
+            ${renderParadigm(topic.paradigm)}
+            ${renderMistakeBlock("Типичные ошибки", topic.commonMistakes)}
+            ${renderMistakeBlock("Исключения", topic.exceptions)}
           </article>`).join("")}
       </div>
     </section>`;
@@ -378,6 +394,16 @@ function renderProgress() {
   const activeCards = getActiveCards();
   const reviewed = new Set(state.reviewLogs.map((log) => log.cardId)).size;
   const due = activeCards.filter((card) => isDueSchedule(state.schedules.get(card.id))).length;
+  const checkpoint = state.data.lessons.find((lesson) => lesson.id === "l38");
+  const checkpointReadiness = checkpoint
+    ? evaluateLessonReadiness(checkpoint, state.exerciseAttempts, state.recordings)
+    : null;
+  const exitStates = new Map((checkpointReadiness?.objectives?.evidence || []).map((item) => [item.objectiveId, item.state]));
+  const exitAxes = (checkpoint?.objectives || []).map((objective) => ({
+    skill: objective.skill,
+    state: exitStates.get(objective.id) || "incomplete"
+  }));
+  const exitReady = Boolean(checkpointReadiness?.canComplete && exitAxes.length === 7 && exitAxes.every((item) => item.state === "mastered"));
   app.innerHTML = `
     <div class="metrics-grid">
       ${renderMetric("Пройдено уроков", `${completed}/${state.data.lessons.length}`, "Разговорные сценарии")}
@@ -386,6 +412,11 @@ function renderProgress() {
       ${renderMetric("Нужно повторить", due, "По расписанию FSRS")}
       ${renderMetric("Свои слова", state.customNotes.length, "Хранятся только на этом устройстве")}
     </div>
+    <section class="section-band with-top-gap">
+      <div class="section-heading"><div><p class="eyebrow">Практический A1</p><h4>A1 exit evidence: ${exitReady ? "готово" : "ещё не готово"}</h4></div></div>
+      <p class="note">Checkpoint l38 подтверждает все семь навыков; карточки к повторению (${due}) рекомендуются, но не блокируют путь.</p>
+      <div class="skill-evidence-grid">${exitAxes.map((item) => `<div class="skill-evidence ${escapeHtml(item.state)}"><strong>${escapeHtml(item.skill)}</strong><span>${item.state === "mastered" ? "подтверждено" : "нужно checkpoint-задание"}</span></div>`).join("")}</div>
+    </section>
     <section class="section-band with-top-gap">
       <div class="section-heading"><div><p class="eyebrow">История</p><h4>Последние повторения</h4></div></div>
       ${state.reviewLogs.length ? `
@@ -460,6 +491,7 @@ function renderLessonInto(container, lesson) {
   objectives.hidden = !lesson.objectives?.length;
   template.querySelector(".complete-lesson").addEventListener("click", () => markLessonComplete(lesson.id));
   template.querySelector(".dialogue-list").innerHTML = lesson.dialogue.map(renderDialogueLine).join("");
+  template.querySelector(".lesson-vocabulary").innerHTML = renderLessonVocabulary(lesson.vocabulary);
   template.querySelector(".pronunciation-target").innerHTML = renderPronunciationForLesson(lesson);
   template.querySelector(".grammar-note").innerHTML = renderGrammarForLesson(lesson);
   template.querySelector(".exercise-list").innerHTML = lesson.exercises
@@ -488,7 +520,8 @@ function renderExercise(lesson, exercise, index) {
   const canSelfReview = isSelfReviewExercise(exercise)
     && modelVisible
     && result?.needsReview === true
-    && result?.coverageComplete === true;
+    && result?.coverageComplete === true
+    && (!isRecordingRequired(exercise) || hasExerciseRecording(attempt, exercise));
   return `
     <div class="exercise" data-exercise-id="${escapeHtml(id)}">
       <div class="exercise-header"><span class="tag">${escapeHtml(exercise.type)}</span>${result ? `<span class="result-badge ${escapeHtml(result.status)}">${resultLabel(result.status)}</span>` : ""}</div>
@@ -503,6 +536,7 @@ function renderExercise(lesson, exercise, index) {
       ${result ? `<div class="exercise-feedback ${escapeHtml(result.status)}">${escapeHtml(result.message)}${result.missing?.length ? `<br><strong>Добавь:</strong> ${result.missing.map(escapeHtml).join(", ")}` : ""}</div>` : ""}
       ${hintVisible ? `<div class="exercise-help"><strong>Подсказка:</strong> ${escapeHtml(exercise.hints?.join(" ") || "Вернись к диалогу и найди нужную конструкцию.")}</div>` : ""}
       ${modelVisible ? `<div class="model-answer"><strong>Возможный ответ</strong><p>${nl2br(exercise.modelAnswer || exercise.acceptedAnswers?.[0] || "Ответ зависит от твоей ситуации.")}</p>${exercise.explanation ? `<span>${escapeHtml(exercise.explanation)}</span>` : ""}</div>` : ""}
+      ${isRecordingRequired(exercise) ? `<div class="exercise-recording">${renderVoiceLab(exercise.modelAnswer, `exercise:${lesson.id}:${id}`, { lessonId: lesson.id, exerciseId: id, minimumSeconds: exercise.minimumRecordingSeconds || 5 })}</div>` : ""}
       ${canSelfReview ? `<button class="secondary-button self-review-button" type="button" data-self-review ${attempt.selfReviewed ? "disabled" : ""}>${attempt.selfReviewed ? "Сравнение подтверждено" : "Я сравнил и исправил"}</button>` : ""}
     </div>`;
 }
@@ -559,6 +593,16 @@ function isSelfReviewExercise(exercise) {
   ].includes(exercise.type);
 }
 
+function isRecordingRequired(exercise) {
+  if (exercise?.requiresRecording === false) return false;
+  return ["speaking", "roleplay", "conversation-prompt", "recorded-monologue"].includes(exercise?.type);
+}
+
+function hasExerciseRecording(attempt, exercise) {
+  const record = state.recordings.get(attempt?.recordingKey);
+  return Boolean(record && Number(record.durationMs) >= Number(exercise.minimumRecordingSeconds || 5) * 1000);
+}
+
 function bindExercise(box, lesson) {
   const id = box.dataset.exerciseId;
   const exercise = lesson.exercises.find((item, index) => (item.id || `${lesson.id}-${index}`) === id);
@@ -602,13 +646,22 @@ function bindExercise(box, lesson) {
   });
   box.querySelector("[data-self-review]")?.addEventListener("click", async () => {
     const attempt = getExerciseAttempt(id, lesson.id);
-    if (!attempt.showModel || attempt.result?.needsReview !== true || attempt.result?.coverageComplete !== true) return;
+    if (!attempt.showModel || attempt.result?.needsReview !== true || attempt.result?.coverageComplete !== true || (isRecordingRequired(exercise) && !hasExerciseRecording(attempt, exercise))) return;
     attempt.selfReviewed = true;
     attempt.updatedAt = new Date().toISOString();
     state.exerciseAttempts.set(id, attempt);
     await putRecord("exercises", attempt);
     preserveScrollAndRender();
   });
+}
+
+function renderLessonVocabulary(vocabulary = []) {
+  return `<div class="lesson-vocabulary-grid">${vocabulary.map((item) => `
+    <article class="lesson-vocabulary-item">
+      <div><strong>${escapeHtml(item.fr)}</strong><button class="inline-audio" type="button" data-speak="${escapeHtml(item.fr)}" aria-label="Прослушать ${escapeHtml(item.fr)}">▶</button><span class="ipa">${escapeHtml(item.ipa)}</span></div>
+      <div class="translation">${escapeHtml(item.ru)}</div>
+      <p class="note">${escapeHtml(item.note)}</p>
+    </article>`).join("")}</div>`;
 }
 
 function renderReviewCard(card) {
@@ -839,9 +892,18 @@ function bindVoiceLabs(scope = document) {
     const status = box.querySelector(".recording-status");
     const audio = box.querySelector("audio");
     box.querySelector("[data-speak]").addEventListener("click", () => speakFrench(target));
-    startButton.addEventListener("click", () => startRecording({ key, status, audio, startButton, stopButton }));
+    const lessonId = box.dataset.lessonId || null;
+    const exerciseId = box.dataset.exerciseId || null;
+    const minimumSeconds = Number(box.dataset.minimumSeconds || 0);
+    startButton.addEventListener("click", () => startRecording({ key, status, audio, startButton, stopButton, lessonId, exerciseId, minimumSeconds }));
     stopButton.addEventListener("click", () => stopRecording());
-    box.querySelector("[data-transcribe]").addEventListener("click", () => transcribeTarget(target, box.querySelector(".transcript-output")));
+    const transcribeButton = box.querySelector("[data-transcribe]");
+    transcribeButton.addEventListener("click", () => transcribeRecording(
+      key,
+      target,
+      box.querySelector(".transcript-output"),
+      transcribeButton
+    ));
     restoreRecording(key, audio, status);
   });
 }
@@ -865,7 +927,7 @@ async function startRecording(context) {
       return;
     }
     const recorder = new MediaRecorder(stream);
-    const recording = { ...context, stream, recorder, chunks: [] };
+    const recording = { ...context, stream, recorder, chunks: [], startedAt: Date.now() };
     state.audioChunks = recording.chunks;
     state.recordingContext = recording;
     state.mediaRecorder = recorder;
@@ -906,11 +968,30 @@ async function saveFinishedRecording(recording) {
   const blob = new Blob(recording.chunks, { type: recording.recorder.mimeType || "audio/webm" });
   try {
     showSaving();
-    const record = { id: recording.key, blob, updatedAt: new Date().toISOString(), size: blob.size };
+    const durationMs = Math.max(0, Date.now() - recording.startedAt);
+    const record = {
+      id: recording.key,
+      blob,
+      updatedAt: new Date().toISOString(),
+      size: blob.size,
+      durationMs,
+      ...(recording.lessonId ? { lessonId: recording.lessonId } : {}),
+      ...(recording.exerciseId ? { exerciseId: recording.exerciseId } : {})
+    };
     await putRecord("recordings", record);
+    state.recordings.set(record.id, record);
+    if (recording.exerciseId && recording.lessonId) {
+      const attempt = getExerciseAttempt(recording.exerciseId, recording.lessonId);
+      attempt.recordingKey = record.id;
+      attempt.updatedAt = record.updatedAt;
+      state.exerciseAttempts.set(attempt.id, attempt);
+      await putRecord("exercises", attempt);
+    }
     if (recording.audio?.isConnected) setAudioSource(recording.audio, blob);
     if (recording.status?.isConnected) {
-      recording.status.textContent = "Запись сохранена локально. Можно перезагрузить страницу и продолжить.";
+      recording.status.textContent = recording.minimumSeconds && durationMs < recording.minimumSeconds * 1000
+        ? `Запись сохранена, но она короче ${recording.minimumSeconds} сек. Запиши ещё раз, чтобы подтвердить упражнение.`
+        : "Запись сохранена локально. Можно перезагрузить страницу и продолжить.";
     }
     showSaved();
   } catch (error) {
@@ -958,22 +1039,37 @@ function setAudioSource(audio, blob) {
   audio.hidden = false;
 }
 
-function transcribeTarget(target, output) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    output.textContent = "STT в этом браузере недоступен. Запись и эталон остаются доступными для сравнения на слух.";
+async function transcribeRecording(key, target, output, button) {
+  const recording = await getRecord("recordings", key);
+  if (!recording?.blob) {
+    output.textContent = "Сначала запиши и сохрани свою фразу, затем распознай эту запись.";
     return;
   }
-  const recognition = new SpeechRecognition();
-  recognition.lang = "fr-FR";
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-  output.textContent = "Скажи фразу после сигнала браузера...";
-  recognition.addEventListener("result", (event) => {
-    output.innerHTML = `<strong>Распознано:</strong> ${escapeHtml(event.results[0][0].transcript)}<br><span class="note">Цель: ${escapeHtml(target)}</span>`;
-  });
-  recognition.addEventListener("error", (event) => { output.textContent = `Распознавание не сработало: ${event.error}`; });
-  recognition.start();
+
+  const previousLabel = button.textContent;
+  button.disabled = true;
+  output.textContent = "Распознаём запись локально…";
+  try {
+    const response = await fetch("/stt", {
+      method: "POST",
+      headers: { "Content-Type": recording.blob.type || "audio/webm" },
+      body: recording.blob
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `Локальный STT вернул HTTP ${response.status}.`);
+    if (!result.transcript?.trim()) throw new Error("В записи не удалось распознать речь.");
+    output.innerHTML = `<strong>Распознано:</strong> ${escapeHtml(result.transcript)}<br><span class="note">Цель: ${escapeHtml(target)}</span>`;
+  } catch (error) {
+    const message = error instanceof TypeError
+      ? "Локальный STT-сервер недоступен. Перезапусти приложение командой python3 server.py."
+      : error.message;
+    output.textContent = `Распознавание не сработало: ${message}`;
+  } finally {
+    if (button.isConnected) {
+      button.disabled = false;
+      button.textContent = previousLabel;
+    }
+  }
 }
 
 function speakFrench(text) {
@@ -1104,13 +1200,14 @@ function renderGrammarForLesson(lesson) {
   return `<div class="target-phrase"><span class="tag amber">${escapeHtml(topic.level)}</span><strong>${escapeHtml(topic.title)}</strong></div><p class="grammar-rule">${escapeHtml(topic.rule)}</p><ul class="example-list">${topic.examples.map((example) => `<li>${escapeHtml(example)}</li>`).join("")}</ul>`;
 }
 
-function renderVoiceLab(target, key) {
+function renderVoiceLab(target, key, options = {}) {
+  const minimumSeconds = Number(options.minimumSeconds || 0);
   return `
-    <div class="voice-lab-box" data-key="${escapeHtml(key)}" data-target="${escapeHtml(target)}">
-      <div class="target-phrase"><span class="tag rose">voice</span><strong>${escapeHtml(target)}</strong><span class="note">Прослушай выбранный голос, затем запиши себя.</span></div>
-      <div class="control-row"><button class="pill-button" type="button" data-speak>Эталон</button><button class="pill-button" type="button" data-record-start>Записать</button><button class="pill-button" type="button" data-record-stop disabled>Стоп</button><button class="pill-button" type="button" data-transcribe>STT</button><span class="recording-status">Готово к записи</span></div>
+    <div class="voice-lab-box" data-key="${escapeHtml(key)}" data-target="${escapeHtml(target)}"${options.lessonId ? ` data-lesson-id="${escapeHtml(options.lessonId)}"` : ""}${options.exerciseId ? ` data-exercise-id="${escapeHtml(options.exerciseId)}"` : ""}${minimumSeconds ? ` data-minimum-seconds="${minimumSeconds}"` : ""}>
+      <div class="target-phrase"><span class="tag rose">voice</span><strong>${escapeHtml(target)}</strong><span class="note">Прослушай выбранный голос, затем запиши себя.${minimumSeconds ? ` Не менее ${minimumSeconds} сек.` : ""}</span></div>
+      <div class="control-row"><button class="pill-button" type="button" data-speak>Эталон</button><button class="pill-button" type="button" data-record-start>Записать</button><button class="pill-button" type="button" data-record-stop disabled>Стоп</button><button class="pill-button" type="button" data-transcribe>Распознать запись</button><span class="recording-status">Готово к записи</span></div>
       <audio controls hidden></audio>
-      <p class="note transcript-output">STT необязателен: окончательное сравнение делается по эталону и сохранённой записи.</p>
+      <p class="note transcript-output">STT работает по сохранённой записи через локальный Whisper; подключение к сервису распознавания не нужно.</p>
     </div>`;
 }
 
@@ -1335,7 +1432,7 @@ function renderMetric(label, value, note) {
 async function markLessonComplete(lessonId) {
   const lesson = getLesson(lessonId);
   const prerequisites = getLessonPrerequisites(lesson);
-  const readiness = evaluateLessonReadiness(lesson, state.exerciseAttempts);
+  const readiness = evaluateLessonReadiness(lesson, state.exerciseAttempts, state.recordings);
   if (!prerequisites.met || !readiness.canComplete) {
     const lessonRoot = document.querySelector(".lesson-layout");
     updateLessonCompletionUI(lessonRoot, lesson);
@@ -1365,7 +1462,7 @@ function updateLessonCompletionUI(scope, lesson) {
   if (!button || !status) return;
   const isDone = state.appState.completedLessons.includes(lesson.id);
   const prerequisites = getLessonPrerequisites(lesson);
-  const readiness = evaluateLessonReadiness(lesson, state.exerciseAttempts);
+  const readiness = evaluateLessonReadiness(lesson, state.exerciseAttempts, state.recordings);
   const disabled = isDone || !prerequisites.met || !readiness.canComplete;
   button.disabled = disabled;
   button.setAttribute("aria-disabled", String(disabled));
