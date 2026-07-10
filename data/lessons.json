@@ -3310,6 +3310,111 @@
         {"id": "phrase:l21:1", "front": "Он маленький, но очень добрый.", "back": "Il est petit, mais il est très gentil.", "type": "phrase"},
         {"id": "phrase:l21:2", "front": "Elle est {{c1::grande}} et sympathique.", "back": "Она высокая и приятная.", "type": "cloze"}
       ]
+    },
+    {
+      "id": "l22",
+      "level": "A1",
+      "title": "Mini-bilan A1",
+      "goal": "Собрать распорядок дня, дни недели и место встречи в одной связной сцене — как l11 для starter.",
+      "scenario": "a1-review",
+      "targetPhrase": "On se voit vendredi ? J'ai une pause à midi.",
+      "pronunciationTopic": "liaison",
+      "grammarTopic": "time-expressions",
+      "moduleId": "module:a1:everyday-life",
+      "order": 5,
+      "prerequisites": ["l21"],
+      "tags": ["review", "mini-bilan", "a1"],
+      "objectives": [
+        {
+          "id": "obj:l22:combine-routine-and-plans",
+          "skill": "spoken-interaction",
+          "cefrCanDo": "Может договориться о встрече, упомянув распорядок дня и время.",
+          "required": true
+        },
+        {
+          "id": "obj:l22:tell-a-short-story",
+          "skill": "spoken-production",
+          "cefrCanDo": "Может связно рассказать о типичном дне и планах на неделю, используя пройденную лексику и грамматику.",
+          "required": true
+        },
+        {
+          "id": "obj:l22:read-and-report",
+          "skill": "reading",
+          "cefrCanDo": "Может прочитать короткое сообщение о планах и найти в нём ключевые данные.",
+          "required": true
+        }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Collègue",
+          "fr": "On se voit vendredi ? J'ai une pause à midi.",
+          "ipa": "/ɔ̃ sə vwa vɑ̃.dʁə.di ʒe yn poz a mi.di/",
+          "ru": "Увидимся в пятницу? У меня перерыв в полдень."
+        },
+        {
+          "speaker": "Toi",
+          "fr": "Vendredi, je suis occupé le matin, mais libre à midi.",
+          "ipa": "/vɑ̃.dʁə.di ʒə sɥi.z‿ɔ.ky.pe lə ma.tɛ̃ mɛ libʁ a mi.di/",
+          "ru": "В пятницу я занят утром, но свободен в полдень."
+        },
+        {
+          "speaker": "Collègue",
+          "fr": "Parfait, à midi alors. Il y a un café près du bureau.",
+          "ipa": "/paʁ.fɛ a mi.di a.lɔʁ il i a ɛ̃ ka.fe pʁɛ dy by.ʁo/",
+          "ru": "Отлично, тогда в полдень. Рядом с офисом есть кафе."
+        }
+      ],
+      "vocabulary": [
+        {"id": "vocab:l22:0", "fr": "une pause", "ipa": "/yn poz/", "ru": "перерыв", "note": "J'ai une pause — снова avoir из l13/l16."},
+        {"id": "vocab:l22:1", "fr": "le bureau", "ipa": "/lə by.ʁo/", "ru": "офис, кабинет", "note": "Новое слово для контекста работы."},
+        {"id": "vocab:l22:2", "fr": "près de", "ipa": "/pʁɛ də/", "ru": "рядом с", "note": "Полезный предлог места."},
+        {"id": "vocab:l22:3", "fr": "alors", "ipa": "/a.lɔʁ/", "ru": "тогда, значит", "note": "Частая связка в разговоре при согласовании плана."},
+        {"id": "vocab:l22:4", "fr": "la semaine", "ipa": "/la sə.mɛn/", "ru": "неделя", "note": "La semaine prochaine — следующая неделя."},
+        {"id": "vocab:l22:5", "fr": "d'habitude", "ipa": "/da.bi.tyd/", "ru": "обычно", "note": "Полезно перед описанием распорядка дня."}
+      ],
+      "exercises": [
+        {
+          "id": "l22-e1",
+          "type": "reading-comprehension",
+          "prompt": "Прочитай сообщение. Когда и где предлагают встретиться?",
+          "sourceText": "Salut ! Tu es libre vendredi à midi ? Il y a un café près du bureau, sympa et pas cher. À bientôt !",
+          "acceptedAnswers": ["в пятницу в полдень, в кафе рядом с офисом", "vendredi à midi, café près du bureau"],
+          "modelAnswer": "Vendredi à midi, dans un café près du bureau.",
+          "hints": ["Ищи день, время и место одним предложением."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l22:read-and-report"],
+          "explanation": "Итоговое чтение объединяет день недели (l17), время (l14) и place-словарь (l06/l22)."
+        },
+        {
+          "id": "l22-e2",
+          "type": "roleplay",
+          "prompt": "Договорись о встрече на неделе: предложи день, упомяни своё расписание (работа/учёба), согласуй время и место.",
+          "acceptedAnswers": [],
+          "modelAnswer": "Tu es libre jeudi ? Je travaille le matin, mais je suis libre à midi. Il y a un café près du bureau.",
+          "hints": ["Собери вместе: день (l17) + распорядок (l16) + место/время (l06, l14)."],
+          "requiredTokens": ["libre", "je travaille"],
+          "objectiveIds": ["obj:l22:combine-routine-and-plans"],
+          "rubric": ["Предложен конкретный день.", "Упомянут распорядок дня (работа/учёба/пауза).", "Согласовано время и/или место встречи."],
+          "explanation": "Это финальная сцена уровня A1 — она нарочно требует лексику из нескольких предыдущих уроков сразу, как l11 для starter."
+        },
+        {
+          "id": "l22-e3",
+          "type": "recorded-monologue",
+          "prompt": "Расскажи связно: обычный день недели и твои планы на эту неделю (кто, когда, что делаете).",
+          "acceptedAnswers": [],
+          "modelAnswer": "D'habitude, je me lève à sept heures et je travaille le matin. Cette semaine, je suis libre vendredi. On se voit à midi dans un café près du bureau.",
+          "hints": ["Сначала обычный день (d'habitude + present), потом конкретный план на неделю."],
+          "requiredTokens": ["d'habitude", "cette semaine"],
+          "objectiveIds": ["obj:l22:tell-a-short-story"],
+          "rubric": ["Есть описание обычного дня.", "Есть конкретный план на неделю (день/время).", "Фразы связаны логично, а не просто перечислены."],
+          "explanation": "Монолог «обычно / а на этой неделе» — стандартная итоговая can-do для routines-plans + social planning вместе."
+        }
+      ],
+      "cards": [
+        {"id": "phrase:l22:0", "front": "У меня перерыв в полдень.", "back": "J'ai une pause à midi.", "type": "phrase"},
+        {"id": "phrase:l22:1", "front": "Рядом с офисом есть кафе.", "back": "Il y a un café près du bureau.", "type": "phrase"},
+        {"id": "phrase:l22:2", "front": "Il y a un café {{c1::près du}} bureau.", "back": "Рядом с офисом есть кафе.", "type": "cloze"}
+      ]
     }
   ]
 }
