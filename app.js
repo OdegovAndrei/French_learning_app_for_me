@@ -62,7 +62,8 @@ const state = {
   audioUrls: new Set(),
   saveTimers: new Map(),
   pendingSaves: new Map(),
-  activeSaveCount: 0
+  activeSaveCount: 0,
+  pendingTopicFocus: null
 };
 
 const viewTitles = {
@@ -176,8 +177,17 @@ function render() {
   };
   renderers[state.view]();
 
+  const focusId = state.pendingTopicFocus;
+  state.pendingTopicFocus = null;
   requestAnimationFrame(() => {
-    window.scrollTo({ top: state.appState.scrollPositions[state.view] || 0, behavior: "instant" });
+    const target = focusId && document.getElementById(focusId);
+    if (target) {
+      target.scrollIntoView({ behavior: "instant", block: "start" });
+      target.classList.add("topic-highlight");
+      target.addEventListener("animationend", () => target.classList.remove("topic-highlight"), { once: true });
+    } else {
+      window.scrollTo({ top: state.appState.scrollPositions[state.view] || 0, behavior: "instant" });
+    }
   });
 }
 
@@ -508,7 +518,16 @@ function bindLessonActions(container, lesson) {
   container.querySelectorAll("[data-speak]").forEach((button) => {
     button.addEventListener("click", () => speakFrench(button.dataset.speak));
   });
+  container.querySelectorAll("[data-open-topic]").forEach((button) => {
+    button.addEventListener("click", () => openTopicReference(button.dataset.openTopic));
+  });
   container.querySelectorAll(".exercise").forEach((box) => bindExercise(box, lesson));
+}
+
+function openTopicReference(key) {
+  const [kind, id] = key.split(":");
+  state.pendingTopicFocus = `topic-${kind}-${id}`;
+  switchView(kind);
 }
 
 function renderExercise(lesson, exercise, index) {
@@ -1192,12 +1211,12 @@ function renderDialogueLine(line) {
 
 function renderPronunciationForLesson(lesson) {
   const topic = state.data.pronunciationTopics.find((item) => item.id === lesson.pronunciationTopic);
-  return `<div class="target-phrase"><span class="tag rose">${escapeHtml(topic.level)}</span><strong>${escapeHtml(topic.title)}</strong><span>${escapeHtml(topic.target)}</span></div><p class="note">${escapeHtml(topic.cue)}</p><ul class="example-list">${topic.minimalPairs.map((pair) => `<li>${escapeHtml(pair)}</li>`).join("")}</ul>`;
+  return `<div class="target-phrase"><span class="tag rose">${escapeHtml(topic.level)}</span><strong>${escapeHtml(topic.title)}</strong><span>${escapeHtml(topic.target)}</span></div><p class="note">${escapeHtml(topic.cue)}</p><ul class="example-list">${topic.minimalPairs.map((pair) => `<li>${escapeHtml(pair)}</li>`).join("")}</ul><button class="pill-button" type="button" data-open-topic="pronunciation:${escapeHtml(topic.id)}">Подробнее →</button>`;
 }
 
 function renderGrammarForLesson(lesson) {
   const topic = state.data.grammarTopics.find((item) => item.id === lesson.grammarTopic);
-  return `<div class="target-phrase"><span class="tag amber">${escapeHtml(topic.level)}</span><strong>${escapeHtml(topic.title)}</strong></div><p class="grammar-rule">${escapeHtml(topic.rule)}</p><ul class="example-list">${topic.examples.map((example) => `<li>${escapeHtml(example)}</li>`).join("")}</ul>`;
+  return `<div class="target-phrase"><span class="tag amber">${escapeHtml(topic.level)}</span><strong>${escapeHtml(topic.title)}</strong></div><p class="grammar-rule">${escapeHtml(topic.rule)}</p><ul class="example-list">${topic.examples.map((example) => `<li>${escapeHtml(example)}</li>`).join("")}</ul><button class="pill-button" type="button" data-open-topic="grammar:${escapeHtml(topic.id)}">Подробнее →</button>`;
 }
 
 function renderVoiceLab(target, key, options = {}) {
