@@ -1,4 +1,4 @@
-export const COURSE_SCHEMA_VERSION = 2;
+export const COURSE_SCHEMA_VERSION = 3;
 
 export const ALLOWED_LEVELS = Object.freeze(["A0", "A1", "A2", "B1", "B2"]);
 
@@ -66,11 +66,11 @@ export const COURSE_SCHEMA = Object.freeze({
   }),
   pronunciationTopic: Object.freeze({
     requiredText: Object.freeze(["id", "title", "level", "target", "cue"]),
-    requiredArrays: Object.freeze(["minimalPairs"])
+    requiredArrays: Object.freeze(["minimalPairs", "paradigm", "commonMistakes", "exceptions"])
   }),
   grammarTopic: Object.freeze({
     requiredText: Object.freeze(["id", "title", "level", "rule"]),
-    requiredArrays: Object.freeze(["examples"])
+    requiredArrays: Object.freeze(["examples", "paradigm", "commonMistakes", "exceptions"])
   }),
   paradigmEntry: Object.freeze({
     requiredText: Object.freeze(["label", "form"])

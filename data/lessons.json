@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "French Study A1",
-    "catalogSchemaVersion": 2,
+    "catalogSchemaVersion": 3,
     "contentVersion": "2.0.0",
     "dailyMinutes": "45-60",
     "method": "conversation first, pronunciation daily, grammar after the phrase"
