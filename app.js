@@ -260,17 +260,20 @@ function renderLessons() {
   document.querySelectorAll(".lesson-tile").forEach((button) => {
     button.addEventListener("click", () => {
       const lesson = getLesson(button.dataset.lessonId);
-      if (!getLessonPrerequisites(lesson).met) return;
       setCurrentLesson(lesson.id);
       state.appState.scrollPositions.lessons = 0;
       renderLessons();
     });
   });
+  document.querySelectorAll("[data-toggle-complete]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleLessonCompleteFromTile(button.dataset.toggleComplete);
+    });
+  });
   const selected = getLesson(state.currentLessonId);
-  const prerequisites = getLessonPrerequisites(selected);
   const container = document.querySelector("#selected-lesson");
-  if (prerequisites.met) renderLessonInto(container, selected);
-  else container.innerHTML = renderLockedLessonNotice(selected, prerequisites);
+  renderLessonInto(container, selected);
 }
 
 function renderParadigm(paradigm) {
@@ -483,11 +486,6 @@ function renderSettings() {
 }
 
 function renderLessonInto(container, lesson) {
-  const prerequisites = getLessonPrerequisites(lesson);
-  if (!prerequisites.met) {
-    container.innerHTML = renderLockedLessonNotice(lesson, prerequisites);
-    return;
-  }
   const template = document.querySelector("#lesson-template").content.cloneNode(true);
   template.querySelector(".lesson-level").textContent = `${lesson.level} · ${lesson.scenario}`;
   template.querySelector(".lesson-title").textContent = lesson.title;
@@ -1347,15 +1345,6 @@ function buildLessonGroups() {
     .filter((level) => level.modules.length);
 }
 
-function renderLockedLessonNotice(lesson, prerequisites) {
-  return `
-    <section class="empty-state locked-notice" role="status">
-      <span class="tag amber">Недоступно</span>
-      <h3>${escapeHtml(lesson.title)}</h3>
-      <p>${escapeHtml(prerequisiteMessage(prerequisites))}</p>
-    </section>`;
-}
-
 function prerequisiteMessage(prerequisites) {
   const titles = prerequisites.missing.map((id) => state.data.lessons.find((lesson) => lesson.id === id)?.title || id);
   return `Сначала заверши: ${titles.join(", ")}.`;
@@ -1364,16 +1353,21 @@ function prerequisiteMessage(prerequisites) {
 function renderLessonTile(lesson) {
   const done = state.appState.completedLessons.includes(lesson.id);
   const prerequisites = getLessonPrerequisites(lesson);
-  const locked = !prerequisites.met;
-  const lockDescriptionId = `lesson-lock-${lesson.id}`;
+  const outOfOrder = !prerequisites.met;
+  const hintId = `lesson-hint-${lesson.id}`;
   return `
-    <button class="lesson-tile ${done ? "done" : ""} ${locked ? "locked" : ""}" type="button"
-      data-lesson-id="${escapeHtml(lesson.id)}" aria-disabled="${locked}" ${locked ? `aria-describedby="${escapeHtml(lockDescriptionId)}"` : ""}>
-      <div class="tag-row"><span class="tag">${escapeHtml(lesson.level)}</span>${done ? `<span class="tag rose">пройден</span>` : ""}${locked ? `<span class="tag amber">заблокирован</span>` : ""}</div>
-      <h4 class="compact-title">${escapeHtml(lesson.title)}</h4>
-      <p class="note">${escapeHtml(lesson.goal)}</p>
-      ${locked ? `<p class="lock-reason" id="${escapeHtml(lockDescriptionId)}">${escapeHtml(prerequisiteMessage(prerequisites))}</p>` : ""}
-    </button>`;
+    <div class="lesson-tile-row">
+      <button class="lesson-tile ${done ? "done" : ""} ${outOfOrder ? "out-of-order" : ""}" type="button"
+        data-lesson-id="${escapeHtml(lesson.id)}" ${outOfOrder ? `aria-describedby="${escapeHtml(hintId)}"` : ""}>
+        <div class="tag-row"><span class="tag">${escapeHtml(lesson.level)}</span>${done ? `<span class="tag rose">пройден</span>` : ""}${outOfOrder ? `<span class="tag amber">не по порядку</span>` : ""}</div>
+        <h4 class="compact-title">${escapeHtml(lesson.title)}</h4>
+        <p class="note">${escapeHtml(lesson.goal)}</p>
+        ${outOfOrder ? `<p class="lock-reason" id="${escapeHtml(hintId)}">${escapeHtml(prerequisiteMessage(prerequisites))}</p>` : ""}
+      </button>
+      <button class="lesson-tile-toggle ${done ? "done" : ""}" type="button" data-toggle-complete="${escapeHtml(lesson.id)}"
+        title="${done ? "Снять отметку «пройден»" : "Отметить урок пройденным"}"
+        aria-label="${done ? `Снять отметку «пройден» с урока ${escapeHtml(lesson.title)}` : `Отметить урок ${escapeHtml(lesson.title)} пройденным`}">${done ? "↺" : "✓"}</button>
+    </div>`;
 }
 
 function compareLessons(first, second) {
@@ -1469,6 +1463,27 @@ async function markLessonComplete(lessonId) {
     state.currentLessonId = previousCurrentLessonId;
     state.appState.currentLessonId = previousStoredLessonId;
     updateLessonCompletionUI(document.querySelector(".lesson-layout"), lesson);
+    return;
+  }
+  render();
+}
+
+async function toggleLessonCompleteFromTile(lessonId) {
+  const wasDone = state.appState.completedLessons.includes(lessonId);
+  const previousCompletedLessons = [...state.appState.completedLessons];
+  const previousCurrentLessonId = state.currentLessonId;
+  const previousStoredLessonId = state.appState.currentLessonId;
+  if (wasDone) {
+    state.appState.completedLessons = state.appState.completedLessons.filter((id) => id !== lessonId);
+  } else {
+    state.appState.completedLessons.push(lessonId);
+    state.appState.completionModelVersion = 1;
+    if (state.currentLessonId === lessonId) setCurrentLesson(getNextLesson()?.id || lessonId, false);
+  }
+  if (!(await saveAppState())) {
+    state.appState.completedLessons = previousCompletedLessons;
+    state.currentLessonId = previousCurrentLessonId;
+    state.appState.currentLessonId = previousStoredLessonId;
     return;
   }
   render();

@@ -388,6 +388,7 @@ button:disabled {
   display: grid;
   gap: 10px;
   text-align: left;
+  flex: 1;
 }
 
 .lesson-tile.done {
@@ -395,14 +396,39 @@ button:disabled {
   background: var(--accent-soft);
 }
 
-.lesson-tile.locked {
+.lesson-tile.out-of-order {
   border-style: dashed;
   background: var(--surface-strong);
-  cursor: not-allowed;
 }
 
-.lesson-tile.locked:hover {
-  border-color: var(--line);
+.lesson-tile-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.lesson-tile-toggle {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.lesson-tile-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
+.lesson-tile-toggle.done {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
 }
 
 .lock-reason {
