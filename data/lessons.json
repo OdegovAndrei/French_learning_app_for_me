@@ -3273,7 +3273,7 @@
         {
           "id": "l21-e1",
           "type": "sentence-transform",
-          "prompt": "Поставь в женский род: Il est grand и gentil. → Elle est ___.",
+          "prompt": "Поставь в женский род: Il est grand et gentil. → Elle est ___.",
           "acceptedAnswers": [],
           "modelAnswer": "Elle est grande et gentille.",
           "hints": ["Grand→grande (добавь d-звук), gentil→gentille (звук меняется сильнее)."],
