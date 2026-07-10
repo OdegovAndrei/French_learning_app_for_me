@@ -2664,7 +2664,7 @@
           "acceptedAnswers": [],
           "modelAnswer": "Аптека открыта каждый день с 8:30 до 19:00, кроме воскресенья — тогда закрыто. По субботам закрывается раньше, в час дня.",
           "hints": ["Медиация — это не перевод слово в слово, а передача сути на понятном языке."],
-          "requiredTokens": ["воскресень", "суббот"],
+          "requiredTokens": ["воскресенья", "субботам"],
           "objectiveIds": ["obj:l15:explain-to-friend"],
           "rubric": ["Названы обычные часы работы.", "Названо исключение (воскресенье).", "Названа особенность субботы."],
           "explanation": "Именно так выглядит mediation-evidence по roadmap: практическая информация, пересказанная для другого человека."
@@ -2988,7 +2988,7 @@
           "acceptedAnswers": [],
           "modelAnswer": "Bonjour, je voudrais un kilo de pommes et une bouteille d'eau, s'il vous plaît.",
           "hints": ["Собери обе конструкции количества в одной фразе."],
-          "requiredTokens": ["un kilo de", "une bouteille de"],
+          "requiredTokens": ["un kilo de", "une bouteille d'eau"],
           "objectiveIds": ["obj:l18:ask-for-quantity"],
           "rubric": ["Есть вежливое начало (Bonjour/je voudrais).", "Есть un kilo de + продукт.", "Есть une bouteille de + продукт."],
           "explanation": "Практика двух параллельных конструкций количества в одной естественной просьбе."
@@ -3181,7 +3181,7 @@
           "acceptedAnswers": [],
           "modelAnswer": "У Жюли есть отец, мать и брат. Они живут в доме.",
           "hints": ["Son/sa здесь значит «её», не «его» — Julie женского рода."],
-          "requiredTokens": ["отец", "мать", "дом"],
+          "requiredTokens": ["отец", "мать", "брат", "доме"],
           "objectiveIds": ["obj:l20:explain-family-to-friend"],
           "rubric": ["Названы все три члена семьи.", "Названо жильё (дом).", "Пересказ на русском, не дословный перевод."],
           "explanation": "Son/sa/ses согласуются с предметом обладания, а не с полом обладателя — важная деталь для правильного понимания текста."
@@ -3288,7 +3288,7 @@
           "acceptedAnswers": [],
           "modelAnswer": "Ma sœur est petite mais très sympathique.",
           "hints": ["Не забудь согласовать прилагательные с родом того, о ком говоришь."],
-          "requiredTokens": [],
+          "requiredTokens": ["très"],
           "objectiveIds": ["obj:l21:describe-person"],
           "rubric": ["Названо, о ком идёт речь.", "Минимум два согласованных прилагательных.", "Есть хотя бы один усилитель (très)."],
           "explanation": "Здесь согласование проверяется не отдельно, а внутри естественной устной реплики."
