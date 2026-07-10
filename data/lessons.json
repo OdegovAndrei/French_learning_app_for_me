@@ -630,42 +630,123 @@
       "title": "Готовые разговорные формулы",
       "level": "A0",
       "rule": "На старте Bonjour, Merci и Au revoir учатся целиком. Не нужно разбирать каждое слово, чтобы сразу использовать фразу.",
-      "examples": ["Bonjour !", "Merci.", "Au revoir."]
+      "examples": ["Bonjour !", "Merci.", "Au revoir."],
+      "paradigm": [
+        { "label": "нейтрально/формально", "form": "Bonjour, merci, au revoir" },
+        { "label": "неформально, с друзьями", "form": "Salut, merci, à bientôt" },
+        { "label": "прощание вечером", "form": "Bonsoir → Bonne soirée" }
+      ],
+      "commonMistakes": [
+        { "wrong": "используешь Salut в формальной ситуации (магазин, офис)", "right": "Bonjour подходит везде, Salut — только с друзьями и ровесниками", "note": "Неверный регистр речи звучит невежливо даже при правильной грамматике" },
+        { "wrong": "не здороваешься первым делом, сразу переходишь к просьбе", "right": "Bonjour всегда идёт первой репликой, даже перед вопросом", "note": "Во французской культуре обращение без Bonjour воспринимается как грубость" }
+      ],
+      "exceptions": [
+        { "wrong": "Bonjour используется в любое время суток", "right": "вечером естественнее Bonsoir, а не Bonjour", "note": "Формально это не грамматическое правило, а социальная норма — но её тоже нужно выучить целиком, как фразу" }
+      ]
     },
     {
       "id": "etre",
       "title": "Être: быть",
       "level": "A1",
       "rule": "Je suis, tu es, il/elle est, vous êtes нужны для представления и описания себя.",
-      "examples": ["Je suis André.", "Tu es étudiant ?", "Vous êtes russe ?"]
+      "examples": ["Je suis André.", "Tu es étudiant ?", "Vous êtes russe ?"],
+      "paradigm": [
+        { "label": "je", "form": "je suis" },
+        { "label": "tu", "form": "tu es" },
+        { "label": "il / elle / on", "form": "il est" },
+        { "label": "nous", "form": "nous sommes" },
+        { "label": "vous", "form": "vous êtes" },
+        { "label": "ils / elles", "form": "ils sont" }
+      ],
+      "commonMistakes": [
+        { "wrong": "je suis произносится с растянутым и, как отдельное слово", "right": "je suis → [ʒə sɥi], suis звучит коротко, почти слитно с je", "note": "Быстрое, слитное произношение — не отдельная растяжка звуков" },
+        { "wrong": "vous êtes используешь только для множественного числа", "right": "vous êtes — это и вежливое «вы» к одному человеку, и обращение к нескольким", "note": "Vous — вежливая форма единственного числа тоже, не только множественное" }
+      ],
+      "exceptions": [
+        { "wrong": "être спрягается регулярно, как обычный -re глагол", "right": "être — полностью неправильный глагол, формы нужно просто выучить целиком", "note": "В отличие от regular -er/-ir/-re глаголов, тут нет предсказуемой основы" }
+      ]
     },
     {
       "id": "articles",
       "title": "Артикли un / une / le / la",
       "level": "A1",
       "rule": "Во французском существительное почти всегда живет с артиклем. Род лучше учить вместе со словом.",
-      "examples": ["un café", "une table", "le métro", "la rue"]
+      "examples": ["un café", "une table", "le métro", "la rue"],
+      "paradigm": [
+        { "label": "неопределённый, м.р.", "form": "un café" },
+        { "label": "неопределённый, ж.р.", "form": "une table" },
+        { "label": "определённый, м.р.", "form": "le métro" },
+        { "label": "определённый, ж.р.", "form": "la rue" },
+        { "label": "определённый перед гласной (оба рода)", "form": "l'ami / l'école" }
+      ],
+      "commonMistakes": [
+        { "wrong": "существительное используется без артикля: je voudrais café", "right": "je voudrais un café — артикль почти всегда обязателен", "note": "В русском артиклей нет, поэтому их пропуск — самая частая ошибка русскоговорящих" },
+        { "wrong": "род угадывается по смыслу слова", "right": "род нужно запоминать вместе со словом: une table, а не логикой", "note": "Грамматический род во французском часто не связан с реальным полом/смыслом предмета" }
+      ],
+      "exceptions": [
+        { "wrong": "перед гласной всегда остаётся le/la", "right": "le/la сокращаются до l' перед гласной или немым h: l'école, l'homme", "note": "Это фонетическое исключение — сделано, чтобы избежать зияния двух гласных подряд" }
+      ]
     },
     {
       "id": "questions",
       "title": "Разговорные и формальные вопросы",
       "level": "A1",
       "rule": "В разговоре вопрос можно задать интонацией, нейтрально — через est-ce que, а в формальной речи — с инверсией глагола и местоимения.",
-      "examples": ["Vous avez un café ?", "Est-ce que tu parles français ?", "Comment vous appelez-vous ?"]
+      "examples": ["Vous avez un café ?", "Est-ce que tu parles français ?", "Comment vous appelez-vous ?"],
+      "paradigm": [
+        { "label": "разговорный (интонация)", "form": "Vous avez un café ?" },
+        { "label": "нейтральный (est-ce que)", "form": "Est-ce que tu parles français ?" },
+        { "label": "формальный (инверсия)", "form": "Comment vous appelez-vous ?" }
+      ],
+      "commonMistakes": [
+        { "wrong": "используешь инверсию в разговорной речи с друзьями", "right": "в устной неформальной речи проще: Tu parles français ? (просто интонация вверх)", "note": "Инверсия звучит книжно/официально в бытовом разговоре" },
+        { "wrong": "разбираешь est-ce que на отдельные слова и переспрашиваешь ими", "right": "Est-ce que — цельная неразложимая частица перед утвердительным порядком слов", "note": "Не пытайся анализировать её по частям — просто ставится в начало фразы" }
+      ],
+      "exceptions": [
+        { "wrong": "инверсия всегда простая: глагол-подлежащее", "right": "с il/elle перед гласной вставляется -t-: Parle-t-il français ?", "note": "Вставное -t- нужно для благозвучия между двумя гласными на стыке глагола и местоимения" }
+      ]
     },
     {
       "id": "voudrais",
       "title": "Je voudrais",
       "level": "A1",
       "rule": "Je voudrais - вежливый способ попросить что-то. На старте это важнее полной таблицы conditionnel.",
-      "examples": ["Je voudrais un café.", "Je voudrais payer.", "Je voudrais aller au centre."]
+      "examples": ["Je voudrais un café.", "Je voudrais payer.", "Je voudrais aller au centre."],
+      "paradigm": [
+        { "label": "je", "form": "je voudrais" },
+        { "label": "tu", "form": "tu voudrais" },
+        { "label": "vous (вежливо)", "form": "vous voudriez" },
+        { "label": "nous", "form": "nous voudrions" }
+      ],
+      "commonMistakes": [
+        { "wrong": "используешь je veux вместо je voudrais в просьбе к незнакомым", "right": "je voudrais вежливее je veux — стандарт в магазине/кафе", "note": "Je veux звучит слишком прямо, почти как требование" },
+        { "wrong": "после je voudrais ставишь de перед существительным: je voudrais de un café", "right": "je voudrais un café — прямое дополнение без de", "note": "De появляется только в отрицании: je ne voudrais pas de café" }
+      ],
+      "exceptions": [
+        { "wrong": "voudrais — обычная форма настоящего времени", "right": "voudrais — форма conditionnel от vouloir, используется как готовая вежливая формула", "note": "На старте формулу учат целиком, не разбирая условное наклонение — оно ещё не пройдено" }
+      ]
     },
     {
       "id": "near-future",
       "title": "Ближайшее будущее: aller + infinitif",
       "level": "A1",
       "rule": "Je vais + infinitif говорит о ближайшем плане: я собираюсь что-то сделать.",
-      "examples": ["Je vais travailler.", "Nous allons manger.", "Vous allez partir ?"]
+      "examples": ["Je vais travailler.", "Nous allons manger.", "Vous allez partir ?"],
+      "paradigm": [
+        { "label": "je", "form": "je vais travailler" },
+        { "label": "tu", "form": "tu vas travailler" },
+        { "label": "il / elle / on", "form": "il va travailler" },
+        { "label": "nous", "form": "nous allons manger" },
+        { "label": "vous", "form": "vous allez partir" },
+        { "label": "ils / elles", "form": "ils vont manger" }
+      ],
+      "commonMistakes": [
+        { "wrong": "после aller используешь спрягаемый глагол: je vais je travaille", "right": "после aller всегда инфинитив: je vais travailler", "note": "Конструкция — вспомогательный глагол aller + неизменяемый инфинитив смыслового глагола" },
+        { "wrong": "путаешь vais/vas/va на слух — кажется, все звучат одинаково", "right": "vais [vɛ], vas/va [va] — vas и va произносятся одинаково, различаются по подлежащему", "note": "На слух ориентируйся на местоимение перед формой, не только на саму форму" }
+      ],
+      "exceptions": [
+        { "wrong": "aller всегда указывает на будущее время", "right": "je vais à Paris — тот же глагол aller как самостоятельный, означает движение, а не будущее", "note": "Будущее образуется только когда после aller идёт инфинитив другого глагола" }
+      ]
     },
     {
       "id": "needs-negation",
