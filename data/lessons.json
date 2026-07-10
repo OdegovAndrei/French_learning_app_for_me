@@ -753,35 +753,101 @@
       "title": "Потребность и отрицание",
       "level": "A1",
       "rule": "J'ai besoin de + существительное выражает потребность; de становится d' перед гласной. В полном отрицании ne и pas окружают спрягаемый глагол.",
-      "examples": ["J'ai besoin d'aide.", "J'ai besoin d'une carte.", "Je ne comprends pas."]
+      "examples": ["J'ai besoin d'aide.", "J'ai besoin d'une carte.", "Je ne comprends pas."],
+      "paradigm": [
+        { "label": "перед согласной", "form": "j'ai besoin de temps" },
+        { "label": "перед гласной", "form": "j'ai besoin d'aide" },
+        { "label": "полное отрицание", "form": "je ne comprends pas" },
+        { "label": "отрицание в разговорной речи (ne опускается)", "form": "je comprends pas" }
+      ],
+      "commonMistakes": [
+        { "wrong": "оставляешь de перед гласной: besoin de aide", "right": "de сокращается до d' перед гласной: besoin d'aide", "note": "Как и артикль le/la, служебное de теряет e перед гласным звуком" },
+        { "wrong": "используешь только pas без ne на письме", "right": "в письменной и нейтральной устной речи нужны обе части: ne ... pas", "note": "Опущение ne — только разговорная норма устной речи, не для писем/упражнений" }
+      ],
+      "exceptions": [
+        { "wrong": "ne...pas всегда окружает один глагол одинаково", "right": "с инфинитивом обе частицы встают перед ним: ne pas comprendre (не ne comprendre pas)", "note": "Порядок ne pas + infinitif отличается от отрицания спрягаемого глагола" }
+      ]
     },
     {
       "id": "prices-hours",
       "title": "Цены и часы работы",
       "level": "A1",
       "rule": "Combien ça coûte ? спрашивает цену. Для часов работы часто используется ouvert de ... à ...",
-      "examples": ["Combien ça coûte ?", "Le café est ouvert de huit heures à midi.", "Ça coûte trois euros."]
+      "examples": ["Combien ça coûte ?", "Le café est ouvert de huit heures à midi.", "Ça coûte trois euros."],
+      "paradigm": [
+        { "label": "вопрос о цене", "form": "Combien ça coûte ?" },
+        { "label": "ответ о цене", "form": "Ça coûte trois euros" },
+        { "label": "часы работы (диапазон)", "form": "ouvert de huit heures à midi" },
+        { "label": "закрыто", "form": "fermé le dimanche" }
+      ],
+      "commonMistakes": [
+        { "wrong": "спрашиваешь цену без ça перед глаголом: Combien coûte ?", "right": "Combien ça coûte ? — ça стоит перед глаголом", "note": "В разговорной конструкции подлежащее ça идёт перед coûte, а combien — вопросительное слово впереди" },
+        { "wrong": "используешь heure и во множественном числе после цифры: à deux heure", "right": "после цифры больше одного всегда heures: à deux heures", "note": "Une heure — один час, но с любым другим числом — heures во множественном" }
+      ],
+      "exceptions": [
+        { "wrong": "midi считается как douze heures", "right": "полдень — отдельное слово midi, а не douze heures", "note": "Аналогично minuit (полночь) — оба слова заменяют собой 12 heures в быту" }
+      ]
     },
     {
       "id": "announcements",
       "title": "Короткие объявления",
       "level": "A1",
       "rule": "В объявлениях важны ключевые слова: кто/что, место, время. Сначала ловим смысл, потом проверяем транскрипт.",
-      "examples": ["Le train part à dix heures.", "Le train est quai deux.", "Attention, le magasin est fermé."]
+      "examples": ["Le train part à dix heures.", "Le train est quai deux.", "Attention, le magasin est fermé."],
+      "paradigm": [
+        { "label": "объявление о рейсе/поезде", "form": "Le train part à dix heures" },
+        { "label": "место", "form": "Le train est quai deux" },
+        { "label": "предупреждение", "form": "Attention, le magasin est fermé" }
+      ],
+      "commonMistakes": [
+        { "wrong": "пытаешься понять каждое слово объявления сразу", "right": "сначала слушай ключевые слова: кто/что, место, время — детали потом", "note": "В объявлениях речь быстрая и с фоновым шумом, стратегия — сначала общий смысл" },
+        { "wrong": "не различаешь quai (платформа) и voie (путь)", "right": "quai — платформа, где стоишь; voie — номер пути поезда", "note": "В реальных объявлениях оба слова встречаются и означают разное" }
+      ],
+      "exceptions": [
+        { "wrong": "все объявления строятся по одной и той же формуле", "right": "формулировки варьируются: Le train à destination de Lyon, voie B, va partir", "note": "Порядок слов в реальных объявлениях сложнее учебного примера — тренируйся на настоящих записях" }
+      ]
     },
     {
       "id": "avoir",
       "title": "Avoir: иметь",
       "level": "A1",
       "rule": "J'ai, tu as, il/elle a, nous avons, vous avez, ils/elles ont. Avoir нужен не только для обладания, но и для возраста (j'ai ... ans) и устойчивых конструкций (avoir besoin de, avoir faim).",
-      "examples": ["J'ai vingt-cinq ans.", "Tu as une minute ?", "Nous avons une pause à midi."]
+      "examples": ["J'ai vingt-cinq ans.", "Tu as une minute ?", "Nous avons une pause à midi."],
+      "paradigm": [
+        { "label": "je", "form": "j'ai" },
+        { "label": "tu", "form": "tu as" },
+        { "label": "il / elle / on", "form": "il a" },
+        { "label": "nous", "form": "nous avons" },
+        { "label": "vous", "form": "vous avez" },
+        { "label": "ils / elles", "form": "ils ont" }
+      ],
+      "commonMistakes": [
+        { "wrong": "возраст выражаешь через être: je suis vingt-cinq ans", "right": "возраст выражается через avoir: j'ai vingt-cinq ans", "note": "В русском «мне 25 лет», по-французски буквально «я имею 25 лет» — глагол другой, чем в русском" },
+        { "wrong": "путаешь il a (глагол) и il à на письме", "right": "il a (без ударения) звучит так же, как предлог à — различай по контексту фразы", "note": "Омофоны a/à — частая путаница на письме даже у самих французов" }
+      ],
+      "exceptions": [
+        { "wrong": "avoir спрягается регулярно, как обычный -oir глагол", "right": "avoir — полностью неправильный глагол, формы нужно выучить целиком (особенно ai/as/a/ont)", "note": "Формы совсем не похожи на инфинитив, в отличие от regular глаголов" }
+      ]
     },
     {
       "id": "il-y-a",
       "title": "Il y a: есть, имеется",
       "level": "A1",
       "rule": "Il y a не меняется по числам и родам: одна форма для 'есть один стул' и 'есть двадцать стульев'. Отрицание — il n'y a pas de.",
-      "examples": ["Il y a dix personnes.", "Il y a vingt chaises.", "Il n'y a pas de café."]
+      "examples": ["Il y a dix personnes.", "Il y a vingt chaises.", "Il n'y a pas de café."],
+      "paradigm": [
+        { "label": "единственное число", "form": "il y a un stylo" },
+        { "label": "множественное число", "form": "il y a vingt chaises" },
+        { "label": "отрицание", "form": "il n'y a pas de café" },
+        { "label": "вопрос", "form": "est-ce qu'il y a du pain ?" }
+      ],
+      "commonMistakes": [
+        { "wrong": "меняешь форму под число: il y ont, il y sont", "right": "il y a не меняется никогда: одна форма и для одного предмета, и для многих", "note": "В отличие от обычных глаголов, il y a — застывшее выражение с фиксированной формой a" },
+        { "wrong": "после отрицания оставляешь артикль: il n'y a pas un café", "right": "после отрицания артикль меняется на de: il n'y a pas de café", "note": "Общее правило французского: неопределённый/частичный артикль после отрицания → de" }
+      ],
+      "exceptions": [
+        { "wrong": "il y a используется только для настоящего времени", "right": "il y avait (было), il y aura (будет) — тот же оборот в других временах", "note": "На уровне A1 нужен только настоящий вариант, но полезно узнавать оборот в прошедшем/будущем при чтении" }
+      ]
     },
     {
       "id": "daily-routine-present",
