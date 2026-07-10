@@ -7,6 +7,7 @@ import {
 } from "./course-schema.js";
 
 const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9:._-]*$/;
+const ORAL_EXERCISE_TYPES = new Set(["speaking", "roleplay", "conversation-prompt", "recorded-monologue"]);
 
 export function collectCourseValidationErrors(catalog) {
   const errors = [];
@@ -91,6 +92,9 @@ export function collectCourseValidationErrors(catalog) {
     validateLevel(topic?.level, `${path}.level`, errors);
     registerId(topic?.id, `${path}.id`, pronunciationIds, errors);
     validateTextArray(topic?.minimalPairs, `${path}.minimalPairs`, errors, { nonEmpty: true });
+    validateStructuredArray(topic?.paradigm, `${path}.paradigm`, COURSE_SCHEMA.paradigmEntry, errors, { nonEmpty: true });
+    validateStructuredArray(topic?.commonMistakes, `${path}.commonMistakes`, COURSE_SCHEMA.mistakeEntry, errors, { nonEmpty: true });
+    validateStructuredArray(topic?.exceptions, `${path}.exceptions`, COURSE_SCHEMA.mistakeEntry, errors, { nonEmpty: true });
   });
 
   grammarTopics.forEach((topic, index) => {
@@ -99,6 +103,9 @@ export function collectCourseValidationErrors(catalog) {
     validateLevel(topic?.level, `${path}.level`, errors);
     registerId(topic?.id, `${path}.id`, grammarIds, errors);
     validateTextArray(topic?.examples, `${path}.examples`, errors, { nonEmpty: true });
+    validateStructuredArray(topic?.paradigm, `${path}.paradigm`, COURSE_SCHEMA.paradigmEntry, errors, { nonEmpty: true });
+    validateStructuredArray(topic?.commonMistakes, `${path}.commonMistakes`, COURSE_SCHEMA.mistakeEntry, errors, { nonEmpty: true });
+    validateStructuredArray(topic?.exceptions, `${path}.exceptions`, COURSE_SCHEMA.mistakeEntry, errors, { nonEmpty: true });
   });
 
   lessons.forEach((lesson, lessonIndex) => {
@@ -175,6 +182,19 @@ export function collectCourseValidationErrors(catalog) {
       validateTextArray(exercise?.acceptedAnswers, `${exercisePath}.acceptedAnswers`, errors);
       validateTextArray(exercise?.hints, `${exercisePath}.hints`, errors, { nonEmpty: true });
       validateTextArray(exercise?.requiredTokens, `${exercisePath}.requiredTokens`, errors);
+      validateRequiredTokenGroups(exercise?.requiredTokenGroups, `${exercisePath}.requiredTokenGroups`, errors);
+      if (exercise?.requiresRecording != null && typeof exercise.requiresRecording !== "boolean") {
+        errors.push(`${exercisePath}.requiresRecording: expected a boolean`);
+      }
+      if (exercise?.minimumRecordingSeconds != null && (!Number.isInteger(exercise.minimumRecordingSeconds) || exercise.minimumRecordingSeconds < 3 || exercise.minimumRecordingSeconds > 90)) {
+        errors.push(`${exercisePath}.minimumRecordingSeconds: expected an integer from 3 to 90`);
+      }
+      if (exercise?.requiresRecording === true && exercise?.minimumRecordingSeconds == null) {
+        errors.push(`${exercisePath}.minimumRecordingSeconds: required when recording is required`);
+      }
+      if (ORAL_EXERCISE_TYPES.has(exercise?.type) && exercise?.requiresRecording === false) {
+        errors.push(`${exercisePath}.requiresRecording: oral exercises cannot opt out of a recording`);
+      }
       validateTextArray(exercise?.objectiveIds, `${exercisePath}.objectiveIds`, errors, {
         nonEmpty: true,
         unique: true
@@ -238,6 +258,19 @@ export function collectCourseValidationErrors(catalog) {
   });
 
   return errors;
+}
+
+function validateRequiredTokenGroups(value, path, errors) {
+  if (value == null) return;
+  if (!Array.isArray(value)) {
+    errors.push(`${path}: expected an array`);
+    return;
+  }
+  value.forEach((group, index) => {
+    const groupPath = `${path}[${index}]`;
+    if (!isObject(group) || !hasText(group.label)) errors.push(`${groupPath}.label: expected text`);
+    validateTextArray(group?.anyOf, `${groupPath}.anyOf`, errors, { nonEmpty: true, unique: true });
+  });
 }
 
 export function validateCourseCatalog(catalog) {
@@ -397,6 +430,14 @@ function validateTextArray(value, path, errors, { nonEmpty = false, unique = fal
     if (!hasText(item)) errors.push(`${path}[${index}]: expected a non-empty string`);
     if (unique && seen.has(item)) errors.push(`${path}[${index}]: duplicate reference "${item}"`);
     seen.add(item);
+  });
+}
+
+function validateStructuredArray(value, path, itemSchema, errors, { nonEmpty = false } = {}) {
+  if (!Array.isArray(value)) return;
+  if (nonEmpty && value.length === 0) errors.push(`${path}: expected at least one item`);
+  value.forEach((item, index) => {
+    validateObject(item, `${path}[${index}]`, itemSchema, errors);
   });
 }
 

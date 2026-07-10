@@ -17,17 +17,17 @@ const raw = await readFile(new URL("../data/lessons.json", import.meta.url), "ut
 const data = JSON.parse(raw);
 
 assert.equal(validateCourseCatalog(data), true);
-assert.match(data.meta.title, /Starter/);
+assert.match(data.meta.title, /A1/);
 assert.equal(data.levels.length, 2, "The catalog must expose exactly the Starter and a1 tracks once A1 content ships");
 assert.ok(data.modules.length >= 3, "Starter content must be grouped into scalable modules");
-assert.ok(data.lessons.length > 0, "The course needs at least one lesson");
+assert.equal(data.lessons.length, 38, "The practical A1 release contains 38 lessons");
 assert.ok(data.pronunciationTopics.length > 0, "The course needs pronunciation topics");
 assert.ok(data.grammarTopics.length > 0, "The course needs grammar topics");
 assert.ok(data.courseRoadmap, "The catalog needs an explicit roadmap before scaling beyond Starter");
 assert.equal(data.courseRoadmap.status, "draft");
 assert.match(
   data.courseRoadmap.claimPolicy,
-  /Starter.+не равен полному A1, A2, B1 или B2/,
+  /A1 заявлен как практический самостоятельный курс/,
   "The roadmap must keep level claims honest"
 );
 assert.ok(data.courseRoadmap.sources.length >= 3, "Roadmap needs official/public source links");
@@ -71,6 +71,7 @@ for (const axis of [
 }
 
 const exercises = data.lessons.flatMap((lesson) => lesson.exercises);
+assert.equal(exercises.length, 118, "38 lessons include 118 exercises with a seven-part checkpoint");
 assert.ok(exercises.length >= data.lessons.length, "Every lesson needs assessable practice");
 for (const exercise of exercises) {
   assert.ok(exercise.id, "Every exercise needs a stable id");
@@ -80,6 +81,13 @@ for (const exercise of exercises) {
   assert.ok(Array.isArray(exercise.requiredTokens));
   assert.ok(Array.isArray(exercise.objectiveIds) && exercise.objectiveIds.length > 0);
   assert.ok(exercise.explanation);
+  if (![
+    "writing", "speaking", "substitution", "controlled-production", "conversation-prompt", "debate-roleplay",
+    "guided-writing", "message-reply", "recorded-monologue", "mediation", "roleplay", "rubric-writing",
+    "sentence-transform", "summarize-for-a-friend"
+  ].includes(exercise.type)) {
+    assert.equal(checkExercise(exercise, exercise.modelAnswer).status, "correct", `${exercise.id}: visible model answer must be accepted`);
+  }
 }
 
 const publishedExerciseTypes = new Set(exercises.map((exercise) => exercise.type));
@@ -484,6 +492,42 @@ const validBackup = {
 };
 assert.equal(validateBackup(validBackup), true);
 assert.throws(() => validateBackup({ format: "wrong", version: 1, stores: {} }));
+
+const malformedParadigmCatalog = JSON.parse(JSON.stringify(data));
+malformedParadigmCatalog.pronunciationTopics[0].paradigm = [{ label: "начало слова" }];
+const paradigmErrors = collectCourseValidationErrors(malformedParadigmCatalog);
+assert.ok(
+  paradigmErrors.some((error) => error.includes("pronunciationTopics[0].paradigm[0].form")),
+  "Malformed paradigm entry (missing form) must be reported"
+);
+
+const malformedMistakeCatalog = JSON.parse(JSON.stringify(data));
+malformedMistakeCatalog.grammarTopics[0].commonMistakes = [{ wrong: "x", right: "y" }];
+const mistakeErrors = collectCourseValidationErrors(malformedMistakeCatalog);
+assert.ok(
+  mistakeErrors.some((error) => error.includes("grammarTopics[0].commonMistakes[0].note")),
+  "Malformed commonMistakes entry (missing note) must be reported"
+);
+
+const emptyParadigmCatalog = JSON.parse(JSON.stringify(data));
+emptyParadigmCatalog.grammarTopics[0].paradigm = [];
+const emptyErrors = collectCourseValidationErrors(emptyParadigmCatalog);
+assert.ok(
+  emptyErrors.some((error) => error.includes("grammarTopics[0].paradigm: expected at least one item")),
+  "Empty paradigm array must be reported"
+);
+
+const wellFormedCatalog = JSON.parse(JSON.stringify(data));
+wellFormedCatalog.pronunciationTopics[0].paradigm = [{ label: "начало слова", form: "rue" }];
+wellFormedCatalog.pronunciationTopics[0].commonMistakes = [{ wrong: "x", right: "y", note: "z" }];
+wellFormedCatalog.pronunciationTopics[0].exceptions = [{ wrong: "x", right: "y", note: "z" }];
+const wellFormedErrors = collectCourseValidationErrors(wellFormedCatalog);
+assert.ok(
+  !wellFormedErrors.some((error) => error.startsWith("pronunciationTopics[0].paradigm"))
+    && !wellFormedErrors.some((error) => error.startsWith("pronunciationTopics[0].commonMistakes"))
+    && !wellFormedErrors.some((error) => error.startsWith("pronunciationTopics[0].exceptions")),
+  "Well-formed paradigm/commonMistakes/exceptions must not raise errors"
+);
 
 console.log(`Smoke tests passed: ${data.lessons.length} lessons, ${exercises.length} exercises, ${cards.length} cards.`);
 

@@ -72,6 +72,12 @@ export const COURSE_SCHEMA = Object.freeze({
     requiredText: Object.freeze(["id", "title", "level", "rule"]),
     requiredArrays: Object.freeze(["examples"])
   }),
+  paradigmEntry: Object.freeze({
+    requiredText: Object.freeze(["label", "form"])
+  }),
+  mistakeEntry: Object.freeze({
+    requiredText: Object.freeze(["wrong", "right", "note"])
+  }),
   lesson: Object.freeze({
     requiredText: Object.freeze([
       "id",
