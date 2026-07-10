@@ -215,7 +215,7 @@
         "id": "roadmap:a1",
         "cefrLevel": "A1",
         "title": "A1: выживание в повседневном контакте",
-        "status": "in-progress",
+        "status": "published",
         "claim": "План полного A1. Текущий Starter покрывает только первые социальные и бытовые сценарии.",
         "prerequisites": ["starter"],
         "targetOutcomes": [

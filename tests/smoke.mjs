@@ -45,11 +45,11 @@ for (const level of ["A1", "A2", "B1", "B2"]) {
   assert.ok(roadmapLevels.has(level), `Roadmap must include ${level}`);
   assert.ok(roadmapLevels.get(level).modules.length >= 3, `${level} roadmap needs multiple modules`);
 }
-assert.equal(roadmapLevels.get("A1").status, "in-progress");
+assert.equal(roadmapLevels.get("A1").status, "published");
 assert.equal(roadmapLevels.get("B2").status, "planned");
 assert.ok(
-  data.courseRoadmap.levels.every((level) => level.status !== "published"),
-  "No future CEFR level should be published before real lessons/evidence exist"
+  data.courseRoadmap.levels.filter((level) => level.cefrLevel !== "A1").every((level) => level.status !== "published"),
+  "No CEFR level beyond the completed A1 should be published before real lessons/evidence exist"
 );
 const roadmapSkillAxes = data.courseRoadmap.skillAxes.map((axis) => axis.id);
 for (const axis of [
