@@ -1692,7 +1692,10 @@ function scheduleReviewRefresh(cards) {
   if (!nextDueAt) return;
   state.reviewRefreshTimer = window.setTimeout(() => {
     state.reviewRefreshTimer = null;
-    if (state.view === "review") renderReview();
+    if (state.view === "review") {
+      state.reviewAnswerVisible = false;
+      renderReview();
+    }
   }, Math.max(1000, nextDueAt - now + 250));
 }
 
