@@ -6,6 +6,7 @@ import { checkExercise } from "../exercises.js";
 import { collectCourseValidationErrors, validateCourseCatalog } from "../course-validator.js";
 import {
   buildReviewQueue,
+  buildUnlockedWordRows,
   createSchedule,
   createScheduler,
   previewSchedule,
@@ -434,6 +435,21 @@ const queue = buildReviewQueue({
 assert.equal(queue.length, 10, "Only ten new cards should be introduced per day");
 assert.equal(new Set(queue.map((card) => card.noteId)).size, queue.length, "Sibling directions are buried");
 
+const firstCardSibling = cards.find((card) => card.noteId === cards[0].noteId && card.id !== cards[0].id);
+const firstCardAfterGood = reviewSchedule(firstSchedule, "good", now, createScheduler({ enable_fuzz: false }));
+const tenMinutesLater = new Date(now.getTime() + 10 * 60 * 1000);
+const queueWithShortRepeat = buildReviewQueue({
+  cards,
+  schedules: new Map([[cards[0].id, firstCardAfterGood.schedule]]),
+  logs: [{ cardId: cards[0].id, wasNew: true, reviewedAt: now.toISOString() }],
+  now: tenMinutesLater,
+  newLimit: 10,
+  cram: false,
+  seen: new Set()
+});
+assert.equal(queueWithShortRepeat[0].id, cards[0].id, "A card due after ten minutes must return today");
+assert.ok(!queueWithShortRepeat.some((card) => card.id === firstCardSibling.id), "The sibling direction stays buried while the note is learning");
+
 const overdue = {
   ...createSchedule(cards[20].id, now),
   due: "2026-07-07T10:00:00.000Z",
@@ -444,6 +460,55 @@ const overdue = {
   scheduled_days: 2,
   last_review: "2026-07-05T10:00:00.000Z"
 };
+const firstCardAfterAgain = reviewSchedule(firstSchedule, "again", now, createScheduler({ enable_fuzz: false }));
+const queueWithAgainPriority = buildReviewQueue({
+  cards,
+  schedules: new Map([
+    [overdue.id, overdue],
+    [cards[0].id, firstCardAfterAgain.schedule]
+  ]),
+  logs: [{ cardId: cards[0].id, wasNew: true, reviewedAt: now.toISOString() }],
+  now: new Date(firstCardAfterAgain.schedule.due),
+  newLimit: 10,
+  cram: false,
+  seen: new Set()
+});
+assert.equal(queueWithAgainPriority[0].id, cards[0].id, "A due Again card must outrank ordinary overdue cards");
+const queueWithAgainMarkedSeen = buildReviewQueue({
+  cards,
+  schedules: new Map([[cards[0].id, firstCardAfterAgain.schedule]]),
+  logs: [{ cardId: cards[0].id, wasNew: true, reviewedAt: now.toISOString() }],
+  now: new Date(firstCardAfterAgain.schedule.due),
+  newLimit: 10,
+  cram: false,
+  seen: new Set([cards[0].id])
+});
+assert.equal(queueWithAgainMarkedSeen[0].id, cards[0].id, "A due Again card must return even when a stale session marks it seen");
+const queueWithSkippedDue = buildReviewQueue({
+  cards,
+  schedules: new Map([
+    [overdue.id, overdue],
+    [cards[0].id, firstCardAfterAgain.schedule]
+  ]),
+  logs: [{ cardId: cards[0].id, wasNew: true, reviewedAt: now.toISOString() }],
+  now: new Date(firstCardAfterAgain.schedule.due),
+  newLimit: 10,
+  cram: false,
+  seen: new Set([overdue.id])
+});
+assert.equal(queueWithSkippedDue.length >= 2, true, "Skipped due cards stay in the session instead of disappearing");
+assert.equal(queueWithSkippedDue[1].id, overdue.id, "Skip moves an ordinary due card behind unskipped due cards");
+const sixteenDueCards = cards.slice(0, 16);
+const allSixteenMarkedSeen = buildReviewQueue({
+  cards: sixteenDueCards,
+  schedules: new Map(sixteenDueCards.map((card) => [card.id, { ...overdue, id: card.id }])),
+  logs: [],
+  now,
+  newLimit: 0,
+  cram: false,
+  seen: new Set(sixteenDueCards.map((card) => card.id))
+});
+assert.equal(allSixteenMarkedSeen.length, 16, "All 16 due cards stay available even after they were skipped in this session");
 const queueWithDue = buildReviewQueue({
   cards,
   schedules: new Map([[overdue.id, overdue]]),
@@ -527,6 +592,49 @@ assert.ok(
     && !wellFormedErrors.some((error) => error.startsWith("pronunciationTopics[0].commonMistakes"))
     && !wellFormedErrors.some((error) => error.startsWith("pronunciationTopics[0].exceptions")),
   "Well-formed paradigm/commonMistakes/exceptions must not raise errors"
+);
+
+const wordRowNow = new Date("2026-07-08T10:00:00.000Z");
+const wordRowCards = [
+  { id: "c:a", noteId: "n:a", source: "builtIn", front: "le pain", back: "хлеб", lessonId: "l01", lessonTitle: "Урок 1" },
+  { id: "c:b", noteId: "n:b", source: "builtIn", front: "bonjour", back: "здравствуйте", lessonId: "l01", lessonTitle: "Урок 1" },
+  { id: "c:c", noteId: "n:c", source: "builtIn", front: "merci", back: "спасибо", lessonId: "l02", lessonTitle: "Урок 2" },
+  { id: "c:d", noteId: "n:d", source: "custom", front: "ananas", back: "ананас", lessonId: "custom", lessonTitle: "Свои слова" }
+];
+const wordRowSchedules = new Map([
+  ["c:b", { ...createSchedule("c:b", wordRowNow), state: 2, reps: 3, due: new Date(wordRowNow.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString() }],
+  ["c:c", { ...createSchedule("c:c", wordRowNow), state: 2, reps: 3, due: new Date(wordRowNow.getTime() - 60 * 60 * 1000).toISOString() }],
+  ["c:d", { ...createSchedule("c:d", wordRowNow), state: 1, reps: 1, due: new Date(wordRowNow.getTime() + 5 * 60 * 1000).toISOString() }]
+]);
+// c:a has no schedule entry at all, i.e. a never-reviewed New card.
+
+const wordRows = buildUnlockedWordRows({ cards: wordRowCards, schedules: wordRowSchedules, now: wordRowNow });
+assert.equal(wordRows.length, 4, "Every active card produces exactly one row");
+assert.deepEqual(
+  wordRows.map((row) => row.front),
+  ["bonjour", "le pain", "merci", "ananas"],
+  "Rows are grouped by lesson in course order, alphabetical within each group, with the custom group last"
+);
+assert.deepEqual(
+  wordRows.map((row) => row.groupLabel),
+  ["Урок 1", "Урок 1", "Урок 2", "Свои слова"]
+);
+const lePain = wordRows.find((row) => row.front === "le pain");
+assert.equal(lePain.statusLabel, "Новое", "A card with no schedule is New");
+assert.equal(lePain.remainingLabel, "Новое", "A New card has no due countdown yet");
+const bonjour = wordRows.find((row) => row.front === "bonjour");
+assert.equal(bonjour.statusLabel, "Повторение");
+assert.equal(bonjour.remainingLabel, "через 2 дн", "A card due in 2 days shows a future countdown");
+const merci = wordRows.find((row) => row.front === "merci");
+assert.equal(merci.statusLabel, "Повторение");
+assert.equal(merci.remainingLabel, "Пора повторить", "An overdue card shows the due-now label");
+const ananas = wordRows.find((row) => row.front === "ananas");
+assert.equal(ananas.statusLabel, "Изучение");
+assert.equal(ananas.remainingLabel, "через 5 мин");
+assert.deepEqual(
+  buildUnlockedWordRows({ cards: [], schedules: new Map(), now: wordRowNow }),
+  [],
+  "No active cards means no rows"
 );
 
 console.log(`Smoke tests passed: ${data.lessons.length} lessons, ${exercises.length} exercises, ${cards.length} cards.`);

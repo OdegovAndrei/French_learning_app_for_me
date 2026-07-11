@@ -66,43 +66,103 @@ export function isDueSchedule(schedule, now = new Date()) {
   return schedule && !isNewSchedule(schedule) && new Date(schedule.due).getTime() <= now.getTime();
 }
 
-export function countNewIntroducedToday(logs, now = new Date()) {
-  const day = localDateKey(now);
-  return new Set(
-    logs.filter((log) => log.wasNew && localDateKey(new Date(log.reviewedAt)) === day).map((log) => log.cardId)
-  ).size;
+export function isLearningSchedule(schedule) {
+  return schedule?.state === State.Learning || schedule?.state === State.Relearning;
 }
 
-export function reviewedNoteIdsToday(logs, cardsById, now = new Date()) {
+const SCHEDULE_STATE_LABELS = {
+  [State.New]: "Новое",
+  [State.Learning]: "Изучение",
+  [State.Review]: "Повторение",
+  [State.Relearning]: "Переизучение"
+};
+
+export function buildUnlockedWordRows({ cards, schedules, now = new Date() }) {
+  const groupOrder = [];
+  const groups = new Map();
+  for (const card of cards) {
+    const key = card.lessonId || "custom";
+    if (!groups.has(key)) {
+      groups.set(key, { label: card.lessonTitle || "Свои слова", cards: [] });
+      groupOrder.push(key);
+    }
+    groups.get(key).cards.push(card);
+  }
+  const orderedKeys = [
+    ...groupOrder.filter((key) => key !== "custom"),
+    ...groupOrder.filter((key) => key === "custom")
+  ];
+
+  return orderedKeys.flatMap((key) => {
+    const group = groups.get(key);
+    const sortedCards = [...group.cards].sort((a, b) => a.front.localeCompare(b.front, "fr"));
+    return sortedCards.map((card) => {
+      const schedule = schedules.get(card.id);
+      return {
+        id: card.id,
+        front: card.front,
+        back: card.back,
+        groupLabel: group.label,
+        statusLabel: SCHEDULE_STATE_LABELS[schedule?.state] || SCHEDULE_STATE_LABELS[State.New],
+        remainingLabel: unlockedWordRemainingLabel(schedule, now)
+      };
+    });
+  });
+}
+
+function unlockedWordRemainingLabel(schedule, now) {
+  if (isNewSchedule(schedule)) return "Новое";
+  if (isDueSchedule(schedule, now)) return "Пора повторить";
+  return `через ${formatInterval(new Date(schedule.due).getTime() - now.getTime())}`;
+}
+
+export function countNewIntroducedToday(logs, cardsById, now = new Date()) {
   const day = localDateKey(now);
   return new Set(
     logs
-      .filter((log) => localDateKey(new Date(log.reviewedAt)) === day)
+      .filter((log) => log.wasNew && localDateKey(new Date(log.reviewedAt)) === day)
+      .map((log) => cardsById.get(log.cardId)?.noteId || log.cardId)
+  ).size;
+}
+
+export function introducedNoteIdsToday(logs, cardsById, now = new Date()) {
+  const day = localDateKey(now);
+  return new Set(
+    logs
+      .filter((log) => log.wasNew && localDateKey(new Date(log.reviewedAt)) === day)
       .map((log) => cardsById.get(log.cardId)?.noteId)
       .filter(Boolean)
   );
 }
 
 export function buildReviewQueue({ cards, schedules, logs, now = new Date(), newLimit = 10, cram = false, seen = new Set() }) {
-  const active = cards.filter((card) => !seen.has(card.id));
-  if (cram) return active;
+  const active = cards;
+  if (cram) return active.filter((card) => !seen.has(card.id));
 
   const cardsById = new Map(cards.map((card) => [card.id, card]));
-  const reviewedNotes = reviewedNoteIdsToday(logs, cardsById, now);
-  const available = active.filter((card) => !reviewedNotes.has(card.noteId));
-  const due = available
+  const due = active
     .filter((card) => isDueSchedule(schedules.get(card.id), now))
-    .sort((a, b) => new Date(schedules.get(a.id).due) - new Date(schedules.get(b.id).due));
+    .sort((a, b) => {
+      const aSchedule = schedules.get(a.id);
+      const bSchedule = schedules.get(b.id);
+      const priorityDifference = Number(isLearningSchedule(bSchedule)) - Number(isLearningSchedule(aSchedule));
+      if (priorityDifference) return priorityDifference;
+      const skippedDifference = Number(seen.has(a.id)) - Number(seen.has(b.id));
+      if (skippedDifference) return skippedDifference;
+      return new Date(aSchedule.due) - new Date(bSchedule.due);
+    });
 
-  const introduced = countNewIntroducedToday(logs, now);
+  const introducedNotes = introducedNoteIdsToday(logs, cardsById, now);
+  const introduced = countNewIntroducedToday(logs, cardsById, now);
   const slots = Math.max(0, newLimit - introduced);
   const newCards = [];
-  const selectedNotes = new Set(due.map((card) => card.noteId));
+  const selectedNotes = new Set([...due.map((card) => card.noteId), ...introducedNotes]);
 
-  for (const card of available) {
+  for (const card of active) {
     if (newCards.length >= slots) break;
+    if (seen.has(card.id)) continue;
     if (!isNewSchedule(schedules.get(card.id))) continue;
-    if (reviewedNotes.has(card.noteId) || selectedNotes.has(card.noteId)) continue;
+    if (selectedNotes.has(card.noteId)) continue;
     newCards.push(card);
     selectedNotes.add(card.noteId);
   }
