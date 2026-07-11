@@ -125,16 +125,6 @@ export function countNewIntroducedToday(logs, cardsById, now = new Date()) {
   ).size;
 }
 
-export function introducedNoteIdsToday(logs, cardsById, now = new Date()) {
-  const day = localDateKey(now);
-  return new Set(
-    logs
-      .filter((log) => log.wasNew && localDateKey(new Date(log.reviewedAt)) === day)
-      .map((log) => cardsById.get(log.cardId)?.noteId)
-      .filter(Boolean)
-  );
-}
-
 export function buildReviewQueue({ cards, schedules, logs, now = new Date(), newLimit = 10, cram = false, seen = new Set() }) {
   const active = cards;
   if (cram) return active.filter((card) => !seen.has(card.id));
@@ -152,19 +142,19 @@ export function buildReviewQueue({ cards, schedules, logs, now = new Date(), new
       return new Date(aSchedule.due) - new Date(bSchedule.due);
     });
 
-  const introducedNotes = introducedNoteIdsToday(logs, cardsById, now);
   const introduced = countNewIntroducedToday(logs, cardsById, now);
   const slots = Math.max(0, newLimit - introduced);
   const newCards = [];
-  const selectedNotes = new Set([...due.map((card) => card.noteId), ...introducedNotes]);
+  const newNoteIds = new Set();
 
   for (const card of active) {
-    if (newCards.length >= slots) break;
     if (seen.has(card.id)) continue;
     if (!isNewSchedule(schedules.get(card.id))) continue;
-    if (selectedNotes.has(card.noteId)) continue;
+    if (!newNoteIds.has(card.noteId)) {
+      if (newNoteIds.size >= slots) continue;
+      newNoteIds.add(card.noteId);
+    }
     newCards.push(card);
-    selectedNotes.add(card.noteId);
   }
 
   return [...due, ...newCards];

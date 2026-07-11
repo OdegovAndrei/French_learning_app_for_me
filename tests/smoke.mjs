@@ -432,8 +432,8 @@ const queue = buildReviewQueue({
   cram: false,
   seen: new Set()
 });
-assert.equal(queue.length, 10, "Only ten new cards should be introduced per day");
-assert.equal(new Set(queue.map((card) => card.noteId)).size, queue.length, "Sibling directions are buried");
+assert.equal(new Set(queue.map((card) => card.noteId)).size, 10, "Only ten distinct new words should be introduced per day");
+assert.equal(queue.length, 20, "Both directions of each of the ten new words are queued together");
 
 const firstCardSibling = cards.find((card) => card.noteId === cards[0].noteId && card.id !== cards[0].id);
 const firstCardAfterGood = reviewSchedule(firstSchedule, "good", now, createScheduler({ enable_fuzz: false }));
@@ -448,7 +448,32 @@ const queueWithShortRepeat = buildReviewQueue({
   seen: new Set()
 });
 assert.equal(queueWithShortRepeat[0].id, cards[0].id, "A card due after ten minutes must return today");
-assert.ok(!queueWithShortRepeat.some((card) => card.id === firstCardSibling.id), "The sibling direction stays buried while the note is learning");
+assert.ok(
+  queueWithShortRepeat.some((card) => card.id === firstCardSibling.id),
+  "The sibling direction is no longer excluded just because the note already has a due/learning card today"
+);
+
+const pairedCards = [
+  { id: "p:a:ru-fr", noteId: "p:a", source: "builtIn", kind: "ru-fr", front: "chat", back: "кот", lessonId: "l01", lessonTitle: "Урок 1" },
+  { id: "p:a:fr-ru", noteId: "p:a", source: "builtIn", kind: "fr-ru", front: "кот", back: "chat", lessonId: "l01", lessonTitle: "Урок 1" },
+  { id: "p:b:ru-fr", noteId: "p:b", source: "builtIn", kind: "ru-fr", front: "chien", back: "собака", lessonId: "l01", lessonTitle: "Урок 1" },
+  { id: "p:b:fr-ru", noteId: "p:b", source: "builtIn", kind: "fr-ru", front: "собака", back: "chien", lessonId: "l01", lessonTitle: "Урок 1" }
+];
+const pairedQueue = buildReviewQueue({
+  cards: pairedCards,
+  schedules: new Map(),
+  logs: [],
+  now,
+  newLimit: 1,
+  cram: false,
+  seen: new Set()
+});
+assert.equal(pairedQueue.length, 2, "A one-word daily budget still admits both directions of that single word");
+assert.deepEqual(
+  new Set(pairedQueue.map((card) => card.noteId)),
+  new Set(["p:a"]),
+  "Only the first note's pair is admitted; the second note's pair waits for tomorrow"
+);
 
 const overdue = {
   ...createSchedule(cards[20].id, now),
