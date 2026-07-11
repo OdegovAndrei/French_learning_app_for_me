@@ -12,6 +12,7 @@ import { validateCourseCatalog } from "./course-validator.js";
 import * as mastery from "./mastery.js";
 import {
   buildReviewQueue,
+  buildUnlockedWordRows,
   createSchedule,
   isDueSchedule,
   isNewSchedule,
@@ -27,8 +28,11 @@ import {
   getRecord,
   getValue,
   importDatabase,
+  initializeFileStorage,
   migrateLegacyProgress,
   putRecord,
+  putRecordingResult,
+  putReviewResult,
   setValue,
   validateBackup
 } from "./storage.js";
@@ -50,10 +54,13 @@ const state = {
   reviewLogs: [],
   exerciseAttempts: new Map(),
   recordings: new Map(),
+  storage: { path: "user-data/french-study-data.json", migratedLocalData: false },
   reviewMode: "review",
   reviewDeck: "all",
   reviewSeen: new Set(),
   reviewAnswerVisible: false,
+  reviewRefreshTimer: null,
+  reviewSaving: false,
   mediaRecorder: null,
   audioChunks: [],
   recordingContext: null,
@@ -94,8 +101,15 @@ async function init() {
     validateCourseCatalog(state.data);
     const catalogTitle = state.data.meta?.title || "French Study";
     document.title = catalogTitle;
+    state.storage = await initializeFileStorage();
     state.appState = await migrateLegacyProgress(defaultAppState());
-    state.settings = { ...defaultSettings(), ...(await getValue("settings", {})) };
+    const storedSettings = await getValue("settings", {});
+    state.settings = { ...defaultSettings(), ...storedSettings };
+    if (storedSettings.reviewSettingsVersion !== 1) {
+      state.settings.newCardsPerDay = defaultSettings().newCardsPerDay;
+      state.settings.reviewSettingsVersion = 1;
+      await setValue("settings", state.settings);
+    }
     if (!VOICE_OPTIONS.some((option) => option.id === state.settings.voiceURI)) {
       state.settings.voiceURI = defaultSettings().voiceURI;
     }
@@ -120,6 +134,7 @@ async function init() {
 
     bindGlobalActions();
     render();
+    showSaved();
   } catch (error) {
     app.innerHTML = `<div class="empty-state">Не удалось загрузить кабинет: ${escapeHtml(error.message)}</div>`;
   }
@@ -138,17 +153,23 @@ function bindGlobalActions() {
     }, 180);
   });
   window.addEventListener("keydown", handleReviewKeyboard);
+  window.addEventListener("focus", refreshReviewOnReturn);
   window.addEventListener("pagehide", () => {
     stopRecording();
     flushPendingSaves();
   });
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") flushPendingSaves();
+    if (document.visibilityState === "hidden") {
+      flushPendingSaves();
+    } else {
+      refreshReviewOnReturn();
+    }
   });
 }
 
 function switchView(view) {
   stopRecording();
+  clearReviewRefreshTimer();
   state.appState.scrollPositions[state.view] = window.scrollY;
   state.view = view;
   state.appState.currentView = view;
@@ -364,7 +385,8 @@ function renderReview() {
   const allActive = getActiveCards();
   const suspendedCards = allCards.filter((card) => state.appState.suspendedCardIds.includes(card.id));
   const deckCards = filterCards(allActive, state.reviewDeck);
-  const queue = buildReviewQueue({
+  const isWordsMode = state.reviewMode === "words";
+  let queue = isWordsMode ? [] : buildReviewQueue({
     cards: deckCards,
     schedules: state.schedules,
     logs: state.reviewLogs,
@@ -372,8 +394,19 @@ function renderReview() {
     cram: state.reviewMode === "cram",
     seen: state.reviewSeen
   });
-  const card = queue[0];
   const summary = getReviewSummary(deckCards);
+  if (!isWordsMode && !queue.length && summary.due > 0 && state.reviewSeen.size > 0) {
+    state.reviewSeen.clear();
+    queue = buildReviewQueue({
+      cards: deckCards,
+      schedules: state.schedules,
+      logs: state.reviewLogs,
+      newLimit: state.settings.newCardsPerDay,
+      cram: state.reviewMode === "cram",
+      seen: state.reviewSeen
+    });
+  }
+  const card = queue[0];
 
   app.innerHTML = `
     <section class="review-stage">
@@ -381,23 +414,64 @@ function renderReview() {
         <div class="segmented" aria-label="Режим повторения">
           <button type="button" data-review-mode="review" class="${state.reviewMode === "review" ? "active" : ""}">Повторение</button>
           <button type="button" data-review-mode="cram" class="${state.reviewMode === "cram" ? "active" : ""}">Зубрёжка</button>
+          <button type="button" data-review-mode="words" class="${isWordsMode ? "active" : ""}">Все слова</button>
         </div>
+        ${isWordsMode ? "" : `
         <select id="review-deck" class="select-control" aria-label="Колода">
           ${renderDeckOptions()}
-        </select>
+        </select>`}
         <button class="secondary-button" type="button" id="review-add-word">Добавить слово</button>
       </div>
+      ${isWordsMode ? "" : `
       <div class="review-counters">
         <span><strong>${summary.due}</strong> пора</span>
         <span><strong>${summary.newCount}</strong> новых</span>
         <span><strong>${queue.length}</strong> в этой сессии</span>
-      </div>
-      ${card ? renderReviewCard(card) : renderReviewEmpty(summary)}
+      </div>`}
+      ${isWordsMode ? renderUnlockedWordsList(allActive) : (card ? renderReviewCard(card) : renderReviewEmpty(summary))}
       ${renderSuspendedCards(suspendedCards)}
     </section>`;
 
   bindReviewToolbar();
-  if (card) bindReviewCard(card);
+  if (!isWordsMode && card) bindReviewCard(card);
+  scheduleReviewRefresh(isWordsMode ? allActive : deckCards);
+}
+
+function renderUnlockedWordsList(cards) {
+  const rows = buildUnlockedWordRows({ cards, schedules: state.schedules, now: new Date() });
+  if (!rows.length) {
+    return `<div class="empty-state"><strong>Пока нет разблокированных слов</strong><p>Пройди урок или добавь своё слово, чтобы они появились здесь.</p></div>`;
+  }
+  const groups = [];
+  for (const row of rows) {
+    const lastGroup = groups[groups.length - 1];
+    if (lastGroup && lastGroup.label === row.groupLabel) {
+      lastGroup.rows.push(row);
+    } else {
+      groups.push({ label: row.groupLabel, rows: [row] });
+    }
+  }
+  return `
+    <div class="unlocked-words-groups">
+      ${groups.map((group) => `
+        <section class="section-band with-top-gap">
+          <div class="section-heading"><div><p class="eyebrow">${group.rows.length} слов</p><h4>${escapeHtml(group.label)}</h4></div></div>
+          <div class="table-wrap">
+            <table class="vocab-table">
+              <thead><tr><th>Французский</th><th>Перевод</th><th>Статус</th><th>Осталось до показа</th></tr></thead>
+              <tbody>
+                ${group.rows.map((row) => `
+                  <tr>
+                    <td><strong>${escapeHtml(row.front)}</strong></td>
+                    <td>${escapeHtml(row.back)}</td>
+                    <td>${escapeHtml(row.statusLabel)}</td>
+                    <td>${escapeHtml(row.remainingLabel)}</td>
+                  </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+        </section>`).join("")}
+    </div>`;
 }
 
 function renderProgress() {
@@ -462,13 +536,24 @@ function renderSettings() {
       </section>
 
       <section class="section-band">
-        <div class="section-heading"><div><p class="eyebrow">Локальные данные</p><h4>Резервная копия</h4></div></div>
+        <div class="section-heading"><div><p class="eyebrow">Повторение FSRS</p><h4>Темп новых слов</h4></div></div>
+        <label class="field-label">Новых слов в день
+          <input id="new-cards-per-day" type="number" min="0" max="1000" step="1" inputmode="numeric" value="${state.settings.newCardsPerDay}" />
+        </label>
+        <p class="note">Это лимит только на новые слова. Карточки, которым FSRS назначил повтор через 1 или 10 минут, появляются вне лимита и в первую очередь. Изменение применяется сразу.</p>
+      </section>
+
+      <section class="section-band">
+        <div class="section-heading"><div><p class="eyebrow">Данные на компьютере</p><h4>Единый файл прогресса</h4></div></div>
+        <p>Все уроки, ответы, свои слова, карточки FSRS и голосовые записи сохраняются в:</p>
+        <p class="storage-path"><code>${escapeHtml(state.storage.path)}</code></p>
+        <p class="note">Этот файл общий для всех браузеров, адресов и портов на этом компьютере. IndexedDB используется только как локальный кэш.</p>
         <div class="stacked-actions">
           <button class="secondary-button" type="button" id="backup-light">Лёгкая копия без аудио</button>
           <button class="secondary-button" type="button" id="backup-full">Полная копия с аудио</button>
           <label class="secondary-button file-button">Восстановить из JSON<input id="restore-backup" type="file" accept="application/json,.json" /></label>
         </div>
-        <p class="note">IndexedDB переживает перезагрузку браузера. JSON-копия защищает от очистки данных сайта.</p>
+        <p class="note">Перед каждым изменением сервер атомарно обновляет основной файл и сохраняет предыдущую версию рядом как <code>french-study-data.backup.json</code>.</p>
       </section>
 
       <section class="section-band">
@@ -479,7 +564,7 @@ function renderSettings() {
 
       <section class="section-band danger-band">
         <div class="section-heading"><div><p class="eyebrow">Опасная зона</p><h4>Сброс кабинета</h4></div></div>
-        <button class="danger-button" type="button" id="reset-progress">Удалить весь локальный прогресс</button>
+        <button class="danger-button" type="button" id="reset-progress">Удалить весь общий прогресс</button>
       </section>
     </div>`;
   bindSettingsActions();
@@ -634,7 +719,7 @@ function bindExercise(box, lesson) {
     attempt.answer = textarea.value;
     attempt.updatedAt = new Date().toISOString();
     state.exerciseAttempts.set(id, attempt);
-    debounceSave(`exercise:${id}`, () => putRecord("exercises", attempt));
+    void runSave(() => putRecord("exercises", { ...attempt }));
     updateLessonCompletionUI(box.closest(".lesson-layout"), lesson);
   });
   box.querySelector("[data-check-exercise]").addEventListener("click", async () => {
@@ -707,7 +792,7 @@ function renderReviewCard(card) {
           </div>
         </div>` : ""}
       <div class="review-card-tools">
-        <button type="button" data-card-skip>Пропустить</button>
+        <button type="button" data-card-skip>В конец очереди</button>
         <button type="button" data-card-reset>Сбросить карточку</button>
         ${card.source === "custom" ? `<button type="button" data-card-edit>Редактировать</button>` : ""}
         <button type="button" data-card-suspend>Приостановить</button>
@@ -724,7 +809,7 @@ function bindReviewToolbar() {
       renderReview();
     });
   });
-  document.querySelector("#review-deck").addEventListener("change", (event) => {
+  document.querySelector("#review-deck")?.addEventListener("change", (event) => {
     state.reviewDeck = event.target.value;
     state.reviewSeen.clear();
     state.reviewAnswerVisible = false;
@@ -776,22 +861,30 @@ function bindReviewCard(card) {
 }
 
 async function gradeReviewCard(card, rating) {
+  if (state.reviewSaving) return;
   if (state.reviewMode === "cram") {
     state.reviewSeen.add(card.id);
     state.reviewAnswerVisible = false;
     renderReview();
     return;
   }
+  state.reviewSaving = true;
+  showSaving();
   const schedule = state.schedules.get(card.id) || createSchedule(card.id);
   const { schedule: nextSchedule, log } = reviewSchedule(schedule, rating);
   log.id = `${card.id}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
-  state.schedules.set(card.id, nextSchedule);
-  state.reviewLogs.push(log);
-  await Promise.all([putRecord("schedules", nextSchedule), putRecord("reviewLogs", log)]);
-  state.reviewSeen.add(card.id);
-  state.reviewAnswerVisible = false;
-  showSaved();
-  renderReview();
+  try {
+    await putReviewResult(nextSchedule, log);
+    state.schedules.set(card.id, nextSchedule);
+    state.reviewLogs.push(log);
+    state.reviewAnswerVisible = false;
+    showSaved();
+    renderReview();
+  } catch (error) {
+    showSaveError(error);
+  } finally {
+    state.reviewSaving = false;
+  }
 }
 
 function openWordDialog(note = null) {
@@ -878,6 +971,7 @@ function bindVocabularyActions() {
 function bindSettingsActions() {
   const voiceSelect = document.querySelector("#voice-select");
   const rate = document.querySelector("#voice-rate");
+  const newCardsPerDay = document.querySelector("#new-cards-per-day");
   voiceSelect.addEventListener("change", async () => {
     state.settings.voiceURI = voiceSelect.value;
     await saveSettings();
@@ -887,13 +981,26 @@ function bindSettingsActions() {
     document.querySelector("#voice-rate-output").textContent = Number(rate.value).toFixed(2);
     debounceSave("settings", () => setValue("settings", state.settings));
   });
+  rate.addEventListener("change", () => {
+    void flushPendingSave("settings");
+  });
+  newCardsPerDay.addEventListener("change", async () => {
+    const limit = Number(newCardsPerDay.value);
+    if (!Number.isInteger(limit) || limit < 0 || limit > 1000) {
+      newCardsPerDay.value = state.settings.newCardsPerDay;
+      window.alert("Укажи целое число от 0 до 1000.");
+      return;
+    }
+    state.settings.newCardsPerDay = limit;
+    await saveSettings();
+  });
   document.querySelector("#test-voice").addEventListener("click", () => speakFrench("Bonjour, je voudrais un café, s'il vous plaît."));
   document.querySelector("#backup-light").addEventListener("click", () => downloadBackup(false));
   document.querySelector("#backup-full").addEventListener("click", () => downloadBackup(true));
   document.querySelector("#restore-backup").addEventListener("change", restoreBackup);
   document.querySelector("#export-anki").addEventListener("click", exportAnki);
   document.querySelector("#reset-progress").addEventListener("click", async () => {
-    if (!window.confirm("Удалить уроки, карточки, свои слова, ответы и аудиозаписи? Это действие нельзя отменить.")) return;
+    if (!window.confirm("Очистить общий файл прогресса: уроки, карточки, свои слова, ответы и аудиозаписи? Предыдущая версия останется в backup-файле.")) return;
     await clearDatabase();
     localStorage.removeItem("frenchStudyProgress");
     window.location.reload();
@@ -995,15 +1102,17 @@ async function saveFinishedRecording(recording) {
       ...(recording.lessonId ? { lessonId: recording.lessonId } : {}),
       ...(recording.exerciseId ? { exerciseId: recording.exerciseId } : {})
     };
-    await putRecord("recordings", record);
-    state.recordings.set(record.id, record);
+    let exerciseAttempt = null;
     if (recording.exerciseId && recording.lessonId) {
-      const attempt = getExerciseAttempt(recording.exerciseId, recording.lessonId);
-      attempt.recordingKey = record.id;
-      attempt.updatedAt = record.updatedAt;
-      state.exerciseAttempts.set(attempt.id, attempt);
-      await putRecord("exercises", attempt);
+      exerciseAttempt = {
+        ...getExerciseAttempt(recording.exerciseId, recording.lessonId),
+        recordingKey: record.id,
+        updatedAt: record.updatedAt
+      };
     }
+    await putRecordingResult(record, exerciseAttempt);
+    state.recordings.set(record.id, record);
+    if (exerciseAttempt) state.exerciseAttempts.set(exerciseAttempt.id, exerciseAttempt);
     if (recording.audio?.isConnected) setAudioSource(recording.audio, blob);
     if (recording.status?.isConnected) {
       recording.status.textContent = recording.minimumSeconds && durationMs < recording.minimumSeconds * 1000
@@ -1115,7 +1224,7 @@ async function restoreBackup(event) {
     }
     const snapshot = JSON.parse(await file.text());
     validateBackup(snapshot);
-    if (!window.confirm("Заменить текущие локальные данные содержимым резервной копии?")) return;
+    if (!window.confirm("Заменить общий файл прогресса содержимым резервной копии?")) return;
     const safetySnapshot = await exportDatabase({ includeRecordings: true });
     const safetyBlob = createBackupBlob(safetySnapshot);
     if (safetyBlob.size > MAX_BACKUP_FILE_BYTES) {
@@ -1178,8 +1287,11 @@ function getActiveCards() {
 function getReviewSummary(cards = getActiveCards()) {
   const due = cards.filter((card) => isDueSchedule(state.schedules.get(card.id))).length;
   const newCount = cards.filter((card) => isNewSchedule(state.schedules.get(card.id))).length;
+  const cardsById = new Map(cards.map((card) => [card.id, card]));
   const introducedToday = new Set(
-    state.reviewLogs.filter((log) => log.wasNew && isToday(log.reviewedAt)).map((log) => log.cardId)
+    state.reviewLogs
+      .filter((log) => log.wasNew && isToday(log.reviewedAt))
+      .map((log) => cardsById.get(log.cardId)?.noteId || log.cardId)
   ).size;
   return {
     due,
@@ -1456,7 +1568,7 @@ async function markLessonComplete(lessonId) {
   const previousCurrentLessonId = state.currentLessonId;
   const previousStoredLessonId = state.appState.currentLessonId;
   if (!state.appState.completedLessons.includes(lessonId)) state.appState.completedLessons.push(lessonId);
-  state.appState.completionModelVersion = 1;
+  state.appState.completionModelVersion = 2;
   if (state.currentLessonId === lessonId) setCurrentLesson(getNextLesson()?.id || lessonId, false);
   if (!(await saveAppState())) {
     state.appState.completedLessons = previousCompletedLessons;
@@ -1477,7 +1589,7 @@ async function toggleLessonCompleteFromTile(lessonId) {
     state.appState.completedLessons = state.appState.completedLessons.filter((id) => id !== lessonId);
   } else {
     state.appState.completedLessons.push(lessonId);
-    state.appState.completionModelVersion = 1;
+    state.appState.completionModelVersion = 2;
     if (state.currentLessonId === lessonId) setCurrentLesson(getNextLesson()?.id || lessonId, false);
   }
   if (!(await saveAppState())) {
@@ -1562,6 +1674,34 @@ function handleReviewKeyboard(event) {
   if (event.key.toLocaleLowerCase() === "s") document.querySelector("[data-card-skip]")?.click();
 }
 
+function clearReviewRefreshTimer() {
+  window.clearTimeout(state.reviewRefreshTimer);
+  state.reviewRefreshTimer = null;
+}
+
+function scheduleReviewRefresh(cards) {
+  clearReviewRefreshTimer();
+  if (state.view !== "review" || state.reviewMode === "cram") return;
+  const now = Date.now();
+  const nextDueAt = cards
+    .map((card) => state.schedules.get(card.id))
+    .filter((schedule) => schedule && !isNewSchedule(schedule))
+    .map((schedule) => new Date(schedule.due).getTime())
+    .filter((dueAt) => Number.isFinite(dueAt) && dueAt > now)
+    .sort((left, right) => left - right)[0];
+  if (!nextDueAt) return;
+  state.reviewRefreshTimer = window.setTimeout(() => {
+    state.reviewRefreshTimer = null;
+    if (state.view === "review") renderReview();
+  }, Math.max(1000, nextDueAt - now + 250));
+}
+
+function refreshReviewOnReturn() {
+  if (state.view !== "review") return;
+  state.reviewAnswerVisible = false;
+  renderReview();
+}
+
 async function migrateLegacySchedules() {
   if (await getValue("legacySchedulesMigrated", false)) return;
   const legacy = state.appState.legacyCardProgress || {};
@@ -1641,8 +1781,8 @@ function showSaving() {
 
 function showSaved() {
   saveIndicator.dataset.saveError = "false";
-  saveIndicator.removeAttribute("title");
-  saveIndicator.textContent = "Сохранено локально";
+  saveIndicator.title = state.storage.path;
+  saveIndicator.textContent = "Сохранено в файл";
   saveIndicator.classList.add("saved-flash");
   window.setTimeout(() => saveIndicator.classList.remove("saved-flash"), 700);
 }
@@ -1650,7 +1790,7 @@ function showSaved() {
 function showSaveError(error) {
   saveIndicator.dataset.saveError = "true";
   saveIndicator.textContent = "Ошибка сохранения";
-  saveIndicator.title = error?.message || "Локальные данные не удалось сохранить";
+  saveIndicator.title = error?.message || "Файл прогресса не удалось сохранить";
   console.error("French Study save failed", error);
 }
 
@@ -1663,7 +1803,7 @@ function defaultAppState() {
   return {
     completedLessons: [],
     legacyCompletedLessons: [],
-    completionModelVersion: 1,
+    completionModelVersion: 2,
     currentView: "today",
     currentLessonId: null,
     scrollPositions: {},
@@ -1675,7 +1815,7 @@ function defaultAppState() {
 }
 
 function defaultSettings() {
-  return { voiceURI: "fr-FR-DeniseNeural", voiceRate: 0.82, newCardsPerDay: 10 };
+  return { voiceURI: "fr-FR-DeniseNeural", voiceRate: 0.82, newCardsPerDay: 20, reviewSettingsVersion: 1 };
 }
 
 function resultLabel(status) {
