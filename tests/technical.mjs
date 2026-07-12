@@ -115,6 +115,12 @@ assert.match(appSource, /function switchView\(view\) \{\s+stopRecording\(\);/);
 assert.match(appSource, /if \(state\.reviewMode === "cram"\) \{[\s\S]*?state\.reviewSeen\.add\(card\.id\);[\s\S]*?return;/);
 assert.match(appSource, /data-card-resume/);
 assert.match(appSource, /window\.addEventListener\("pagehide"[\s\S]*?flushPendingSaves\(\)/);
+assert.match(appSource, /reviewDirection: "ru-fr"/, "state must default to ru-fr direction");
+assert.match(
+  appSource,
+  /const deckCards = filterCardsByDirection\(filterCards\(allActive, state\.reviewDeck\), state\.reviewDirection\);/,
+  "renderReview must filter deck cards by the selected direction"
+);
 
 const masteryLesson = {
   id: "lesson:mastery",

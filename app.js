@@ -4,6 +4,7 @@ import {
   buildVocabularyNotes,
   cardsFromVocabularyNote,
   filterCards,
+  filterCardsByDirection,
   renderClozeFront,
   revealCloze
 } from "./cards.js";
@@ -58,6 +59,7 @@ const state = {
   storage: { path: "user-data/french-study-data.json", migratedLocalData: false },
   reviewMode: "review",
   reviewDeck: "all",
+  reviewDirection: "ru-fr",
   reviewSeen: new Set(),
   reviewAnswerVisible: false,
   reviewRefreshTimer: null,
@@ -414,7 +416,7 @@ function renderReview() {
   const allCards = getAllCards();
   const allActive = getActiveCards();
   const suspendedCards = allCards.filter((card) => state.appState.suspendedCardIds.includes(card.id));
-  const deckCards = filterCards(allActive, state.reviewDeck);
+  const deckCards = filterCardsByDirection(filterCards(allActive, state.reviewDeck), state.reviewDirection);
   const isWordsMode = state.reviewMode === "words";
   const isPhrasesDeck = state.reviewDeck === "phrases";
   let queue = isWordsMode ? [] : buildReviewQueue({
