@@ -1059,6 +1059,26 @@
       "exceptions": [
         { "wrong": "aimer всегда переводится как романтическая любовь", "right": "j'aime le cinéma — просто «нравится», без романтического оттенка", "note": "Для чувств к людям есть отдельные конструкции (aimer bien для дружеской симпатии), но на A1 aimer к предметам/занятиям — нейтральное «нравится»" }
       ]
+    },
+    {
+      "id": "numbers-tens",
+      "title": "Числа 20-100: десятки и вигезимальная система 70-99",
+      "level": "A1",
+      "rule": "Десятки 20-60 образуются регулярно (vingt, trente, quarante, cinquante, soixante). С 70 начинается счёт по двадцаткам: 70 = soixante-dix (60+10), 80 = quatre-vingts (4×20), 90 = quatre-vingt-dix (4×20+10). В числах на 1 используется et без дефиса (vingt et un), кроме случаев после quatre-vingt(s), где всегда дефис без et: quatre-vingt-un. Soixante et onze (71) — единственное исключение с et в зоне 70-х.",
+      "examples": ["Il y a trente-cinq personnes.", "Ça fait soixante et onze euros.", "Il y a quatre-vingts chaises.", "Ça fait quatre-vingt-dix-neuf euros."],
+      "paradigm": [
+        { "label": "20-60 (регулярно)", "form": "vingt, trente, quarante, cinquante, soixante" },
+        { "label": "70-79 (60+10..19)", "form": "soixante-dix, soixante et onze, soixante-douze..." },
+        { "label": "80-89 (4×20)", "form": "quatre-vingts, quatre-vingt-un, quatre-vingt-deux..." },
+        { "label": "90-99 (4×20+10..19)", "form": "quatre-vingt-dix, quatre-vingt-onze, quatre-vingt-douze..." }
+      ],
+      "commonMistakes": [
+        { "wrong": "septante, huitante/octante, nonante (бельгийский/швейцарский счёт)", "right": "во французском французском — только soixante-dix, quatre-vingts, quatre-vingt-dix", "note": "Эти формы существуют в Бельгии и Швейцарии, но не используются во Франции." },
+        { "wrong": "quatre-vingts un (s перед другим числом)", "right": "quatre-vingt-un — s пропадает, как только после quatre-vingt идёт ещё одно число", "note": "s остаётся только в ровном числе 80: quatre-vingts euros." }
+      ],
+      "exceptions": [
+        { "wrong": "soixante-onze (по аналогии с quatre-vingt-onze)", "right": "soixante et onze — единственное число в 70-х с et", "note": "Все остальные 72-79 образуются без et: soixante-douze, soixante-treize..." }
+      ]
     }
   ],
   "lessons": [
@@ -2297,6 +2317,104 @@
         { "id": "phrase:l08a:0", "front": "Сколько учеников?", "back": "Il y a combien d'élèves ?", "type": "phrase" },
         { "id": "phrase:l08a:1", "front": "Четырнадцать учеников.", "back": "Il y a quatorze élèves.", "type": "phrase" },
         { "id": "phrase:l08a:2", "front": "Il y a {{c1::seize}} chaises.", "back": "Есть шестнадцать стульев.", "type": "cloze" }
+      ]
+    },
+    {
+      "id": "l08b",
+      "level": "A1",
+      "title": "Числа 20-100: десятки и особая логика 70-99",
+      "goal": "Использовать десятки 20-100, включая нерегулярную зону 70-99, и применять правило et/дефис.",
+      "scenario": "counting-tens",
+      "targetPhrase": "Ça fait quatre-vingt-dix-neuf euros.",
+      "pronunciationTopic": "nasals",
+      "grammarTopic": "numbers-tens",
+      "moduleId": "module:starter:numbers",
+      "order": 2,
+      "prerequisites": ["l08a"],
+      "tags": ["numbers", "tens", "irregular"],
+      "objectives": [
+        { "id": "obj:l08b:use-irregular-70-99", "skill": "language-system", "cefrCanDo": "Может образовывать и произносить числа 70-99 (soixante-dix, quatre-vingts, quatre-vingt-dix).", "required": true },
+        { "id": "obj:l08b:apply-et-hyphen-rule", "skill": "language-system", "cefrCanDo": "Может применять правило et/дефис в составных числах (vingt et un, quatre-vingt-un).", "required": true }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Vendeuse",
+          "fr": "Alors, ça fait combien en tout ?",
+          "ipa": "/a.lɔʁ sa fɛ kɔ̃.bjɛ̃ ɑ̃ tu/",
+          "ru": "Итак, сколько это выходит всего?"
+        },
+        {
+          "speaker": "Client",
+          "fr": "Attendez... ça fait quatre-vingt-quinze euros.",
+          "ipa": "/a.tɑ̃.de sa fɛ katʁ.vɛ̃.kɛ̃z ø.ʁo/",
+          "ru": "Подождите... это выходит девяносто пять евро."
+        },
+        {
+          "speaker": "Vendeuse",
+          "fr": "Et avec la réduction, soixante-dix-neuf euros.",
+          "ipa": "/e a.vɛk la ʁe.dyk.sjɔ̃ swa.sɑ̃t.dis.nœf ø.ʁo/",
+          "ru": "А со скидкой — семьдесят девять евро."
+        },
+        {
+          "speaker": "Client",
+          "fr": "Parfait, merci !",
+          "ipa": "/paʁ.fɛ mɛʁ.si/",
+          "ru": "Отлично, спасибо!"
+        }
+      ],
+      "vocabulary": [
+        { "id": "vocab:l08b:0", "fr": "trente", "ipa": "/tʁɑ̃t/", "ru": "тридцать", "note": "Дальше все круглые десятки по этой модели: quarante, cinquante, soixante." },
+        { "id": "vocab:l08b:1", "fr": "quarante", "ipa": "/ka.ʁɑ̃t/", "ru": "сорок", "note": "Похоже на trente по структуре." },
+        { "id": "vocab:l08b:2", "fr": "cinquante", "ipa": "/sɛ̃.kɑ̃t/", "ru": "пятьдесят", "note": "Носовой в начале, как в cinq." },
+        { "id": "vocab:l08b:3", "fr": "soixante", "ipa": "/swa.sɑ̃t/", "ru": "шестьдесят", "note": "Последний регулярный десяток — дальше начинается особая логика." },
+        { "id": "vocab:l08b:4", "fr": "soixante-dix", "ipa": "/swa.sɑ̃t.dis/", "ru": "семьдесят", "note": "Дословно «шестьдесят-десять»; отдельного слова septante во Франции нет." },
+        { "id": "vocab:l08b:5", "fr": "quatre-vingts", "ipa": "/katʁ.vɛ̃/", "ru": "восемьдесят", "note": "Дословно «четыре двадцатки»; s остаётся только в ровном числе 80." },
+        { "id": "vocab:l08b:6", "fr": "quatre-vingt-dix", "ipa": "/katʁ.vɛ̃.dis/", "ru": "девяносто", "note": "«Четыре двадцатки плюс десять» — nonante не используется во Франции." },
+        { "id": "vocab:l08b:7", "fr": "vingt et un", "ipa": "/vɛ̃.t‿e ɛ̃/", "ru": "двадцать один", "note": "Модель «X et un» работает для 21, 31, 41, 51, 61." },
+        { "id": "vocab:l08b:8", "fr": "soixante et onze", "ipa": "/swa.sɑ̃.t‿e ɔ̃z/", "ru": "семьдесят один", "note": "Единственное исключение в 70-х: et есть, но перед onze, не перед un." },
+        { "id": "vocab:l08b:9", "fr": "quatre-vingt-un", "ipa": "/katʁ.vɛ̃.ɛ̃/", "ru": "восемьдесят один", "note": "После quatre-vingt(s) и cent нет et — сразу дефис." },
+        { "id": "vocab:l08b:10", "fr": "quatre-vingt-onze", "ipa": "/katʁ.vɛ̃.ɔ̃z/", "ru": "девяносто один", "note": "Тот же принцип: без et, просто дефис." },
+        { "id": "vocab:l08b:11", "fr": "cent", "ipa": "/sɑ̃/", "ru": "сто", "note": "Замыкает сотню; дальше начинается урок о больших числах." }
+      ],
+      "exercises": [
+        {
+          "id": "l08b-e1",
+          "type": "controlled-production",
+          "prompt": "Назови по-французски: 71, 80, 91, 99.",
+          "acceptedAnswers": [],
+          "modelAnswer": "71 = soixante et onze. 80 = quatre-vingts. 91 = quatre-vingt-onze. 99 = quatre-vingt-dix-neuf.",
+          "hints": ["70-99 не образуются как обычные десятки — используй soixante-dix и quatre-vingt(s) как базу."],
+          "requiredTokens": ["quatre-vingts", "quatre-vingt-onze"],
+          "objectiveIds": ["obj:l08b:use-irregular-70-99"],
+          "explanation": "Это самая нерегулярная зона французских числительных — стоит выучить как блок."
+        },
+        {
+          "id": "l08b-e2",
+          "type": "gap-fill",
+          "prompt": "Заполни пропуск, чтобы получилось «девяносто один»: quatre-vingt-___.",
+          "acceptedAnswers": ["onze"],
+          "modelAnswer": "quatre-vingt-onze",
+          "hints": ["После quatre-vingt et не нужен — сразу число через дефис."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l08b:apply-et-hyphen-rule"],
+          "explanation": "quatre-vingt-onze — дефис, без et, в отличие от vingt et un."
+        },
+        {
+          "id": "l08b-e3",
+          "type": "translate",
+          "prompt": "Переведи: В группе тридцать пять человек. В зале восемьдесят стульев.",
+          "acceptedAnswers": ["Il y a trente-cinq personnes dans le groupe. Il y a quatre-vingts chaises dans la salle."],
+          "modelAnswer": "Il y a trente-cinq personnes dans le groupe. Il y a quatre-vingts chaises dans la salle.",
+          "hints": ["Обе фразы строятся через il y a — эта грамматика уже знакома из прошлого урока."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l08b:use-irregular-70-99"],
+          "explanation": "Quatre-vingts пишется с s, потому что это ровно 80, без добавочного числа."
+        }
+      ],
+      "cards": [
+        { "id": "phrase:l08b:0", "front": "Сколько это выходит всего?", "back": "Ça fait combien en tout ?", "type": "phrase" },
+        { "id": "phrase:l08b:1", "front": "Это выходит девяносто пять евро.", "back": "Ça fait quatre-vingt-quinze euros.", "type": "phrase" },
+        { "id": "phrase:l08b:2", "front": "Ça fait {{c1::soixante-dix-neuf}} euros.", "back": "Это выходит семьдесят девять евро.", "type": "cloze" }
       ]
     },
     {
