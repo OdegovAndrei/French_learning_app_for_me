@@ -121,6 +121,13 @@ assert.match(
   /const deckCards = filterCardsByDirection\(filterCards\(allActive, state\.reviewDeck\), state\.reviewDirection\);/,
   "renderReview must filter deck cards by the selected direction"
 );
+assert.match(appSource, /data-review-direction="ru-fr"/, "review toolbar must render an RU→FR direction button");
+assert.match(appSource, /data-review-direction="fr-ru"/, "review toolbar must render an FR→RU direction button");
+assert.match(
+  appSource,
+  /document\.querySelectorAll\("\[data-review-direction\]"\)\.forEach\(\(button\) => \{[\s\S]*?state\.reviewDirection = button\.dataset\.reviewDirection;[\s\S]*?state\.reviewSeen\.clear\(\);[\s\S]*?renderReview\(\);/,
+  "direction buttons must update state.reviewDirection, reset the seen set, and re-render"
+);
 
 const masteryLesson = {
   id: "lesson:mastery",

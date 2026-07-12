@@ -449,6 +449,10 @@ function renderReview() {
           <button type="button" data-review-mode="cram" class="${state.reviewMode === "cram" ? "active" : ""}">Зубрёжка</button>
           <button type="button" data-review-mode="words" class="${isWordsMode ? "active" : ""}">${isPhrasesDeck ? "Все фразы" : "Все слова"}</button>
         </div>
+        <div class="segmented" aria-label="Направление">
+          <button type="button" data-review-direction="ru-fr" class="${state.reviewDirection === "ru-fr" ? "active" : ""}">RU → FR</button>
+          <button type="button" data-review-direction="fr-ru" class="${state.reviewDirection === "fr-ru" ? "active" : ""}">FR → RU</button>
+        </div>
         ${isWordsMode ? "" : `
         <select id="review-deck" class="select-control" aria-label="Колода">
           ${renderDeckOptions()}
@@ -879,6 +883,14 @@ function bindReviewToolbar() {
   document.querySelectorAll("[data-review-mode]").forEach((button) => {
     button.addEventListener("click", () => {
       state.reviewMode = button.dataset.reviewMode;
+      state.reviewSeen.clear();
+      state.reviewAnswerVisible = false;
+      renderReview();
+    });
+  });
+  document.querySelectorAll("[data-review-direction]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.reviewDirection = button.dataset.reviewDirection;
       state.reviewSeen.clear();
       state.reviewAnswerVisible = false;
       renderReview();
