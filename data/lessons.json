@@ -84,8 +84,8 @@
     {
       "id": "module:a1:daily-services",
       "levelId": "a1",
-      "title": "Числа, время и бытовые сервисы",
-      "description": "Числа 0-100, il y a, чтение и объяснение объявлений/расписаний.",
+      "title": "Время и бытовые сервисы",
+      "description": "Чтение и объяснение объявлений/расписаний с указанием времени.",
       "order": 2,
       "prerequisites": ["module:a1:social-identity"]
     },
@@ -3262,113 +3262,6 @@
       ]
     },
     {
-      "id": "l14",
-      "level": "A1",
-      "title": "Числа и время: считаем и планируем",
-      "goal": "Использовать числа 0-100 и il y a в простых бытовых расчётах и планировании.",
-      "scenario": "counting-and-planning",
-      "targetPhrase": "Il y a combien de personnes ? Il y a dix personnes.",
-      "pronunciationTopic": "liaison",
-      "grammarTopic": "il-y-a",
-      "moduleId": "module:a1:daily-services",
-      "order": 1,
-      "prerequisites": ["l13"],
-      "tags": ["numbers", "il-y-a", "planning"],
-      "objectives": [
-        {
-          "id": "obj:l14:count-to-hundred",
-          "skill": "language-system",
-          "cefrCanDo": "Может использовать числа 0-100 в простых бытовых расчётах.",
-          "required": true
-        },
-        {
-          "id": "obj:l14:use-il-y-a",
-          "skill": "language-system",
-          "cefrCanDo": "Может использовать il y a, чтобы сказать о наличии и количестве.",
-          "required": true
-        }
-      ],
-      "dialogue": [
-        {
-          "speaker": "Organisateur",
-          "fr": "Il y a combien de personnes pour la réunion ?",
-          "ipa": "/il i a kɔ̃.bjɛ̃ də pɛʁ.sɔn puʁ la ʁe.y.njɔ̃/",
-          "ru": "Сколько человек на встрече?"
-        },
-        {
-          "speaker": "Collègue",
-          "fr": "Il y a dix personnes.",
-          "ipa": "/il i a di pɛʁ.sɔn/",
-          "ru": "Десять человек."
-        },
-        {
-          "speaker": "Organisateur",
-          "fr": "Et il y a des chaises ?",
-          "ipa": "/e il i a de ʃɛz/",
-          "ru": "А стулья есть?"
-        },
-        {
-          "speaker": "Collègue",
-          "fr": "Oui, il y a vingt chaises.",
-          "ipa": "/wi il i a vɛ̃ ʃɛz/",
-          "ru": "Да, двадцать стульев."
-        }
-      ],
-      "vocabulary": [
-        {"id": "vocab:l14:0", "fr": "six", "ipa": "/sis/", "ru": "шесть", "note": "Перед согласной звучит /si/, перед гласной /siz/."},
-        {"id": "vocab:l14:1", "fr": "sept", "ipa": "/sɛt/", "ru": "семь", "note": "Финальная t звучит, редкое исключение."},
-        {"id": "vocab:l14:2", "fr": "huit", "ipa": "/ɥit/", "ru": "восемь", "note": "h немое, начинается с /ɥ/."},
-        {"id": "vocab:l14:4", "fr": "onze", "ipa": "/ɔ̃z/", "ru": "одиннадцать", "note": "Не делает liaison, в отличие от других чисел."},
-        {"id": "vocab:l14:5", "fr": "trente", "ipa": "/tʁɑ̃t/", "ru": "тридцать", "note": "Дальше все десятки по этой модели: quarante, cinquante..."},
-        {"id": "vocab:l14:6", "fr": "quarante", "ipa": "/ka.ʁɑ̃t/", "ru": "сорок", "note": "Похоже на trente по структуре."},
-        {"id": "vocab:l14:7", "fr": "cinquante", "ipa": "/sɛ̃.kɑ̃t/", "ru": "пятьдесят", "note": "Носовой в начале, как в cinq."},
-        {"id": "vocab:l14:8", "fr": "cent", "ipa": "/sɑ̃/", "ru": "сто", "note": "Без s в единственном числе: cent euros."},
-        {"id": "vocab:l14:9", "fr": "il y a", "ipa": "/il i a/", "ru": "есть, имеется", "note": "Не меняется по числам: il y a un café / il y a dix cafés."}
-      ],
-      "exercises": [
-        {
-          "id": "l14-e1",
-          "type": "gap-fill",
-          "prompt": "Заполни: ___ dix personnes.",
-          "acceptedAnswers": ["Il y a"],
-          "modelAnswer": "Il y a dix personnes.",
-          "hints": ["Стандартная формула наличия/количества."],
-          "requiredTokens": [],
-          "objectiveIds": ["obj:l14:use-il-y-a"],
-          "explanation": "Il y a не согласуется с числом — форма всегда одна."
-        },
-        {
-          "id": "l14-e2",
-          "type": "controlled-production",
-          "prompt": "Реши и назови по-французски: 20+10=? 40+9=? 50+50=?",
-          "acceptedAnswers": [],
-          "modelAnswer": "20+10 = trente. 40+9 = quarante-neuf. 50+50 = cent.",
-          "hints": ["Складывай десятки и единицы, как в trente + un = trente et un."],
-          "requiredTokens": ["trente"],
-          "objectiveIds": ["obj:l14:count-to-hundred"],
-          "explanation": "Составные числа — десяток плюс единица. Числа 70-99 (irregular) сюда намеренно не входят — это за пределами практического A1."
-        },
-        {
-          "id": "l14-e3",
-          "type": "dictation",
-          "prompt": "Диктант: прослушай и запиши фразу полностью.",
-          "transcript": "Il y a vingt chaises.",
-          "listenText": "Il y a vingt chaises.",
-          "acceptedAnswers": ["Il y a vingt chaises."],
-          "modelAnswer": "Il y a vingt chaises.",
-          "hints": ["Il y a не меняется; vingt — число."],
-          "requiredTokens": [],
-          "objectiveIds": ["obj:l14:use-il-y-a"],
-          "explanation": "Диктант закрепляет il y a + число + существительное."
-        }
-      ],
-      "cards": [
-        {"id": "phrase:l14:0", "front": "Сколько человек?", "back": "Il y a combien de personnes ?", "type": "phrase"},
-        {"id": "phrase:l14:1", "front": "Десять человек.", "back": "Il y a dix personnes.", "type": "phrase"},
-        {"id": "phrase:l14:2", "front": "Il y a {{c1::vingt}} chaises.", "back": "Есть двадцать стульев.", "type": "cloze"}
-      ]
-    },
-    {
       "id": "l15",
       "level": "A1",
       "title": "Часы работы: читаем и объясняем другу",
@@ -3378,8 +3271,8 @@
       "pronunciationTopic": "silent-endings",
       "grammarTopic": "announcements",
       "moduleId": "module:a1:daily-services",
-      "order": 2,
-      "prerequisites": ["l14"],
+      "order": 1,
+      "prerequisites": ["l13"],
       "tags": ["reading", "mediation", "hours"],
       "objectives": [
         {
