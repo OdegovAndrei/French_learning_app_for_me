@@ -1079,6 +1079,26 @@
       "exceptions": [
         { "wrong": "soixante-onze (по аналогии с quatre-vingt-onze)", "right": "soixante et onze — единственное число в 70-х с et", "note": "Все остальные 72-79 образуются без et: soixante-douze, soixante-treize..." }
       ]
+    },
+    {
+      "id": "numbers-large",
+      "title": "Числа 100+: сотни, тысячи, миллионы, миллиарды",
+      "level": "A1",
+      "rule": "Cent получает s только в ровных сотнях без добавочного числа (deux cents), и теряет s, как только после него идёт ещё одно число (deux cent trois). Mille никогда не меняется и не берёт артикль un перед собой (mille, а не un mille). Million и milliard — обычные существительные, а не числительные: они согласуются во множественном числе (deux millions) и требуют de перед следующим существительным (un million de personnes, un milliard de dollars).",
+      "examples": ["Il y a deux cents personnes.", "Il y a deux cent trois personnes.", "Cette ville a mille habitants.", "Il y a un million d'habitants.", "Il y a deux milliards de dollars."],
+      "paradigm": [
+        { "label": "cent ровно", "form": "deux cents (200)" },
+        { "label": "cent + число", "form": "deux cent trois (203) — без s" },
+        { "label": "mille", "form": "mille, deux mille, cent mille — не меняется" },
+        { "label": "million/milliard + сущ.", "form": "un million de dollars, deux millions d'habitants" }
+      ],
+      "commonMistakes": [
+        { "wrong": "un mille euros", "right": "mille euros — mille никогда не берёт артикль un перед собой", "note": "В отличие от million/milliard, mille — неизменяемое числительное, а не существительное." },
+        { "wrong": "un million habitants (без de)", "right": "un million d'habitants — de обязателен, потому что million/milliard — существительные", "note": "Та же модель, что un kilo de pommes." }
+      ],
+      "exceptions": [
+        { "wrong": "deux cents trois (s остаётся перед числом)", "right": "deux cent trois — s исчезает, как только после cent идёт ещё одна цифра", "note": "То же правило работает для quatre-vingts: s только в ровном числе." }
+      ]
     }
   ],
   "lessons": [
@@ -2418,6 +2438,105 @@
       ]
     },
     {
+      "id": "l08c",
+      "level": "A1",
+      "title": "Числа 100 и больше: сотни, тысячи, миллионы, миллиарды",
+      "goal": "Использовать сотни, тысячи, миллионы и миллиарды, включая согласование cent и правило de после million/milliard.",
+      "scenario": "counting-large-numbers",
+      "targetPhrase": "Cette ville a deux millions d'habitants.",
+      "pronunciationTopic": "silent-endings",
+      "grammarTopic": "numbers-large",
+      "moduleId": "module:starter:numbers",
+      "order": 3,
+      "prerequisites": ["l08b"],
+      "tags": ["numbers", "large-numbers", "million"],
+      "objectives": [
+        { "id": "obj:l08c:agree-cent-mille", "skill": "language-system", "cefrCanDo": "Может правильно согласовывать cent (deux cents / deux cent trois) и использовать неизменяемое mille.", "required": true },
+        { "id": "obj:l08c:use-de-after-million-milliard", "skill": "language-system", "cefrCanDo": "Может использовать de после million/milliard перед существительным.", "required": true },
+        { "id": "obj:l08c:read-big-numbers", "skill": "reading", "cefrCanDo": "Может найти и понять большие числа (сотни тысяч, миллионы) в коротком тексте.", "required": true }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Touriste",
+          "fr": "Paris a combien d'habitants ?",
+          "ipa": "/pa.ʁi a kɔ̃.bjɛ̃ d‿a.bi.tɑ̃/",
+          "ru": "Сколько жителей в Париже?"
+        },
+        {
+          "speaker": "Guide",
+          "fr": "Paris a environ deux millions d'habitants.",
+          "ipa": "/pa.ʁi a ɑ̃.vi.ʁɔ̃ dø mi.ljɔ̃ d‿a.bi.tɑ̃/",
+          "ru": "В Париже около двух миллионов жителей."
+        },
+        {
+          "speaker": "Touriste",
+          "fr": "Et la région parisienne ?",
+          "ipa": "/e la ʁe.ʒjɔ̃ pa.ʁi.zjɛn/",
+          "ru": "А парижский регион?"
+        },
+        {
+          "speaker": "Guide",
+          "fr": "Plus de douze millions de personnes.",
+          "ipa": "/plys də duz mi.ljɔ̃ də pɛʁ.sɔn/",
+          "ru": "Более двенадцати миллионов человек."
+        }
+      ],
+      "vocabulary": [
+        { "id": "vocab:l08c:0", "fr": "cent", "ipa": "/sɑ̃/", "ru": "сто", "note": "Финальная t никогда не звучит, даже во множественном числе." },
+        { "id": "vocab:l08c:1", "fr": "cent un", "ipa": "/sɑ̃.ɛ̃/", "ru": "сто один", "note": "После cent никогда не бывает et, в отличие от vingt et un." },
+        { "id": "vocab:l08c:2", "fr": "deux cents", "ipa": "/dø sɑ̃/", "ru": "двести", "note": "s появляется, потому что это ровно круглое число." },
+        { "id": "vocab:l08c:3", "fr": "deux cent trois", "ipa": "/dø sɑ̃ tʁwa/", "ru": "двести три", "note": "s у cent пропадает, как только после него идёт другое число." },
+        { "id": "vocab:l08c:4", "fr": "mille", "ipa": "/mil/", "ru": "тысяча", "note": "Никогда не изменяется: mille, deux mille, dix mille — без s, без артикля un перед mille." },
+        { "id": "vocab:l08c:5", "fr": "dix mille", "ipa": "/di mil/", "ru": "десять тысяч", "note": "Dix перед согласной m — без z." },
+        { "id": "vocab:l08c:6", "fr": "cent mille", "ipa": "/sɑ̃ mil/", "ru": "сто тысяч", "note": "Cent тут тоже без s — mille не считается «ещё одним числом»." },
+        { "id": "vocab:l08c:7", "fr": "un million", "ipa": "/ɛ̃ mi.ljɔ̃/", "ru": "миллион", "note": "Это существительное, а не число: перед следующим словом нужен de — un million d'habitants." },
+        { "id": "vocab:l08c:8", "fr": "deux millions", "ipa": "/dø mi.ljɔ̃/", "ru": "два миллиона", "note": "Как обычное существительное, во множественном числе получает s." },
+        { "id": "vocab:l08c:9", "fr": "un milliard", "ipa": "/ɛ̃ mi.ljaʁ/", "ru": "миллиард", "note": "Тот же принцип, что и million: un milliard de dollars." },
+        { "id": "vocab:l08c:10", "fr": "environ", "ipa": "/ɑ̃.vi.ʁɔ̃/", "ru": "около, примерно", "note": "Полезно перед приблизительными большими числами." }
+      ],
+      "exercises": [
+        {
+          "id": "l08c-e1",
+          "type": "controlled-production",
+          "prompt": "Назови по-французски: 200, 203, 1000, 2 000 000.",
+          "acceptedAnswers": [],
+          "modelAnswer": "200 = deux cents. 203 = deux cent trois. 1000 = mille. 2 000 000 = deux millions.",
+          "hints": ["s у cent остаётся только в ровных сотнях; mille никогда не меняется."],
+          "requiredTokens": ["deux cents", "deux cent trois", "mille", "deux millions"],
+          "objectiveIds": ["obj:l08c:agree-cent-mille"],
+          "explanation": "Deux cents (ровно) vs deux cent trois (плюс единицы) — s то есть, то нет, в зависимости от того, идёт ли после сотни ещё число."
+        },
+        {
+          "id": "l08c-e2",
+          "type": "translate",
+          "prompt": "Переведи, используя de: Город с миллионом жителей. Здание за миллиард долларов.",
+          "acceptedAnswers": ["Une ville avec un million d'habitants. Un bâtiment à un milliard de dollars."],
+          "modelAnswer": "Une ville avec un million d'habitants. Un bâtiment à un milliard de dollars.",
+          "hints": ["Million и milliard — существительные, перед следующим словом нужен de (d' перед гласной)."],
+          "requiredTokens": ["million d'habitants", "milliard de dollars"],
+          "objectiveIds": ["obj:l08c:use-de-after-million-milliard"],
+          "explanation": "Million/milliard ведут себя как обычные существительные (un kilo de...) — отсюда обязательный de."
+        },
+        {
+          "id": "l08c-e3",
+          "type": "reading-comprehension",
+          "prompt": "Прочитай текст. Сколько жителей в городе и сколько это примерно в регионе?",
+          "sourceText": "Cette ville compte environ trois cent mille habitants. Toute la région autour compte presque deux millions de personnes.",
+          "acceptedAnswers": ["300 000 в городе, почти 2 миллиона в регионе", "trois cent mille habitants dans la ville, presque deux millions dans la région"],
+          "modelAnswer": "В городе около трёхсот тысяч жителей, а во всём регионе — почти два миллиона человек.",
+          "hints": ["Два числа в тексте: cent mille (сто тысяч) и millions."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l08c:read-big-numbers"],
+          "explanation": "Большие числа в реальных текстах часто округлены (environ, presque) — их тоже нужно уметь узнавать."
+        }
+      ],
+      "cards": [
+        { "id": "phrase:l08c:0", "front": "Сколько жителей в Париже?", "back": "Paris a combien d'habitants ?", "type": "phrase" },
+        { "id": "phrase:l08c:1", "front": "В Париже около двух миллионов жителей.", "back": "Paris a environ deux millions d'habitants.", "type": "phrase" },
+        { "id": "phrase:l08c:2", "front": "Plus de douze {{c1::millions}} de personnes.", "back": "Более двенадцати миллионов человек.", "type": "cloze" }
+      ]
+    },
+    {
       "id": "l09",
       "level": "A1",
       "title": "Меню и цены",
@@ -2428,7 +2547,7 @@
       "grammarTopic": "prices-hours",
       "moduleId": "module:starter:reception-review",
       "order": 1,
-      "prerequisites": ["l08"],
+      "prerequisites": ["l08c"],
       "tags": ["prices", "reading", "cafe"],
       "objectives": [
         {
