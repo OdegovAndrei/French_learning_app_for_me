@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { buildAnkiTsv } from "../anki.js";
-import { buildCards, buildVocabularyNotes, filterCards, normalizeCardText } from "../cards.js";
+import { buildCards, buildVocabularyNotes, filterCards, filterCardsByDirection, normalizeCardText } from "../cards.js";
 import { checkExercise } from "../exercises.js";
 import { collectCourseValidationErrors, validateCourseCatalog } from "../course-validator.js";
 import {
@@ -169,6 +169,50 @@ for (const phrase of dialoguePhrases) {
   assert.deepEqual(new Set(pair.map((card) => card.direction)), new Set(["ru-fr", "fr-ru"]));
   assert.equal(new Set(pair.map((card) => card.noteId)).size, 1, "Phrase directions share one FSRS note budget");
 }
+
+const ruFrDirectionCards = filterCardsByDirection(cards, "ru-fr");
+const frRuDirectionCards = filterCardsByDirection(cards, "fr-ru");
+assert.equal(
+  ruFrDirectionCards.length + frRuDirectionCards.length,
+  cards.length,
+  "Every card must fall into exactly one direction bucket"
+);
+assert.ok(
+  cards.filter((card) => card.kind === "ru-fr").every((card) => ruFrDirectionCards.includes(card)),
+  "Vocabulary ru-fr cards must appear in the ru-fr bucket"
+);
+assert.ok(
+  cards.filter((card) => card.kind === "fr-ru").every((card) => frRuDirectionCards.includes(card)),
+  "Vocabulary fr-ru cards must appear in the fr-ru bucket"
+);
+const clozeCards = cards.filter((card) => card.kind === "cloze");
+assert.ok(clozeCards.length > 0, "The catalog must contain cloze cards to exercise the direction split");
+assert.ok(
+  clozeCards.every((card) => ruFrDirectionCards.includes(card)),
+  "Cloze cards have no direction of their own and must surface under ru-fr"
+);
+assert.ok(
+  clozeCards.every((card) => !frRuDirectionCards.includes(card)),
+  "Cloze cards must not surface under fr-ru"
+);
+const phraseNoteDirections = new Map();
+for (const card of cards.filter((card) => card.kind === "phrase")) {
+  if (!phraseNoteDirections.has(card.noteId)) phraseNoteDirections.set(card.noteId, new Set());
+  phraseNoteDirections.get(card.noteId).add(card.direction);
+}
+const singleDirectionNote = [...phraseNoteDirections.entries()].find(([, directions]) => directions.size === 1);
+assert.ok(singleDirectionNote, "Fixture data must include at least one phrase note with only one generated direction");
+const [singleNoteId, singleDirections] = singleDirectionNote;
+const [onlyDirection] = singleDirections;
+const otherDirection = onlyDirection === "ru-fr" ? "fr-ru" : "ru-fr";
+assert.ok(
+  filterCardsByDirection(cards, onlyDirection).some((card) => card.noteId === singleNoteId),
+  "A phrase note with a single generated direction must appear under that direction"
+);
+assert.ok(
+  !filterCardsByDirection(cards, otherDirection).some((card) => card.noteId === singleNoteId),
+  "A phrase note with a single generated direction must not appear under the other direction"
+);
 
 const legacyVocabularyIds = [
   ...legacyIds("vocab:l01:", 3),

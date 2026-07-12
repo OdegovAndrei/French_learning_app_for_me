@@ -135,6 +135,14 @@ export function filterCards(cards, deck) {
   return cards.filter((card) => card.lessonId === deck);
 }
 
+export function filterCardsByDirection(cards, direction) {
+  return cards.filter((card) => {
+    const cardDirection = card.kind === "ru-fr" || card.kind === "fr-ru" ? card.kind : card.direction;
+    if (!cardDirection) return direction === "ru-fr";
+    return cardDirection === direction;
+  });
+}
+
 export function isFullPhraseCard(card) {
   return card.kind === "phrase" && isFullFrenchText(card.audioText);
 }
