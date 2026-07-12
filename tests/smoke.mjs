@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { buildAnkiTsv } from "../anki.js";
-import { buildCards, buildVocabularyNotes } from "../cards.js";
+import { buildCards, buildVocabularyNotes, filterCards, normalizeCardText } from "../cards.js";
 import { checkExercise } from "../exercises.js";
 import { collectCourseValidationErrors, validateCourseCatalog } from "../course-validator.js";
 import {
   buildReviewQueue,
+  buildUnlockedPhraseRows,
   buildUnlockedWordRows,
   createSchedule,
   createScheduler,
@@ -148,6 +149,26 @@ assert.equal(
   "Every built-in vocabulary item must keep both review directions"
 );
 assert.equal(new Set(cards.map((card) => card.id)).size, cards.length, "Card ids must be unique");
+
+const dialoguePhrases = data.lessons.flatMap((lesson) =>
+  lesson.dialogue
+    .filter((line) => wordCount(line.fr) > 2)
+    .map((line) => ({ lessonId: lesson.id, french: line.fr }))
+);
+const phraseCards = filterCards(cards, "phrases");
+assert.ok(phraseCards.length > 0, "The phrase deck must be populated from lesson dialogue");
+assert.ok(
+  phraseCards.every((card) => wordCount(card.audioText) > 2),
+  "The phrase deck contains only complete dialogue phrases longer than two words"
+);
+for (const phrase of dialoguePhrases) {
+  const pair = phraseCards.filter(
+    (card) => card.lessonId === phrase.lessonId && normalizeCardText(card.audioText) === normalizeCardText(phrase.french)
+  );
+  assert.equal(pair.length, 2, `Dialogue phrase must receive two cards: ${phrase.french}`);
+  assert.deepEqual(new Set(pair.map((card) => card.direction)), new Set(["ru-fr", "fr-ru"]));
+  assert.equal(new Set(pair.map((card) => card.noteId)).size, 1, "Phrase directions share one FSRS note budget");
+}
 
 const legacyVocabularyIds = [
   ...legacyIds("vocab:l01:", 3),
@@ -662,6 +683,26 @@ assert.deepEqual(
   "No active cards means no rows"
 );
 
+const phraseRowCards = [
+  { id: "phrase:a:ru-fr", noteId: "phrase:a", kind: "phrase", direction: "ru-fr", front: "Здравствуйте, меня зовут Андре.", back: "Bonjour, je m'appelle André.", audioText: "Bonjour, je m'appelle André.", lessonId: "l01", lessonTitle: "Урок 1" },
+  { id: "phrase:a:fr-ru", noteId: "phrase:a", kind: "phrase", direction: "fr-ru", front: "Bonjour, je m'appelle André.", back: "Здравствуйте, меня зовут Андре.", audioText: "Bonjour, je m'appelle André.", lessonId: "l01", lessonTitle: "Урок 1" },
+  { id: "phrase:b:ru-fr", noteId: "phrase:b", kind: "phrase", direction: "ru-fr", front: "Я бы хотел кофе.", back: "Je voudrais un café.", audioText: "Je voudrais un café.", lessonId: "l02", lessonTitle: "Урок 2" },
+  { id: "phrase:b:fr-ru", noteId: "phrase:b", kind: "phrase", direction: "fr-ru", front: "Je voudrais un café.", back: "Я бы хотел кофе.", audioText: "Je voudrais un café.", lessonId: "l02", lessonTitle: "Урок 2" }
+];
+const phraseRowSchedules = new Map([
+  ["phrase:a:ru-fr", { ...createSchedule("phrase:a:ru-fr", wordRowNow), state: 2, reps: 3, due: new Date(wordRowNow.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString() }],
+  ["phrase:a:fr-ru", { ...createSchedule("phrase:a:fr-ru", wordRowNow), state: 1, reps: 1, due: new Date(wordRowNow.getTime() - 60 * 1000).toISOString() }]
+]);
+const phraseRows = buildUnlockedPhraseRows({ cards: phraseRowCards, schedules: phraseRowSchedules, now: wordRowNow });
+assert.equal(phraseRows.length, 2, "A paired phrase is listed once in its separate tab");
+assert.deepEqual(phraseRows.map((row) => row.groupLabel), ["Урок 1", "Урок 2"]);
+const introduction = phraseRows[0];
+assert.equal(introduction.french, "Bonjour, je m'appelle André.");
+assert.match(introduction.reviewLabel, /русский → французский: Повторение · через 2 дн/);
+assert.match(introduction.reviewLabel, /французский → русский: Изучение · Пора повторить/);
+assert.match(phraseRows[1].reviewLabel, /русский → французский: Новое · Новое/);
+assert.match(phraseRows[1].reviewLabel, /французский → русский: Новое · Новое/);
+
 console.log(`Smoke tests passed: ${data.lessons.length} lessons, ${exercises.length} exercises, ${cards.length} cards.`);
 
 function legacyIds(prefix, count) {
@@ -688,4 +729,8 @@ function pickCheckState(result) {
     needsReview: result.needsReview,
     coverageComplete: result.coverageComplete
   };
+}
+
+function wordCount(value) {
+  return String(value).match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu)?.length || 0;
 }

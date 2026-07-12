@@ -21,6 +21,7 @@ export function buildCards(data, customNotes = []) {
   const vocabularyCards = notes.flatMap(cardsFromVocabularyNote);
   const signatures = new Set(vocabularyCards.map(cardSignature));
   const phraseCards = [];
+  const manualPhraseTargets = new Set();
 
   for (const lesson of data.lessons) {
     lesson.cards.forEach((card) => {
@@ -29,6 +30,7 @@ export function buildCards(data, customNotes = []) {
         noteId: card.noteId || phraseNoteId(card.id),
         source: "builtIn",
         kind: card.type === "cloze" || card.front.includes("{{c1::") ? "cloze" : "phrase",
+        direction: card.type === "cloze" || card.front.includes("{{c1::") ? null : "ru-fr",
         front: card.front,
         back: card.back,
         audioText: cleanCloze(card.back.match(/[À-ÿA-Za-z]/) ? card.back : card.front),
@@ -38,6 +40,62 @@ export function buildCards(data, customNotes = []) {
       };
       const signature = cardSignature(candidate);
       if (!signatures.has(signature)) {
+        signatures.add(signature);
+        phraseCards.push(candidate);
+      }
+
+      if (!isFullFrenchPhrase(candidate)) return;
+      manualPhraseTargets.add(phraseTargetKey(candidate.back));
+      const reverse = {
+        ...candidate,
+        id: `${candidate.id}:fr-ru`,
+        direction: "fr-ru",
+        front: candidate.back,
+        back: candidate.front
+      };
+      const reverseSignature = cardSignature(reverse);
+      if (!signatures.has(reverseSignature)) {
+        signatures.add(reverseSignature);
+        phraseCards.push(reverse);
+      }
+    });
+  }
+
+  for (const lesson of data.lessons) {
+    lesson.dialogue.forEach((line) => {
+      if (!isFullFrenchText(line.fr)) return;
+      const target = phraseTargetKey(line.fr);
+      if (manualPhraseTargets.has(target)) return;
+
+      const noteId = `phrase-note:${lesson.id}:dialogue:${stableTextId(line.fr)}`;
+      const common = {
+        noteId,
+        source: "builtIn",
+        kind: "phrase",
+        audioText: line.fr,
+        lessonId: lesson.id,
+        lessonTitle: lesson.title,
+        tags: [lesson.level, lesson.scenario, "dialogue", "phrase"]
+      };
+      const pair = [
+        {
+          ...common,
+          id: `phrase:${lesson.id}:dialogue:${stableTextId(line.fr)}:ru-fr`,
+          direction: "ru-fr",
+          front: line.ru,
+          back: line.fr
+        },
+        {
+          ...common,
+          id: `phrase:${lesson.id}:dialogue:${stableTextId(line.fr)}:fr-ru`,
+          direction: "fr-ru",
+          front: line.fr,
+          back: line.ru
+        }
+      ];
+      for (const candidate of pair) {
+        const signature = cardSignature(candidate);
+        if (signatures.has(signature)) continue;
         signatures.add(signature);
         phraseCards.push(candidate);
       }
@@ -72,9 +130,13 @@ export function cardsFromVocabularyNote(note) {
 export function filterCards(cards, deck) {
   if (!deck || deck === "all") return cards;
   if (deck === "vocabulary") return cards.filter((card) => ["ru-fr", "fr-ru"].includes(card.kind));
-  if (deck === "phrases") return cards.filter((card) => ["phrase", "cloze"].includes(card.kind));
+  if (deck === "phrases") return cards.filter(isFullPhraseCard);
   if (deck === "custom") return cards.filter((card) => card.source === "custom");
   return cards.filter((card) => card.lessonId === deck);
+}
+
+export function isFullPhraseCard(card) {
+  return card.kind === "phrase" && isFullFrenchText(card.audioText);
 }
 
 export function normalizeCardText(value) {
@@ -113,4 +175,35 @@ function dedupeText(value) {
 
 function cleanCloze(value) {
   return revealCloze(value).replace(/\n.*$/s, "");
+}
+
+function isFullFrenchPhrase(card) {
+  return card.kind === "phrase" && isFullFrenchText(card.back);
+}
+
+function isFullFrenchText(value) {
+  return /[A-Za-zÀ-ÿ]/.test(String(value)) && phraseWordCount(value) > 2;
+}
+
+function phraseWordCount(value) {
+  return String(value).match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu)?.length || 0;
+}
+
+function phraseTargetKey(value) {
+  return cleanCloze(value)
+    .normalize("NFC")
+    .toLocaleLowerCase("fr")
+    .replace(/[’']/g, "'")
+    .replace(/[.,!?;:]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stableTextId(value) {
+  let hash = 2166136261;
+  for (const character of phraseTargetKey(value)) {
+    hash ^= character.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
 }
