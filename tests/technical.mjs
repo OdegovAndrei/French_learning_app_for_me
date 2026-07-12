@@ -110,6 +110,7 @@ assert.deepEqual(
 
 const appSource = await readFile(new URL("../app.js", import.meta.url), "utf8");
 const storageSource = await readFile(new URL("../storage.js", import.meta.url), "utf8");
+const indexSource = await readFile(new URL("../index.html", import.meta.url), "utf8");
 assert.match(appSource, /function switchView\(view\) \{\s+stopRecording\(\);/);
 assert.match(appSource, /if \(state\.reviewMode === "cram"\) \{[\s\S]*?state\.reviewSeen\.add\(card\.id\);[\s\S]*?return;/);
 assert.match(appSource, /data-card-resume/);
@@ -136,6 +137,10 @@ assert.deepEqual(
   ["lesson:current", "lesson:first", "lesson:mastery"].sort()
 );
 assert.match(appSource, /getIntroducedLessonIds\(/);
+assert.match(appSource, /phrases: renderPhrases/);
+assert.match(appSource, /state\.reviewDeck = "phrases"/);
+assert.match(appSource, /isPhrasesDeck \? renderUnlockedPhrasesList\(deckCards\) : renderUnlockedWordsList\(deckCards\)/);
+assert.match(indexSource, /app\.js\?v=20260712-phrases-1/);
 assert.match(appSource, /data-self-review/);
 assert.match(appSource, /checkCatalogLessonPrerequisites\(state\.data, lesson, state\.appState\.completedLessons\)/);
 assert.match(appSource, /if \(!\(await saveAppState\(\)\)\) \{[\s\S]*?completedLessons = previousCompletedLessons/);

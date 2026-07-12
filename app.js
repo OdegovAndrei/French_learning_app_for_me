@@ -12,6 +12,7 @@ import { validateCourseCatalog } from "./course-validator.js";
 import * as mastery from "./mastery.js";
 import {
   buildReviewQueue,
+  buildUnlockedPhraseRows,
   buildUnlockedWordRows,
   createSchedule,
   isDueSchedule,
@@ -79,6 +80,7 @@ const viewTitles = {
   pronunciation: "Произношение",
   grammar: "Грамматика",
   vocabulary: "Словарь",
+  phrases: "Фразы",
   review: "Повторение",
   progress: "Прогресс",
   settings: "Настройки"
@@ -192,6 +194,7 @@ function render() {
     pronunciation: renderPronunciation,
     grammar: renderGrammar,
     vocabulary: renderVocabulary,
+    phrases: renderPhrases,
     review: renderReview,
     progress: renderProgress,
     settings: renderSettings
@@ -380,12 +383,40 @@ function renderVocabulary() {
   });
 }
 
+function renderPhrases() {
+  const phraseCards = filterCards(getActiveCards(), "phrases");
+  const rows = buildUnlockedPhraseRows({ cards: phraseCards, schedules: state.schedules, now: new Date() });
+
+  app.innerHTML = `
+    <section class="section-band">
+      <div class="section-heading vocab-heading">
+        <div>
+          <p class="eyebrow">${rows.length} фраз · ${phraseCards.length} карточек</p>
+          <h4>Фразы из пройденных уроков</h4>
+          <p class="note">Полные реплики диалогов открываются вместе со словами урока. Для каждой фразы есть карточки в обе стороны, а расписание ведёт тот же FSRS.</p>
+        </div>
+        <button class="primary-button" type="button" id="review-phrases">Повторять фразы</button>
+      </div>
+      ${renderUnlockedPhrasesList(phraseCards, rows)}
+    </section>`;
+
+  document.querySelector("#review-phrases").addEventListener("click", () => {
+    state.reviewDeck = "phrases";
+    state.reviewMode = "review";
+    switchView("review");
+  });
+  document.querySelectorAll("[data-phrase-speak]").forEach((button) => {
+    button.addEventListener("click", () => speakFrench(button.dataset.phraseSpeak));
+  });
+}
+
 function renderReview() {
   const allCards = getAllCards();
   const allActive = getActiveCards();
   const suspendedCards = allCards.filter((card) => state.appState.suspendedCardIds.includes(card.id));
   const deckCards = filterCards(allActive, state.reviewDeck);
   const isWordsMode = state.reviewMode === "words";
+  const isPhrasesDeck = state.reviewDeck === "phrases";
   let queue = isWordsMode ? [] : buildReviewQueue({
     cards: deckCards,
     schedules: state.schedules,
@@ -414,7 +445,7 @@ function renderReview() {
         <div class="segmented" aria-label="Режим повторения">
           <button type="button" data-review-mode="review" class="${state.reviewMode === "review" ? "active" : ""}">Повторение</button>
           <button type="button" data-review-mode="cram" class="${state.reviewMode === "cram" ? "active" : ""}">Зубрёжка</button>
-          <button type="button" data-review-mode="words" class="${isWordsMode ? "active" : ""}">Все слова</button>
+          <button type="button" data-review-mode="words" class="${isWordsMode ? "active" : ""}">${isPhrasesDeck ? "Все фразы" : "Все слова"}</button>
         </div>
         ${isWordsMode ? "" : `
         <select id="review-deck" class="select-control" aria-label="Колода">
@@ -428,13 +459,13 @@ function renderReview() {
         <span><strong>${summary.newCount}</strong> новых</span>
         <span><strong>${queue.length}</strong> в этой сессии</span>
       </div>`}
-      ${isWordsMode ? renderUnlockedWordsList(allActive) : (card ? renderReviewCard(card) : renderReviewEmpty(summary))}
+      ${isWordsMode ? (isPhrasesDeck ? renderUnlockedPhrasesList(deckCards) : renderUnlockedWordsList(deckCards)) : (card ? renderReviewCard(card) : renderReviewEmpty(summary))}
       ${renderSuspendedCards(suspendedCards)}
     </section>`;
 
   bindReviewToolbar();
   if (!isWordsMode && card) bindReviewCard(card);
-  scheduleReviewRefresh(isWordsMode ? allActive : deckCards);
+  scheduleReviewRefresh(deckCards);
 }
 
 function renderUnlockedWordsList(cards) {
@@ -466,6 +497,47 @@ function renderUnlockedWordsList(cards) {
                     <td>${escapeHtml(row.back)}</td>
                     <td>${escapeHtml(row.statusLabel)}</td>
                     <td>${escapeHtml(row.remainingLabel)}</td>
+                  </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+        </section>`).join("")}
+    </div>`;
+}
+
+function groupPhraseRows(rows) {
+  const groups = [];
+  for (const row of rows) {
+    const lastGroup = groups[groups.length - 1];
+    if (lastGroup && lastGroup.label === row.groupLabel) {
+      lastGroup.rows.push(row);
+    } else {
+      groups.push({ label: row.groupLabel, rows: [row] });
+    }
+  }
+  return groups;
+}
+
+function renderUnlockedPhrasesList(cards, existingRows = null) {
+  const rows = existingRows || buildUnlockedPhraseRows({ cards, schedules: state.schedules, now: new Date() });
+  if (!rows.length) {
+    return `<div class="empty-state"><strong>Пока нет разблокированных фраз</strong><p>Начни урок — его полные реплики появятся здесь вместе с новыми словами.</p></div>`;
+  }
+  const groups = groupPhraseRows(rows);
+  return `
+    <div class="unlocked-words-groups">
+      ${groups.map((group) => `
+        <section class="section-band with-top-gap">
+          <div class="section-heading"><div><p class="eyebrow">${group.rows.length} фраз</p><h4>${escapeHtml(group.label)}</h4></div></div>
+          <div class="table-wrap">
+            <table class="vocab-table">
+              <thead><tr><th>Французский</th><th>Перевод</th><th>Повторение</th></tr></thead>
+              <tbody>
+                ${group.rows.map((row) => `
+                  <tr>
+                    <td><strong>${escapeHtml(row.french)}</strong><button class="inline-audio" type="button" data-phrase-speak="${escapeHtml(row.audioText)}" aria-label="Прослушать ${escapeHtml(row.french)}">▶</button></td>
+                    <td>${escapeHtml(row.russian)}</td>
+                    <td>${nl2br(row.reviewLabel)}</td>
                   </tr>`).join("")}
               </tbody>
             </table>
