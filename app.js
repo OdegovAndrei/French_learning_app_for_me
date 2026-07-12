@@ -599,6 +599,7 @@ function renderLessonInto(container, lesson) {
 
 function bindLessonActions(container, lesson) {
   container.querySelectorAll("[data-speak]").forEach((button) => {
+    if (button.closest(".voice-lab-box")) return;
     button.addEventListener("click", () => speakFrench(button.dataset.speak));
   });
   container.querySelectorAll("[data-open-topic]").forEach((button) => {
