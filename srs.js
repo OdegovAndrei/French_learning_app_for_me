@@ -110,10 +110,61 @@ export function buildUnlockedWordRows({ cards, schedules, now = new Date() }) {
   });
 }
 
+export function buildUnlockedPhraseRows({ cards, schedules, now = new Date() }) {
+  const groupOrder = [];
+  const groups = new Map();
+
+  for (const card of cards) {
+    const key = card.lessonId || "custom";
+    if (!groups.has(key)) {
+      groups.set(key, { label: card.lessonTitle || "Свои фразы", notes: new Map() });
+      groupOrder.push(key);
+    }
+    const group = groups.get(key);
+    if (!group.notes.has(card.noteId)) group.notes.set(card.noteId, []);
+    group.notes.get(card.noteId).push(card);
+  }
+
+  const orderedKeys = [
+    ...groupOrder.filter((key) => key !== "custom"),
+    ...groupOrder.filter((key) => key === "custom")
+  ];
+
+  return orderedKeys.flatMap((key) => {
+    const group = groups.get(key);
+    return [...group.notes.values()]
+      .map((noteCards) => phraseRow(noteCards, group.label, schedules, now))
+      .sort((first, second) => first.french.localeCompare(second.french, "fr"));
+  });
+}
+
 function unlockedWordRemainingLabel(schedule, now) {
   if (isNewSchedule(schedule)) return "Новое";
   if (isDueSchedule(schedule, now)) return "Пора повторить";
   return `через ${formatInterval(new Date(schedule.due).getTime() - now.getTime())}`;
+}
+
+function phraseRow(cards, groupLabel, schedules, now) {
+  const orderedCards = [...cards].sort((first, second) => {
+    const firstDirection = first.direction === "ru-fr" ? 0 : 1;
+    const secondDirection = second.direction === "ru-fr" ? 0 : 1;
+    return firstDirection - secondDirection;
+  });
+  const production = orderedCards.find((card) => card.direction === "ru-fr") || orderedCards[0];
+  const french = production.direction === "fr-ru" ? production.front : production.back;
+  const russian = production.direction === "fr-ru" ? production.back : production.front;
+  return {
+    id: production.noteId,
+    french,
+    russian,
+    audioText: production.audioText || french,
+    groupLabel,
+    reviewLabel: orderedCards.map((card) => {
+      const direction = card.direction === "fr-ru" ? "французский → русский" : "русский → французский";
+      const schedule = schedules.get(card.id);
+      return `${direction}: ${SCHEDULE_STATE_LABELS[schedule?.state] || SCHEDULE_STATE_LABELS[State.New]} · ${unlockedWordRemainingLabel(schedule, now)}`;
+    }).join("\n")
+  };
 }
 
 export function countNewIntroducedToday(logs, cardsById, now = new Date()) {
