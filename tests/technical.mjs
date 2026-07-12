@@ -98,17 +98,18 @@ newCardSnapshot.stores.schedules.push({
 });
 assert.equal(validateBackup(newCardSnapshot), true, "A new ts-fsrs card legitimately uses zero difficulty");
 
-const completionDefaults = { completedLessons: [], legacyCompletedLessons: [], completionModelVersion: 1 };
+const completionDefaults = { completedLessons: [], legacyCompletedLessons: [], completionModelVersion: 2 };
 assert.deepEqual(
   normalizeCompletionModel({ completedLessons: ["l01", "l02"] }, completionDefaults),
-  { completedLessons: [], legacyCompletedLessons: ["l01", "l02"], completionModelVersion: 1 }
+  { completedLessons: ["l01", "l02"], legacyCompletedLessons: [], completionModelVersion: 2 }
 );
 assert.deepEqual(
   normalizeCompletionModel({ completedLessons: ["l03"], legacyCompletedLessons: ["l01"], completionModelVersion: 1 }, completionDefaults),
-  { completedLessons: ["l03"], legacyCompletedLessons: ["l01"], completionModelVersion: 1 }
+  { completedLessons: ["l01", "l03"], legacyCompletedLessons: [], completionModelVersion: 2 }
 );
 
 const appSource = await readFile(new URL("../app.js", import.meta.url), "utf8");
+const storageSource = await readFile(new URL("../storage.js", import.meta.url), "utf8");
 assert.match(appSource, /function switchView\(view\) \{\s+stopRecording\(\);/);
 assert.match(appSource, /if \(state\.reviewMode === "cram"\) \{[\s\S]*?state\.reviewSeen\.add\(card\.id\);[\s\S]*?return;/);
 assert.match(appSource, /data-card-resume/);
@@ -144,5 +145,13 @@ assert.match(appSource, /Старый прогресс/);
 assert.match(appSource, /state\.data\.resources\.map/);
 assert.match(appSource, /objective\?\.canDo \|\| objective\?\.cefrCanDo/);
 assert.match(appSource, /module\.level \|\| module\.levelId/);
+assert.match(appSource, /function transcribeRecording\(key, target, output, button\)/);
+assert.match(appSource, /fetch\("\/stt", \{/);
+assert.doesNotMatch(appSource, /webkitSpeechRecognition/);
+assert.match(appSource, /await initializeFileStorage\(\);[\s\S]*?migrateLegacyProgress/);
+assert.match(appSource, /Сохранено в файл/);
+assert.doesNotMatch(appSource, /renderOriginWarning/);
+assert.match(storageSource, /FILE_STORAGE_ENDPOINT}\/transaction/);
+assert.match(storageSource, /initializeOnly: true/);
 
-console.log("Technical regression tests passed: backup, recording, cram, mastery gates, introduced cards, resources, save flush.");
+console.log("Technical regression tests passed: file storage, backup, recording, cram, mastery gates, introduced cards, resources, save flush.");

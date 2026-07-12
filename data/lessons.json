@@ -1526,6 +1526,20 @@
           "note": "Un показывает мужской род."
         },
         {
+          "id": "vocab:l04:croissant",
+          "fr": "un croissant",
+          "ipa": "/ɛ̃ kʁwa.sɑ̃/",
+          "ru": "круассан",
+          "note": "Мужской род; в заказе учи вместе с un."
+        },
+        {
+          "id": "vocab:l04:the",
+          "fr": "un thé",
+          "ipa": "/ɛ̃ te/",
+          "ru": "чай",
+          "note": "Мужской род; accent aigu в thé обязателен на письме."
+        },
+        {
           "id": "vocab:l04:2",
           "fr": "de l'eau",
           "ipa": "/də lo/",
@@ -1671,6 +1685,8 @@
           "ru": "хлеб",
           "note": "Pain содержит носовой звук."
         },
+        {"id": "vocab:l18:3", "fr": "le fromage", "ipa": "/lə fʁɔ.maʒ/", "ru": "сыр", "note": "Для вопроса о наличии: Est-ce que vous avez du fromage ?"},
+        {"id": "vocab:l05:sac", "fr": "un sac", "ipa": "/ɛ̃ sak/", "ru": "сумка, пакет", "note": "Мужской род; финальная c произносится."},
         {
           "id": "vocab:l05:3",
           "fr": "une baguette",
@@ -1810,6 +1826,8 @@
           "ru": "метро",
           "note": "Мужской род."
         },
+        {"id": "vocab:l06:gare", "fr": "la gare", "ipa": "/la ɡaʁ/", "ru": "вокзал", "note": "Женский род; пригодится в вопросе Où est la gare ?"},
+        {"id": "vocab:l15:0", "fr": "la pharmacie", "ipa": "/la faʁ.ma.si/", "ru": "аптека", "note": "Женский род; пригодится в вопросе Où est la pharmacie ?"},
         {
           "id": "vocab:l06:3",
           "fr": "à droite",
@@ -1942,6 +1960,9 @@
           "ru": "завтра",
           "note": "Носовой звук в конце."
         },
+        {"id": "vocab:l14:3", "fr": "neuf", "ipa": "/nœf/", "ru": "девять", "note": "Перед heures звучит как /nœv/: neuf heures."},
+        {"id": "vocab:l07:midi", "fr": "midi", "ipa": "/mi.di/", "ru": "полдень", "note": "Перед midi ставится à: à midi."},
+        {"id": "vocab:l07:ce-soir", "fr": "ce soir", "ipa": "/sə swaʁ/", "ru": "сегодня вечером", "note": "В отличие от à midi, предлог перед ce soir не нужен."},
         {
           "id": "vocab:l07:1",
           "fr": "à quelle heure",
@@ -2101,7 +2122,9 @@
           "ipa": "/pʁɔ.blɛm/",
           "ru": "проблема",
           "note": "Слово похоже на русское, но ударение и звук другие."
-        }
+        },
+        {"id": "vocab:l08:carte", "fr": "une carte", "ipa": "/yn kaʁt/", "ru": "карта", "note": "После de: j'ai besoin d'une carte."},
+        {"id": "vocab:l08:informations", "fr": "des informations", "ipa": "/de.z‿ɛ̃.fɔʁ.ma.sjɔ̃/", "ru": "информация, сведения", "note": "Обычно употребляется во множественном числе; после de: d'informations."}
       ],
       "exercises": [
         {
@@ -2941,7 +2964,6 @@
         {"id": "vocab:l14:0", "fr": "six", "ipa": "/sis/", "ru": "шесть", "note": "Перед согласной звучит /si/, перед гласной /siz/."},
         {"id": "vocab:l14:1", "fr": "sept", "ipa": "/sɛt/", "ru": "семь", "note": "Финальная t звучит, редкое исключение."},
         {"id": "vocab:l14:2", "fr": "huit", "ipa": "/ɥit/", "ru": "восемь", "note": "h немое, начинается с /ɥ/."},
-        {"id": "vocab:l14:3", "fr": "neuf", "ipa": "/nœf/", "ru": "девять", "note": "Перед heures звучит как /nœv/: neuf heures."},
         {"id": "vocab:l14:4", "fr": "onze", "ipa": "/ɔ̃z/", "ru": "одиннадцать", "note": "Не делает liaison, в отличие от других чисел."},
         {"id": "vocab:l14:5", "fr": "trente", "ipa": "/tʁɑ̃t/", "ru": "тридцать", "note": "Дальше все десятки по этой модели: quarante, cinquante..."},
         {"id": "vocab:l14:6", "fr": "quarante", "ipa": "/ka.ʁɑ̃t/", "ru": "сорок", "note": "Похоже на trente по структуре."},
@@ -3046,7 +3068,6 @@
         }
       ],
       "vocabulary": [
-        {"id": "vocab:l15:0", "fr": "la pharmacie", "ipa": "/la faʁ.ma.si/", "ru": "аптека", "note": "Ударение на последнем слоге, как обычно во французском."},
         {"id": "vocab:l15:1", "fr": "fermer", "ipa": "/fɛʁ.me/", "ru": "закрываться/закрывать", "note": "Elle ferme — регулярный -er глагол."},
         {"id": "vocab:l15:2", "fr": "tous les jours", "ipa": "/tu le ʒuʁ/", "ru": "каждый день", "note": "S в tous перед les не звучит."},
         {"id": "vocab:l15:3", "fr": "sauf", "ipa": "/sof/", "ru": "кроме", "note": "Полезно для исключений в расписании."},
@@ -3361,7 +3382,6 @@
         {"id": "vocab:l18:0", "fr": "une pomme", "ipa": "/yn pɔm/", "ru": "яблоко", "note": "Женский род, как большинство фруктов на -e."},
         {"id": "vocab:l18:1", "fr": "le pain", "ipa": "/lə pɛ̃/", "ru": "хлеб", "note": "Носовой звук, как в vin."},
         {"id": "vocab:l18:2", "fr": "l'eau", "ipa": "/lo/", "ru": "вода", "note": "Женский род: de l'eau, une bouteille d'eau."},
-        {"id": "vocab:l18:3", "fr": "le fromage", "ipa": "/lə fʁɔ.maʒ/", "ru": "сыр", "note": "Частое слово для рынка/магазина."},
         {"id": "vocab:l18:4", "fr": "le lait", "ipa": "/lə lɛ/", "ru": "молоко", "note": "Финальное t не звучит."},
         {"id": "vocab:l18:5", "fr": "un kilo de", "ipa": "/ɛ̃ ki.lo də/", "ru": "килограмм (чего-то)", "note": "De не меняется на du/de la после количества."},
         {"id": "vocab:l18:6", "fr": "une bouteille de", "ipa": "/yn bu.tɛj də/", "ru": "бутылка (чего-то)", "note": "Тот же паттерн, что и kilo de."},

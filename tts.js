@@ -7,6 +7,11 @@ const AUDIO_BASE_URL = "data/audio/";
 let manifestPromise = null;
 let currentAudio = null;
 
+const BROWSER_VOICE_NAME_HINTS = {
+  "fr-FR-DeniseNeural": ["denise", "amélie", "amelie", "audrey", "aurélie", "aurelie", "marie", "céline", "celine", "julie", "sophie", "female", "feminine", "woman"],
+  "fr-FR-HenriNeural": ["henri", "thomas", "mathieu", "rémi", "remi", "male", "masculine", "man"]
+};
+
 export function normalizeSpeechText(text) {
   const firstLine = String(text).split("\n")[0];
   return firstLine.split(/\s+/).filter(Boolean).join(" ");
@@ -57,7 +62,7 @@ export async function speakFrench(text, { voice, rate }) {
     playBlob(blob);
   } catch (error) {
     console.warn("[tts] live synthesis unavailable, falling back to the browser voice", error);
-    speakFrenchFallback(text, rate);
+    speakFrenchFallback(text, rate, voice);
   }
 }
 
@@ -76,11 +81,28 @@ function playUrl(url, { revokeOnEnd = false } = {}) {
   audio.play().catch((error) => console.warn("[tts] playback failed", error));
 }
 
-export function speakFrenchFallback(text, rate) {
+export function selectBrowserVoice(voices, requestedVoice) {
+  const hints = BROWSER_VOICE_NAME_HINTS[requestedVoice] || [];
+  if (!hints.length) return null;
+  return voices.find((voice) => {
+    if (!String(voice.lang || "").toLowerCase().startsWith("fr")) return false;
+    const name = String(voice.name || "").toLowerCase();
+    return hints.some((hint) => name.includes(hint));
+  }) || null;
+}
+
+export function speakFrenchFallback(text, rate, requestedVoice = "fr-FR-DeniseNeural") {
   if (!window.speechSynthesis) return;
+  const voice = selectBrowserVoice(window.speechSynthesis.getVoices(), requestedVoice);
+  if (!voice) {
+    console.warn(`[tts] no matching browser voice for ${requestedVoice}; suppressing a mismatched fallback voice`);
+    return false;
+  }
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(normalizeSpeechText(text));
-  utterance.lang = "fr-FR";
+  utterance.lang = voice.lang || "fr-FR";
+  utterance.voice = voice;
   utterance.rate = rate;
   window.speechSynthesis.speak(utterance);
+  return true;
 }

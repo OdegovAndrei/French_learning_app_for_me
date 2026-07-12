@@ -1,2 +1,6 @@
 .DS_Store
 .tts-cache/
+.venv/
+user-data/
+__pycache__/
+*.py[cod]

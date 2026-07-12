@@ -66,6 +66,24 @@ class CollectTextsTests(unittest.TestCase):
             sorted({"Bonjour.", "Le train part à dix heures.", "Le magasin est ouvert."})
         )
 
+    def test_collects_french_review_card_audio(self):
+        data = {
+            "lessons": [{
+                "targetPhrase": "Bonjour.",
+                "dialogue": [],
+                "vocabulary": [],
+                "cards": [
+                    {"front": "Я иду домой.", "back": "Je rentre chez moi."},
+                    {"front": "Je vais au {{c1::marché}}.", "back": "рынок"}
+                ]
+            }],
+            "pronunciationTopics": []
+        }
+        self.assertEqual(
+            prewarm_tts.collect_texts(data),
+            sorted({"Bonjour.", "Je rentre chez moi.", "Je vais au marché."})
+        )
+
 
 class PrewarmManifestTests(unittest.TestCase):
     def test_writes_manifest_matching_cache_key(self):

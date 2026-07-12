@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -13,6 +14,14 @@ LESSONS_PATH = REPO_ROOT / "data" / "lessons.json"
 AUDIO_DIR = REPO_ROOT / "data" / "audio"
 VOICE = "fr-FR-DeniseNeural"
 RATE = 0.82
+CLOZE_PATTERN = re.compile(r"\{\{c\d+::(.*?)(?:::.+?)?\}\}")
+
+
+def card_audio_text(card):
+    front = str(card.get("front", ""))
+    back = str(card.get("back", ""))
+    source = back if re.search(r"[À-ÿA-Za-z]", back) else front
+    return CLOZE_PATTERN.sub(r"\1", source)
 
 
 def collect_texts(data):
@@ -28,6 +37,10 @@ def collect_texts(data):
                 texts.add(exercise["listenText"])
             if exercise.get("transcript"):
                 texts.add(exercise["transcript"])
+        for card in lesson.get("cards", []):
+            text = card_audio_text(card)
+            if text.strip():
+                texts.add(text)
     for topic in data["pronunciationTopics"]:
         texts.add(topic["target"])
     return sorted(text for text in texts if text.strip())

@@ -22,14 +22,28 @@ export function checkExercise(exercise, input) {
   ].includes(exercise.type);
   if (isOpenEnded || (exercise.type === "substitution" && exercise.requiredTokens?.length)) {
     const required = exercise.requiredTokens || [];
+    const groups = Array.isArray(exercise.requiredTokenGroups) ? exercise.requiredTokenGroups : [];
     const normalized = normalizeAnswer(value);
     const matched = required.filter((token) => containsRequiredToken(normalized, normalizeAnswer(token)));
-    const complete = matched.length === required.length;
+    const groupResults = groups.map((group) => {
+      const tokens = Array.isArray(group?.anyOf) ? group.anyOf : [];
+      return {
+        label: group?.label || "один из вариантов",
+        matched: tokens.some((token) => containsRequiredToken(normalized, normalizeAnswer(token)))
+      };
+    });
+    const complete = matched.length === required.length && groupResults.every((group) => group.matched);
     const accentless = stripDiacritics(normalized);
     const accentComplete = required.every((token) =>
       containsRequiredToken(accentless, stripDiacritics(normalizeAnswer(token)))
-    );
-    const missing = required.filter((token) => !matched.includes(token));
+    ) && groupResults.every((group, index) => {
+      const tokens = Array.isArray(groups[index]?.anyOf) ? groups[index].anyOf : [];
+      return tokens.some((token) => containsRequiredToken(accentless, stripDiacritics(normalizeAnswer(token))));
+    });
+    const missing = [
+      ...required.filter((token) => !matched.includes(token)),
+      ...groupResults.filter((group) => !group.matched).map((group) => group.label)
+    ];
 
     if (isOpenEnded) {
       if (!required.length) {
@@ -87,7 +101,9 @@ export function checkExercise(exercise, input) {
     };
   }
 
-  const accepted = exercise.acceptedAnswers || [];
+  // The UI exposes modelAnswer, so it must always be a valid submission as well.
+  // This also lets a learner answer a gap-fill with the complete sentence.
+  const accepted = [...new Set([...(exercise.acceptedAnswers || []), exercise.modelAnswer].filter(Boolean))];
   const normalizedInput = normalizeAnswer(value);
   if (accepted.some((answer) => normalizeAnswer(answer) === normalizedInput)) {
     return { status: "correct", message: exercise.explanation || "Верно." };

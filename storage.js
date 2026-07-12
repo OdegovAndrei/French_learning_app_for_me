@@ -14,7 +14,45 @@ export const CACHE_STORE_NAMES = ["ttsAudio"];
 
 export const ALL_STORE_NAMES = [...STORE_NAMES, ...CACHE_STORE_NAMES];
 
+const FILE_STORAGE_ENDPOINT = "/api/storage";
+
 let databasePromise;
+let fileStorageReady = false;
+let fileStorageInfo = {
+  path: "user-data/french-study-data.json",
+  migratedLocalData: false
+};
+
+export async function initializeFileStorage() {
+  const remote = await fileStorageRequest(FILE_STORAGE_ENDPOINT);
+  let snapshot = remote.snapshot;
+  let migratedLocalData = false;
+
+  if (!remote.exists) {
+    const localSnapshot = await exportDatabase({ includeRecordings: true });
+    validateBackup(localSnapshot);
+    const initialized = await fileStorageRequest(FILE_STORAGE_ENDPOINT, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ snapshot: localSnapshot, initializeOnly: true })
+    });
+    snapshot = initialized.snapshot;
+    migratedLocalData = Boolean(initialized.created && snapshotHasRecords(localSnapshot));
+  }
+
+  validateBackup(snapshot);
+  await replaceIndexedDatabase(snapshot);
+  fileStorageReady = true;
+  fileStorageInfo = {
+    path: remote.storagePath || fileStorageInfo.path,
+    migratedLocalData
+  };
+  return { ...fileStorageInfo };
+}
+
+export function getFileStorageInfo() {
+  return { ...fileStorageInfo, ready: fileStorageReady };
+}
 
 export function openDatabase() {
   if (!databasePromise) {
@@ -44,11 +82,17 @@ export async function getAllRecords(storeName) {
 }
 
 export async function putRecord(storeName, value) {
+  if (STORE_NAMES.includes(storeName)) {
+    await syncFileTransaction({ puts: [{ store: storeName, record: value }] });
+  }
   await runRequest(storeName, "readwrite", (store) => store.put(value));
   return value;
 }
 
 export async function deleteRecord(storeName, id) {
+  if (STORE_NAMES.includes(storeName)) {
+    await syncFileTransaction({ deletes: [{ store: storeName, id }] });
+  }
   await runRequest(storeName, "readwrite", (store) => store.delete(id));
 }
 
@@ -61,12 +105,38 @@ export async function setValue(key, value) {
   return putRecord("kv", { key, value });
 }
 
+export async function putReviewResult(schedule, log) {
+  await syncFileTransaction({
+    puts: [
+      { store: "schedules", record: schedule },
+      { store: "reviewLogs", record: log }
+    ]
+  });
+  const database = await openDatabase();
+  const transaction = database.transaction(["schedules", "reviewLogs"], "readwrite");
+  transaction.objectStore("schedules").put(schedule);
+  transaction.objectStore("reviewLogs").put(log);
+  await transactionDone(transaction);
+}
+
+export async function putRecordingResult(recording, exerciseAttempt = null) {
+  const stores = exerciseAttempt ? ["recordings", "exercises"] : ["recordings"];
+  const puts = [{ store: "recordings", record: recording }];
+  if (exerciseAttempt) puts.push({ store: "exercises", record: exerciseAttempt });
+  await syncFileTransaction({ puts });
+  const database = await openDatabase();
+  const transaction = database.transaction(stores, "readwrite");
+  transaction.objectStore("recordings").put(recording);
+  if (exerciseAttempt) transaction.objectStore("exercises").put(exerciseAttempt);
+  await transactionDone(transaction);
+}
+
 export async function migrateLegacyProgress(defaultAppState) {
   const done = await getValue("legacyMigrationDone", false);
   if (done) {
     const saved = await getValue("appState", defaultAppState);
     const normalized = normalizeCompletionModel(saved, defaultAppState);
-    if (normalized.completionModelVersion !== saved?.completionModelVersion) {
+    if (JSON.stringify(normalized) !== JSON.stringify(saved)) {
       await setValue("appState", normalized);
     }
     return normalized;
@@ -100,21 +170,15 @@ export async function migrateLegacyProgress(defaultAppState) {
 export function normalizeCompletionModel(appState, defaultAppState = {}) {
   const saved = isPlainObject(appState) ? appState : {};
   const normalized = { ...defaultAppState, ...saved };
-  if (saved.completionModelVersion === 1) {
-    return {
-      ...normalized,
-      completedLessons: uniqueStrings(normalized.completedLessons),
-      legacyCompletedLessons: uniqueStrings(normalized.legacyCompletedLessons)
-    };
-  }
+  const completedLessons = uniqueStrings([
+    ...(Array.isArray(normalized.legacyCompletedLessons) ? normalized.legacyCompletedLessons : []),
+    ...(Array.isArray(normalized.completedLessons) ? normalized.completedLessons : [])
+  ]);
   return {
     ...normalized,
-    completionModelVersion: 1,
-    legacyCompletedLessons: uniqueStrings([
-      ...(Array.isArray(saved.legacyCompletedLessons) ? saved.legacyCompletedLessons : []),
-      ...(Array.isArray(saved.completedLessons) ? saved.completedLessons : [])
-    ]),
-    completedLessons: []
+    completionModelVersion: 2,
+    legacyCompletedLessons: [],
+    completedLessons
   };
 }
 
@@ -191,8 +255,8 @@ function validateAppState(value) {
   validateOptionalStringArray(value, "suspendedNoteIds", "appState");
   if (value.currentView != null && !isNonEmptyString(value.currentView)) throw new Error("appState.currentView должен быть строкой.");
   if (value.currentLessonId != null && !isNonEmptyString(value.currentLessonId)) throw new Error("appState.currentLessonId должен быть строкой или null.");
-  if (value.completionModelVersion != null && value.completionModelVersion !== 1) {
-    throw new Error("appState.completionModelVersion должен быть равен 1.");
+  if (value.completionModelVersion != null && ![1, 2].includes(value.completionModelVersion)) {
+    throw new Error("appState.completionModelVersion должен быть равен 1 или 2.");
   }
   if (value.scrollPositions != null) {
     if (!isPlainObject(value.scrollPositions)) throw new Error("appState.scrollPositions должен быть объектом.");
@@ -213,6 +277,9 @@ function validateSettings(value) {
   }
   if (value.newCardsPerDay != null && (!Number.isInteger(value.newCardsPerDay) || value.newCardsPerDay < 0 || value.newCardsPerDay > 1000)) {
     throw new Error("settings.newCardsPerDay должен быть целым числом от 0 до 1000.");
+  }
+  if (value.reviewSettingsVersion != null && value.reviewSettingsVersion !== 1) {
+    throw new Error("settings.reviewSettingsVersion должен быть равен 1.");
   }
 }
 
@@ -267,6 +334,7 @@ function validateExerciseRecord(record) {
     if (record[field] != null && !isDateString(record[field])) throw new Error(`Упражнение ${record.id}: неверная дата ${field}.`);
   }
   if (record.result != null && !isPlainObject(record.result)) throw new Error(`Упражнение ${record.id}: result должен быть объектом.`);
+  if (record.recordingKey != null && typeof record.recordingKey !== "string") throw new Error(`Упражнение ${record.id}: recordingKey должен быть строкой.`);
 }
 
 function validateRecordingRecord(record) {
@@ -281,6 +349,12 @@ function validateRecordingRecord(record) {
     }
   }
   if (record.blobType != null && typeof record.blobType !== "string") throw new Error(`Запись ${record.id}: blobType должен быть строкой.`);
+  for (const field of ["lessonId", "exerciseId"]) {
+    if (record[field] != null && typeof record[field] !== "string") throw new Error(`Запись ${record.id}: ${field} должен быть строкой.`);
+  }
+  if (record.durationMs != null && (!Number.isFinite(record.durationMs) || record.durationMs < 0 || record.durationMs > 120000)) {
+    throw new Error(`Запись ${record.id}: неверная длительность.`);
+  }
 }
 
 function validateOptionalStringArray(object, field, label) {
@@ -308,6 +382,17 @@ function uniqueStrings(value) {
 
 export async function importDatabase(snapshot) {
   validateBackup(snapshot);
+  if (fileStorageReady) {
+    await fileStorageRequest(FILE_STORAGE_ENDPOINT, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ snapshot, initializeOnly: false })
+    });
+  }
+  await replaceIndexedDatabase(snapshot);
+}
+
+async function replaceIndexedDatabase(snapshot) {
   const restoredStores = {};
   for (const name of STORE_NAMES) {
     restoredStores[name] = await Promise.all(snapshot.stores[name].map(deserializeBinaryFields));
@@ -325,6 +410,7 @@ export async function importDatabase(snapshot) {
 }
 
 export async function clearDatabase() {
+  await syncFileTransaction({ clearStores: STORE_NAMES });
   const database = await openDatabase();
   const transaction = database.transaction(ALL_STORE_NAMES, "readwrite");
   for (const name of ALL_STORE_NAMES) transaction.objectStore(name).clear();
@@ -338,6 +424,37 @@ async function runRequest(storeName, mode, operation) {
   const result = await requestDone(request);
   await transactionDone(transaction);
   return result;
+}
+
+async function syncFileTransaction({ puts = [], deletes = [], clearStores = [] }) {
+  if (!fileStorageReady) return;
+  const serializedPuts = await Promise.all(puts.map(async ({ store, record }) => ({
+    store,
+    record: await serializeBinaryFields(record)
+  })));
+  await fileStorageRequest(`${FILE_STORAGE_ENDPOINT}/transaction`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ puts: serializedPuts, deletes, clearStores })
+  });
+}
+
+async function fileStorageRequest(url, options = {}) {
+  let response;
+  try {
+    response = await fetch(url, { cache: "no-store", ...options });
+  } catch (error) {
+    throw new Error("Файловое хранилище недоступно. Запусти или перезапусти приложение через .venv/bin/python server.py.", { cause: error });
+  }
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result.error || `Файловое хранилище вернуло HTTP ${response.status}. Перезапусти server.py.`);
+  }
+  return result;
+}
+
+function snapshotHasRecords(snapshot) {
+  return STORE_NAMES.some((name) => snapshot.stores[name].length > 0);
 }
 
 function requestDone(request) {

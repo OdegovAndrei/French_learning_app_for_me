@@ -15,7 +15,7 @@ const OPEN_EXERCISE_TYPES = new Set([
   "summarize-for-a-friend"
 ]);
 
-export function evaluateLessonReadiness(lesson, attempts = []) {
+export function evaluateLessonReadiness(lesson, attempts = [], recordingEvidence = new Set()) {
   const exercises = Array.isArray(lesson?.exercises)
     ? lesson.exercises.filter((exercise) => exercise?.required !== false)
     : [];
@@ -25,7 +25,7 @@ export function evaluateLessonReadiness(lesson, attempts = []) {
     const attempt = exerciseId ? attemptsByExercise.get(exerciseId) : undefined;
     return {
       exerciseId,
-      state: classifyExercise(exercise, attempt)
+      state: classifyExercise(exercise, attempt, recordingEvidence)
     };
   });
 
@@ -170,18 +170,31 @@ export function getIntroducedLessonIds({ completedLessons = [], attempts = [], c
   return [...introduced];
 }
 
-function classifyExercise(exercise, attempt) {
+function classifyExercise(exercise, attempt, recordingEvidence) {
   const result = attempt?.result;
   if (!result || typeof result !== "object") return "incomplete";
 
   if (OPEN_EXERCISE_TYPES.has(exercise?.type)) {
     if (result.needsReview !== true || result.coverageComplete !== true) return "incomplete";
+    if (requiresRecording(exercise) && !hasValidRecording(attempt, recordingEvidence, exercise)) return "incomplete";
     return attempt.selfReviewed === true ? "mastered" : "needs-review";
   }
 
   if (result.status === "correct") return "mastered";
   if (result.needsReview === true) return "needs-review";
   return "incomplete";
+}
+
+function requiresRecording(exercise) {
+  if (exercise?.requiresRecording === false) return false;
+  return ["speaking", "roleplay", "conversation-prompt", "recorded-monologue"].includes(exercise?.type);
+}
+
+function hasValidRecording(attempt, recordingEvidence, exercise) {
+  const key = attempt?.recordingKey;
+  if (!validId(key)) return false;
+  const record = recordingEvidence instanceof Map ? recordingEvidence.get(key) : recordingEvidence instanceof Set ? recordingEvidence.has(key) ? { durationMs: Infinity } : null : null;
+  return Boolean(record && Number(record.durationMs) >= Number(exercise.minimumRecordingSeconds || 5) * 1000);
 }
 
 function evaluateRequiredObjectives(lesson, exercises, evidence) {

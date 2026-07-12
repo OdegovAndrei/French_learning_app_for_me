@@ -29,12 +29,13 @@ const attempts = [
   { id: "closed-1", result: { status: "correct" } },
   { id: "closed-2", result: { status: "almost" } },
   { id: "open-writing", result: { status: "open", needsReview: true, coverageComplete: true }, selfReviewed: false },
-  { id: "open-speaking", result: { status: "open", needsReview: true, coverageComplete: true }, selfReviewed: true },
+  { id: "open-speaking", recordingKey: "exercise:lesson-1:open-speaking", result: { status: "open", needsReview: true, coverageComplete: true }, selfReviewed: true },
   { id: "optional", result: { status: "incorrect" } },
   { id: "unknown-exercise", result: { status: "correct" } }
 ];
 
-assert.deepEqual(evaluateLessonReadiness(lesson, attempts), {
+const recordingEvidence = new Map([["exercise:lesson-1:open-speaking", { durationMs: 5000 }]]);
+assert.deepEqual(evaluateLessonReadiness(lesson, attempts, recordingEvidence), {
   lessonId: "lesson-1",
   total: 4,
   mastered: 2,
@@ -65,14 +66,21 @@ const completeAttempts = new Map([
   ["closed-1", { result: { status: "correct" } }],
   ["closed-2", { result: { status: "open", needsReview: true, coverageComplete: true }, selfReviewed: true }],
   ["open-writing", { result: { status: "open", needsReview: true, coverageComplete: true }, selfReviewed: true }],
-  ["open-speaking", { result: { status: "open", needsReview: true, coverageComplete: true }, selfReviewed: true }]
+  ["open-speaking", { recordingKey: "exercise:lesson-1:open-speaking", result: { status: "open", needsReview: true, coverageComplete: true }, selfReviewed: true }]
 ]);
-const complete = evaluateLessonReadiness(lesson, completeAttempts);
+const complete = evaluateLessonReadiness(lesson, completeAttempts, recordingEvidence);
 assert.equal(complete.mastered, 4);
 assert.equal(complete.incomplete, 0);
 assert.equal(complete.needsReview, 0);
 assert.equal(complete.canComplete, true);
 assert.equal(complete.objectives.mastered, 4);
+
+const shortRecording = evaluateLessonReadiness(
+  { id: "short", exercises: [{ id: "oral", type: "speaking", minimumRecordingSeconds: 10 }] },
+  [{ id: "oral", recordingKey: "exercise:short:oral", result: { needsReview: true, coverageComplete: true }, selfReviewed: true }],
+  new Map([["exercise:short:oral", { durationMs: 5000 }]])
+);
+assert.equal(shortRecording.incomplete, 1, "A short recording cannot complete oral evidence");
 
 const openWithoutReviewContract = evaluateLessonReadiness(
   { id: "open-only", exercises: [{ id: "writing", type: "writing" }] },
@@ -85,7 +93,7 @@ const pendingSelfReview = evaluateLessonReadiness(
   { id: "open-only", exercises: [{ id: "speaking", type: "speaking" }] },
   [{ id: "speaking", result: { needsReview: true, coverageComplete: true } }]
 );
-assert.equal(pendingSelfReview.needsReview, 1);
+assert.equal(pendingSelfReview.incomplete, 1, "Speaking stays incomplete until a recording exists");
 assert.equal(pendingSelfReview.canComplete, false);
 
 const missingCoverageCannotBeConfirmed = evaluateLessonReadiness(
