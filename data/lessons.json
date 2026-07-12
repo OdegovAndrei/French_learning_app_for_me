@@ -58,12 +58,20 @@
       "prerequisites": ["module:starter:orientation-plans"]
     },
     {
+      "id": "module:starter:numbers",
+      "levelId": "starter",
+      "title": "Числа: считаем по-французски",
+      "description": "Полная система счёта: от нуля до миллиарда.",
+      "order": 5,
+      "prerequisites": ["module:starter:help"]
+    },
+    {
       "id": "module:starter:reception-review",
       "levelId": "starter",
       "title": "Первые тексты и объявления",
       "description": "Чтение меню, понимание короткого объявления, диктант и мини-медиация.",
-      "order": 5,
-      "prerequisites": ["module:starter:help"]
+      "order": 6,
+      "prerequisites": ["module:starter:numbers"]
     },
     {
       "id": "module:a1:social-identity",
@@ -2180,6 +2188,115 @@
           "back": "Мне нужно + существительное",
           "type": "cloze"
         }
+      ]
+    },
+    {
+      "id": "l08a",
+      "level": "A1",
+      "title": "Числа 0-20: считаем с нуля",
+      "goal": "Называть числа 0-20 и использовать il y a, чтобы говорить о количестве.",
+      "scenario": "counting-basics",
+      "targetPhrase": "Il y a combien d'élèves ? Il y a quatorze élèves.",
+      "pronunciationTopic": "liaison",
+      "grammarTopic": "il-y-a",
+      "moduleId": "module:starter:numbers",
+      "order": 1,
+      "prerequisites": ["l08"],
+      "tags": ["numbers", "il-y-a", "counting"],
+      "objectives": [
+        { "id": "obj:l08a:count-zero-to-twenty", "skill": "language-system", "cefrCanDo": "Может называть и использовать числа 0-20.", "required": true },
+        { "id": "obj:l08a:use-il-y-a", "skill": "language-system", "cefrCanDo": "Может использовать il y a, чтобы сказать о наличии и количестве.", "required": true }
+      ],
+      "dialogue": [
+        {
+          "speaker": "Prof",
+          "fr": "Il y a combien d'élèves dans la classe ?",
+          "ipa": "/il i a kɔ̃.bjɛ̃ d‿e.lɛv dɑ̃ la klas/",
+          "ru": "Сколько учеников в классе?"
+        },
+        {
+          "speaker": "Élève",
+          "fr": "Il y a quatorze élèves.",
+          "ipa": "/il i a ka.tɔʁz e.lɛv/",
+          "ru": "Четырнадцать учеников."
+        },
+        {
+          "speaker": "Prof",
+          "fr": "Et il y a des chaises pour tout le monde ?",
+          "ipa": "/e il i a de ʃɛz puʁ tu lə mɔ̃d/",
+          "ru": "А стульев на всех хватает?"
+        },
+        {
+          "speaker": "Élève",
+          "fr": "Oui, il y a seize chaises.",
+          "ipa": "/wi il i a sɛz ʃɛz/",
+          "ru": "Да, шестнадцать стульев."
+        }
+      ],
+      "vocabulary": [
+        { "id": "vocab:l08a:0", "fr": "zéro", "ipa": "/ze.ʁo/", "ru": "ноль", "note": "Ударение на последнем слоге, как обычно во французском." },
+        { "id": "vocab:l08a:1", "fr": "un", "ipa": "/ɛ̃/", "ru": "один", "note": "Носовой звук, как в un café." },
+        { "id": "vocab:l08a:2", "fr": "deux", "ipa": "/dø/", "ru": "два", "note": "Закрытый звук eu, губы округлены, как в peu." },
+        { "id": "vocab:l08a:3", "fr": "trois", "ipa": "/tʁwa/", "ru": "три", "note": "oi читается как /wa/." },
+        { "id": "vocab:l08a:4", "fr": "quatre", "ipa": "/katʁ/", "ru": "четыре", "note": "Финальное e не звучит." },
+        { "id": "vocab:l08a:5", "fr": "cinq", "ipa": "/sɛ̃k/", "ru": "пять", "note": "Перед паузой q звучит; перед согласной иногда пропадает: cinq minutes." },
+        { "id": "vocab:l08a:6", "fr": "six", "ipa": "/sis/", "ru": "шесть", "note": "Перед согласной звучит /si/, перед гласной /siz/." },
+        { "id": "vocab:l08a:7", "fr": "sept", "ipa": "/sɛt/", "ru": "семь", "note": "Финальная t звучит — редкое исключение среди чисел." },
+        { "id": "vocab:l08a:8", "fr": "huit", "ipa": "/ɥit/", "ru": "восемь", "note": "h немое, слово начинается со звука /ɥ/." },
+        { "id": "vocab:l08a:9", "fr": "neuf", "ipa": "/nœf/", "ru": "девять", "note": "Перед heures/ans звучит как /nœv/: neuf heures." },
+        { "id": "vocab:l08a:10", "fr": "dix", "ipa": "/dis/", "ru": "десять", "note": "Перед согласной /di/, перед гласной /diz/." },
+        { "id": "vocab:l08a:11", "fr": "onze", "ipa": "/ɔ̃z/", "ru": "одиннадцать", "note": "Начинается с гласной, но liaison перед onze не делается." },
+        { "id": "vocab:l08a:12", "fr": "douze", "ipa": "/duz/", "ru": "двенадцать", "note": "u — закрытый звук, как в vous." },
+        { "id": "vocab:l08a:13", "fr": "treize", "ipa": "/tʁɛz/", "ru": "тринадцать", "note": "ei читается как открытое /ɛ/." },
+        { "id": "vocab:l08a:14", "fr": "quatorze", "ipa": "/ka.tɔʁz/", "ru": "четырнадцать", "note": "Ударение на последнем слоге." },
+        { "id": "vocab:l08a:15", "fr": "quinze", "ipa": "/kɛ̃z/", "ru": "пятнадцать", "note": "Носовой звук в начале, как в cinq." },
+        { "id": "vocab:l08a:16", "fr": "seize", "ipa": "/sɛz/", "ru": "шестнадцать", "note": "Похоже по звучанию на treize, не перепутай." },
+        { "id": "vocab:l08a:17", "fr": "dix-sept", "ipa": "/di.sɛt/", "ru": "семнадцать", "note": "dix перед согласной без z: /di/ + sept." },
+        { "id": "vocab:l08a:18", "fr": "dix-huit", "ipa": "/di.zɥit/", "ru": "восемнадцать", "note": "Перед немым h — liaison, dix звучит /diz/." },
+        { "id": "vocab:l08a:19", "fr": "dix-neuf", "ipa": "/diz.nœf/", "ru": "девятнадцать", "note": "Тоже liaison: /diz/ + neuf." },
+        { "id": "vocab:l08a:20", "fr": "vingt", "ipa": "/vɛ̃/", "ru": "двадцать", "note": "Финальное t не звучит в одиночном слове, но появляется в vingt et un." }
+      ],
+      "exercises": [
+        {
+          "id": "l08a-e1",
+          "type": "controlled-production",
+          "prompt": "Реши и назови по-французски: 5+7=? 8+9=? 6+9=?",
+          "acceptedAnswers": [],
+          "modelAnswer": "5+7 = douze. 8+9 = dix-sept. 6+9 = quinze.",
+          "hints": ["Складывай как в уме по-русски, потом называй результат по-французски."],
+          "requiredTokens": ["douze", "dix-sept", "quinze"],
+          "objectiveIds": ["obj:l08a:count-zero-to-twenty"],
+          "explanation": "Числа 0-20 — основа для всех дальнейших вычислений и цен."
+        },
+        {
+          "id": "l08a-e2",
+          "type": "gap-fill",
+          "prompt": "Заполни: ___ onze personnes dans la salle.",
+          "acceptedAnswers": ["Il y a"],
+          "modelAnswer": "Il y a onze personnes dans la salle.",
+          "hints": ["Стандартная формула наличия/количества, не меняется по числам."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l08a:use-il-y-a"],
+          "explanation": "Il y a не согласуется ни с родом, ни с числом существительного."
+        },
+        {
+          "id": "l08a-e3",
+          "type": "dictation",
+          "prompt": "Диктант: прослушай и запиши фразу полностью.",
+          "transcript": "Il y a quinze personnes et huit chaises.",
+          "listenText": "Il y a quinze personnes et huit chaises.",
+          "acceptedAnswers": ["Il y a quinze personnes et huit chaises."],
+          "modelAnswer": "Il y a quinze personnes et huit chaises.",
+          "hints": ["Два числа подряд — quinze и huit, слушай внимательно."],
+          "requiredTokens": [],
+          "objectiveIds": ["obj:l08a:use-il-y-a"],
+          "explanation": "Диктант закрепляет числа на слух в связке с il y a."
+        }
+      ],
+      "cards": [
+        { "id": "phrase:l08a:0", "front": "Сколько учеников?", "back": "Il y a combien d'élèves ?", "type": "phrase" },
+        { "id": "phrase:l08a:1", "front": "Четырнадцать учеников.", "back": "Il y a quatorze élèves.", "type": "phrase" },
+        { "id": "phrase:l08a:2", "front": "Il y a {{c1::seize}} chaises.", "back": "Есть шестнадцать стульев.", "type": "cloze" }
       ]
     },
     {

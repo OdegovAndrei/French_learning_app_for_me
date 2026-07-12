@@ -102,7 +102,7 @@ In the top-level `lessons` array, insert this object immediately after `l08` (be
   "title": "Числа 0-20: считаем с нуля",
   "goal": "Называть числа 0-20 и использовать il y a, чтобы говорить о количестве.",
   "scenario": "counting-basics",
-  "targetPhrase": "Il y a combien de personnes ? Il y a dix personnes.",
+  "targetPhrase": "Il y a combien d'élèves ? Il y a quatorze élèves.",
   "pronunciationTopic": "liaison",
   "grammarTopic": "il-y-a",
   "moduleId": "module:starter:numbers",
@@ -131,28 +131,28 @@ In the top-level `lessons` array, insert this object immediately after `l08` (be
   ],
   "dialogue": [
     {
-      "speaker": "Organisateur",
-      "fr": "Il y a combien de personnes pour la réunion ?",
-      "ipa": "/il i a kɔ̃.bjɛ̃ də pɛʁ.sɔn puʁ la ʁe.y.njɔ̃/",
-      "ru": "Сколько человек на встрече?"
+      "speaker": "Prof",
+      "fr": "Il y a combien d'élèves dans la classe ?",
+      "ipa": "/il i a kɔ̃.bjɛ̃ d‿e.lɛv dɑ̃ la klas/",
+      "ru": "Сколько учеников в классе?"
     },
     {
-      "speaker": "Collègue",
-      "fr": "Il y a dix personnes.",
-      "ipa": "/il i a di pɛʁ.sɔn/",
-      "ru": "Десять человек."
+      "speaker": "Élève",
+      "fr": "Il y a quatorze élèves.",
+      "ipa": "/il i a ka.tɔʁz e.lɛv/",
+      "ru": "Четырнадцать учеников."
     },
     {
-      "speaker": "Organisateur",
-      "fr": "Et il y a des chaises ?",
-      "ipa": "/e il i a de ʃɛz/",
-      "ru": "А стулья есть?"
+      "speaker": "Prof",
+      "fr": "Et il y a des chaises pour tout le monde ?",
+      "ipa": "/e il i a de ʃɛz puʁ tu lə mɔ̃d/",
+      "ru": "А стульев на всех хватает?"
     },
     {
-      "speaker": "Collègue",
-      "fr": "Oui, il y a quinze chaises.",
-      "ipa": "/wi il i a kɛ̃z ʃɛz/",
-      "ru": "Да, пятнадцать стульев."
+      "speaker": "Élève",
+      "fr": "Oui, il y a seize chaises.",
+      "ipa": "/wi il i a sɛz ʃɛz/",
+      "ru": "Да, шестнадцать стульев."
     }
   ],
   "vocabulary": [
@@ -216,12 +216,14 @@ In the top-level `lessons` array, insert this object immediately after `l08` (be
     }
   ],
   "cards": [
-    {"id": "phrase:l08a:0", "front": "Сколько человек?", "back": "Il y a combien de personnes ?", "type": "phrase"},
-    {"id": "phrase:l08a:1", "front": "Десять человек.", "back": "Il y a dix personnes.", "type": "phrase"},
-    {"id": "phrase:l08a:2", "front": "Il y a {{c1::quinze}} chaises.", "back": "Есть пятнадцать стульев.", "type": "cloze"}
+    {"id": "phrase:l08a:0", "front": "Сколько учеников?", "back": "Il y a combien d'élèves ?", "type": "phrase"},
+    {"id": "phrase:l08a:1", "front": "Четырнадцать учеников.", "back": "Il y a quatorze élèves.", "type": "phrase"},
+    {"id": "phrase:l08a:2", "front": "Il y a {{c1::seize}} chaises.", "back": "Есть шестнадцать стульев.", "type": "cloze"}
   ]
 }
 ```
+
+**Execution note (added during implementation):** the JSON above was originally written to reuse `l14`'s exact dialogue/card text ("réunion"/"personnes"/dix/vingt), since `l14` was going to be deleted anyway. That broke `tests/smoke.mjs`'s "every dialogue phrase gets exactly 2 same-lesson cards" invariant (`smoke.mjs:164-169`): `cards.js`'s cross-lesson signature dedup (`cardSignature`, keyed by front+back text only, not `lessonId`) silently drops the *second* lesson's identical dialogue/manual card. Since `l08a` is processed before `l14` in array order, `l14` — which still exists at this point in the plan — lost its own cards for the shared lines, and `l08a`'s own text differs from what's shown above. This was caught by actually running `node tests/smoke.mjs` (the plan's dry-run validation only checked `collectCourseValidationErrors` + duplicate card ids, not this cross-lesson invariant). Fixed by making `l08a`'s dialogue/targetPhrase/cards textually original (a classroom scene instead of the réunion scene) — the JSON above already reflects the corrected, tested content.
 
 - [ ] **Step 4: Update the two guardrail assertions in `tests/smoke.mjs`**
 

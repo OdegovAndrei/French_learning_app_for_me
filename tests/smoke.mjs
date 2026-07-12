@@ -21,7 +21,7 @@ assert.equal(validateCourseCatalog(data), true);
 assert.match(data.meta.title, /A1/);
 assert.equal(data.levels.length, 2, "The catalog must expose exactly the Starter and a1 tracks once A1 content ships");
 assert.ok(data.modules.length >= 3, "Starter content must be grouped into scalable modules");
-assert.equal(data.lessons.length, 38, "The practical A1 release contains 38 lessons");
+assert.equal(data.lessons.length, 39, "The catalog grows to 39 lessons once l08a (numbers 0-20) ships");
 assert.ok(data.pronunciationTopics.length > 0, "The course needs pronunciation topics");
 assert.ok(data.grammarTopics.length > 0, "The course needs grammar topics");
 assert.ok(data.courseRoadmap, "The catalog needs an explicit roadmap before scaling beyond Starter");
@@ -72,7 +72,7 @@ for (const axis of [
 }
 
 const exercises = data.lessons.flatMap((lesson) => lesson.exercises);
-assert.equal(exercises.length, 118, "38 lessons include 118 exercises with a seven-part checkpoint");
+assert.equal(exercises.length, 121, "39 lessons include 121 exercises with a seven-part checkpoint");
 assert.ok(exercises.length >= data.lessons.length, "Every lesson needs assessable practice");
 for (const exercise of exercises) {
   assert.ok(exercise.id, "Every exercise needs a stable id");
