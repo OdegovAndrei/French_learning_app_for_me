@@ -65,6 +65,11 @@ def collect_texts(data, pronunciation_data=None):
                 texts.add(example.get("text", ""))
             for card in lesson.get("cards", []):
                 texts.add(card.get("audioText", ""))
+            for spelling in lesson.get("spellings", []):
+                if spelling.get("soundText"):
+                    texts.add(spelling["soundText"])
+                if spelling.get("examples"):
+                    texts.add(spelling["examples"])
     return sorted(text for text in texts if text.strip())
 
 

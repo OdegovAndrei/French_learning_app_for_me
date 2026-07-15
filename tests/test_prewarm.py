@@ -98,6 +98,21 @@ class CollectTextsTests(unittest.TestCase):
             ["bateau", "loup", "loup, où"]
         )
 
+    def test_collects_reading_table_sound_and_example_text(self):
+        data = {"lessons": [], "pronunciationTopics": []}
+        pronunciation_data = {
+            "lessons": [{
+                "spellings": [
+                    {"pattern": "a, à, â", "sound": "[a]", "examples": "ami, là, âge", "soundText": "a, à, â"},
+                    {"pattern": "c + a/o/u", "sound": "[k]", "examples": "café, code, culture", "soundText": "c"}
+                ]
+            }]
+        }
+        self.assertEqual(
+            prewarm_tts.collect_texts(data, pronunciation_data),
+            sorted({"a, à, â", "ami, là, âge", "c", "café, code, culture"})
+        )
+
 
 class PrewarmManifestTests(unittest.TestCase):
     def test_writes_manifest_matching_cache_key(self):
