@@ -92,6 +92,20 @@
 
 Добавить `.pronunciation-sound-actions` (flex-ряд с gap) и расширить `.inline-audio`, чтобы кнопка могла содержать текст, а не только иконку-круг (сейчас `.inline-audio` — круглая кнопка 30×30 под один символ `▶`). Для этой таблицы нужен вариант с текстовой подписью — либо модификатор класса (`.inline-audio.labeled`), либо отдельный класс с похожим оформлением (рамка, скруглённые углы, `--accent-dark`).
 
+### 5. `scripts/prewarm_tts.py` — prewarm-кэш
+
+`collect_texts()` (строки ~41-63) собирает весь озвучиваемый текст курса заранее, чтобы `data/audio/manifest.json` содержал готовые MP3 для каждой фразы (см. `tts.js:32-49` — сначала проверяется manifest, потом IndexedDB-кэш, и только затем идёт живой запрос к `/tts`). Сейчас функция не заглядывает в `lesson.spellings` вообще. Нужно добавить сбор `soundText` и `examples` из каждой записи `spellings` каждого урока `pronunciation_data`, по аналогии с уже существующим циклом по `lesson.get("examples", [])` и `lesson.get("cards", [])` в этой же функции:
+
+```python
+for spelling in lesson.get("spellings", []):
+    if spelling.get("soundText"):
+        texts.add(spelling["soundText"])
+    if spelling.get("examples"):
+        texts.add(spelling["examples"])
+```
+
+После этого нужно перегенерировать `data/audio/manifest.json`, запустив `python3 scripts/prewarm_tts.py` (или `--local-macos`, если внешний Edge TTS недоступен), чтобы реальные MP3 для новых 88 фраз (52 soundText + 52 examples, с учётом что часть soundText совпадает по тексту с уже закэшированными словами) появились в `data/audio/`.
+
 ## Не входит в объём
 
 - Не трогаем остальные вызовы `.inline-audio` (карточки примеров ниже по странице, `app.js:462`) — там уже есть своя круглая кнопка ▶ без изменений.
