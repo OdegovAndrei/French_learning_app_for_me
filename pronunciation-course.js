@@ -50,7 +50,7 @@ export function collectPronunciationCourseErrors(course) {
       if (id === lesson?.id) errors.push(`${path}.prerequisites: lesson cannot require itself`);
     });
 
-    requireStructuredArray(lesson?.spellings, `${path}.spellings`, ["pattern", "sound", "examples"], errors);
+    requireStructuredArray(lesson?.spellings, `${path}.spellings`, ["pattern", "sound", "examples", "soundText"], errors);
     requireStructuredArray(lesson?.examples, `${path}.examples`, ["text", "ipa", "note"], errors);
 
     const cards = Array.isArray(lesson?.cards) ? lesson.cards : [];
