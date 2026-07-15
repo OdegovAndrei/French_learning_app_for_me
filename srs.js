@@ -171,8 +171,8 @@ export function countNewIntroducedToday(logs, cardsById, now = new Date()) {
   const day = localDateKey(now);
   return new Set(
     logs
-      .filter((log) => log.wasNew && localDateKey(new Date(log.reviewedAt)) === day)
-      .map((log) => cardsById.get(log.cardId)?.noteId || log.cardId)
+      .filter((log) => log.wasNew && cardsById.has(log.cardId) && localDateKey(new Date(log.reviewedAt)) === day)
+      .map((log) => cardsById.get(log.cardId).noteId)
   ).size;
 }
 

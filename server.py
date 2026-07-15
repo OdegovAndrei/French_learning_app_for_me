@@ -263,6 +263,13 @@ def apply_storage_transaction(snapshot, transaction):
 
 
 class Handler(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        parsed = urlparse(self.path)
+        suffix = Path(parsed.path).suffix.lower()
+        if parsed.path == "/" or suffix in {".html", ".js", ".css", ".json"}:
+            self.send_header("Cache-Control", "no-store, max-age=0")
+        super().end_headers()
+
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/api/storage":

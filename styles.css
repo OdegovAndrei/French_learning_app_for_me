@@ -1271,6 +1271,131 @@ audio {
   color: var(--muted);
 }
 
+.pronunciation-course-heading {
+  align-items: center;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--rose-soft), var(--surface));
+}
+
+.pronunciation-course-heading .note {
+  max-width: 760px;
+  margin-bottom: 0;
+}
+
+.pronunciation-module-list {
+  display: grid;
+  gap: 26px;
+  margin-top: 24px;
+}
+
+.pronunciation-lesson-grid {
+  grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+}
+
+.pronunciation-lesson-tile.completed {
+  border-color: var(--rose);
+  background: var(--rose-soft);
+}
+
+.pronunciation-lesson-tile.selected {
+  outline: 3px solid color-mix(in srgb, var(--rose) 28%, transparent);
+  border-color: var(--rose);
+}
+
+.pronunciation-lesson-tile .fr {
+  color: var(--rose);
+}
+
+.pronunciation-lesson-detail {
+  display: grid;
+  gap: 18px;
+}
+
+.pronunciation-lesson-detail > .section-band {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.pronunciation-rule {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.pronunciation-spelling-row {
+  grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.6fr);
+}
+
+.pronunciation-example-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.pronunciation-example {
+  position: relative;
+  display: grid;
+  gap: 7px;
+  min-height: 150px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+}
+
+.pronunciation-example .inline-audio {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.pronunciation-example .fr {
+  padding-right: 38px;
+  font-size: 1.45rem;
+}
+
+.pronunciation-reference {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.pronunciation-reference > summary {
+  cursor: pointer;
+}
+
+.pronunciation-review-card .review-front {
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  line-height: 1.4;
+}
+
+.pronunciation-review-card .review-back .note {
+  max-width: 720px;
+  margin: 10px auto 16px;
+}
+
+.pronunciation-card-catalog {
+  display: grid;
+  gap: 18px;
+}
+
+.pronunciation-card-catalog .section-band {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.pronunciation-catalog-row {
+  grid-template-columns: 110px minmax(220px, 1.2fr) minmax(220px, 1fr) 48px;
+  align-items: center;
+}
+
 @media (max-width: 920px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -1359,4 +1484,9 @@ audio {
   .history-row {
     grid-template-columns: 1fr;
   }
+
+  .pronunciation-catalog-row {
+    grid-template-columns: 1fr;
+  }
+
 }

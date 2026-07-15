@@ -139,6 +139,12 @@ class TtsEndpointTests(unittest.TestCase):
             response, _ = self.request(path)
             self.assertEqual(response.status, 404)
 
+    def test_interface_files_are_not_cached(self):
+        for path in ["/", "/app.js", "/styles.css", "/data/lessons.json"]:
+            response, _ = self.request(path)
+            self.assertEqual(response.status, 200)
+            self.assertEqual(response.getheader("Cache-Control"), "no-store, max-age=0")
+
     def test_storage_rejects_unknown_stores(self):
         response, payload = self.request_json(
             "POST",

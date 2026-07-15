@@ -241,6 +241,7 @@ function validateStoreRecord(storeName, record, index) {
 function validateKeyValueRecord(record) {
   if (!("value" in record)) throw new Error(`Настройка ${record.key} не содержит value.`);
   if (record.key === "appState") validateAppState(record.value);
+  if (record.key === "pronunciationState") validatePronunciationState(record.value);
   if (record.key === "settings") validateSettings(record.value);
   if (["legacyMigrationDone", "legacySchedulesMigrated"].includes(record.key) && typeof record.value !== "boolean") {
     throw new Error(`Настройка ${record.key} должна быть логическим значением.`);
@@ -269,6 +270,18 @@ function validateAppState(value) {
   }
 }
 
+function validatePronunciationState(value) {
+  if (!isPlainObject(value)) throw new Error("pronunciationState должен быть объектом.");
+  validateOptionalStringArray(value, "completedLessons", "pronunciationState");
+  validateOptionalStringArray(value, "suspendedCardIds", "pronunciationState");
+  if (value.currentLessonId != null && !isNonEmptyString(value.currentLessonId)) {
+    throw new Error("pronunciationState.currentLessonId должен быть строкой или null.");
+  }
+  if (value.contentVersion != null && !isNonEmptyString(value.contentVersion)) {
+    throw new Error("pronunciationState.contentVersion должен быть строкой или null.");
+  }
+}
+
 function validateSettings(value) {
   if (!isPlainObject(value)) throw new Error("settings должен быть объектом.");
   if (value.voiceURI != null && typeof value.voiceURI !== "string") throw new Error("settings.voiceURI должен быть строкой.");
@@ -277,6 +290,9 @@ function validateSettings(value) {
   }
   if (value.newCardsPerDay != null && (!Number.isInteger(value.newCardsPerDay) || value.newCardsPerDay < 0 || value.newCardsPerDay > 1000)) {
     throw new Error("settings.newCardsPerDay должен быть целым числом от 0 до 1000.");
+  }
+  if (value.pronunciationNewCardsPerDay != null && (!Number.isInteger(value.pronunciationNewCardsPerDay) || value.pronunciationNewCardsPerDay < 0 || value.pronunciationNewCardsPerDay > 1000)) {
+    throw new Error("settings.pronunciationNewCardsPerDay должен быть целым числом от 0 до 1000.");
   }
   if (value.reviewSettingsVersion != null && value.reviewSettingsVersion !== 1) {
     throw new Error("settings.reviewSettingsVersion должен быть равен 1.");

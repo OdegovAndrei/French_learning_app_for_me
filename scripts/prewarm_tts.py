@@ -15,6 +15,7 @@ sys.path.insert(0, str(REPO_ROOT))
 import server  # noqa: E402
 
 LESSONS_PATH = REPO_ROOT / "data" / "lessons.json"
+PRONUNCIATION_PATH = REPO_ROOT / "data" / "pronunciation-course.json"
 AUDIO_DIR = REPO_ROOT / "data" / "audio"
 VOICE = "fr-FR-DeniseNeural"
 RATE = 0.82
@@ -37,7 +38,7 @@ def card_audio_text(card):
     return CLOZE_PATTERN.sub(r"\1", source)
 
 
-def collect_texts(data):
+def collect_texts(data, pronunciation_data=None):
     texts = set()
     for lesson in data["lessons"]:
         texts.add(lesson["targetPhrase"])
@@ -58,6 +59,12 @@ def collect_texts(data):
                 texts.add(text)
     for topic in data["pronunciationTopics"]:
         texts.add(topic["target"])
+    if pronunciation_data:
+        for lesson in pronunciation_data.get("lessons", []):
+            for example in lesson.get("examples", []):
+                texts.add(example.get("text", ""))
+            for card in lesson.get("cards", []):
+                texts.add(card.get("audioText", ""))
     return sorted(text for text in texts if text.strip())
 
 
@@ -102,16 +109,22 @@ async def synthesize_locally(text, voice, rate):
     return await asyncio.to_thread(synthesize_with_macos, text, voice, rate)
 
 
-async def prewarm(data, audio_dir=AUDIO_DIR, voice=VOICE, rate=RATE, synthesizer=None):
+async def prewarm(data, audio_dir=AUDIO_DIR, voice=VOICE, rate=RATE, synthesizer=None, replace_texts=None, pronunciation_data=None):
     if synthesizer is None:
         synthesizer = server.synthesize
+    replace_texts = set(replace_texts or [])
     audio_dir.mkdir(parents=True, exist_ok=True)
     manifest = {}
-    for text in collect_texts(data):
+    available_texts = collect_texts(data, pronunciation_data)
+    unknown_texts = replace_texts.difference(available_texts)
+    if unknown_texts:
+        raise ValueError(f"Нет таких фраз в курсе: {', '.join(sorted(unknown_texts))}")
+
+    for text in available_texts:
         key = server.cache_key(text, voice, rate)
         filename = f"{key}.mp3"
         path = audio_dir / filename
-        if not path.exists():
+        if text in replace_texts or not path.exists():
             print(f"Synthesizing: {text}")
             audio = await synthesizer(text, voice, rate)
             path.write_bytes(audio)
@@ -130,6 +143,13 @@ def main():
         action="store_true",
         help="Use the locally installed macOS French voice instead of an external TTS service.",
     )
+    parser.add_argument(
+        "--replace-text",
+        action="append",
+        default=[],
+        metavar="TEXT",
+        help="Regenerate one current course phrase, even if its MP3 already exists. May be repeated.",
+    )
     args = parser.parse_args()
     synthesizer = synthesize_locally
     source = f"локальный голос macOS {LOCAL_MACOS_VOICE}"
@@ -142,7 +162,13 @@ def main():
         synthesizer = server.synthesize
         source = "Edge TTS"
     data = json.loads(LESSONS_PATH.read_text(encoding="utf-8"))
-    manifest = asyncio.run(prewarm(data, synthesizer=synthesizer))
+    pronunciation_data = json.loads(PRONUNCIATION_PATH.read_text(encoding="utf-8"))
+    manifest = asyncio.run(prewarm(
+        data,
+        synthesizer=synthesizer,
+        replace_texts=args.replace_text,
+        pronunciation_data=pronunciation_data
+    ))
     print(f"Prewarmed {len(manifest)} phrases into {AUDIO_DIR} using {source}")
 
 

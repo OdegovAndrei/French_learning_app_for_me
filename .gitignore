@@ -1,5 +1,6 @@
 .DS_Store
 .tts-cache/
+.tools/
 .venv/
 user-data/
 __pycache__/

@@ -153,7 +153,7 @@ assert.match(appSource, /getIntroducedLessonIds\(/);
 assert.match(appSource, /phrases: renderPhrases/);
 assert.match(appSource, /state\.reviewDeck = "phrases"/);
 assert.match(appSource, /isPhrasesDeck \? renderUnlockedPhrasesList\(deckCards\) : renderUnlockedWordsList\(deckCards\)/);
-assert.match(indexSource, /app\.js\?v=20260712-phrases-1/);
+assert.match(indexSource, /app\.js\?v=20260714-reading-4/);
 assert.match(appSource, /data-self-review/);
 assert.match(appSource, /checkCatalogLessonPrerequisites\(state\.data, lesson, state\.appState\.completedLessons\)/);
 assert.match(appSource, /if \(!\(await saveAppState\(\)\)\) \{[\s\S]*?completedLessons = previousCompletedLessons/);

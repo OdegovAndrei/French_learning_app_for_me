@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { computeCacheKey, normalizeSpeechText, roundRatePercent, selectBrowserVoice } from "../tts.js";
+import { computeCacheKey, normalizeSpeechText, roundRatePercent, selectBrowserVoice, speakFrench, speakFrenchFallback } from "../tts.js";
 
 assert.equal(normalizeSpeechText("bonjour"), "bonjour");
 assert.equal(normalizeSpeechText("bonjour\n/bɔ̃.ʒuʁ/"), "bonjour", "text after the first newline (IPA line) must be dropped");
@@ -29,5 +29,70 @@ const browserVoices = [
 assert.equal(selectBrowserVoice(browserVoices, "fr-FR-DeniseNeural")?.name, "Amélie", "Denise must use a female French browser fallback");
 assert.equal(selectBrowserVoice(browserVoices, "fr-FR-HenriNeural")?.name, "Thomas", "Henri must use a male French browser fallback");
 assert.equal(selectBrowserVoice([{ name: "Thomas", lang: "fr-FR" }], "fr-FR-DeniseNeural"), null, "Do not replace Denise with a mismatched male fallback");
+
+const originalWindow = globalThis.window;
+const originalUtterance = globalThis.SpeechSynthesisUtterance;
+const spoken = [];
+try {
+  globalThis.window = {
+    speechSynthesis: {
+      getVoices: () => [{ name: "Thomas", lang: "fr-FR" }],
+      cancel: () => {},
+      speak: (utterance) => spoken.push(utterance)
+    }
+  };
+  globalThis.SpeechSynthesisUtterance = class {
+    constructor(text) {
+      this.text = text;
+    }
+  };
+  assert.equal(speakFrenchFallback("une carte", 0.82, "fr-FR-DeniseNeural"), true);
+  assert.equal(spoken.length, 1, "A French browser default must speak when the selected voice is unavailable");
+  assert.equal(spoken[0].text, "une carte");
+  assert.equal(spoken[0].lang, "fr-FR");
+  assert.equal(spoken[0].voice, undefined, "The browser must choose its own French default voice");
+} finally {
+  globalThis.window = originalWindow;
+  globalThis.SpeechSynthesisUtterance = originalUtterance;
+}
+
+const originalFetch = globalThis.fetch;
+const originalAudio = globalThis.Audio;
+const recoveredSpeech = [];
+const brokenAudioKey = await computeCacheKey("des informations", "fr-FR-DeniseNeural", 0.82);
+try {
+  globalThis.window = {
+    speechSynthesis: {
+      getVoices: () => [{ name: "Amélie", lang: "fr-FR" }],
+      cancel: () => {},
+      speak: (utterance) => recoveredSpeech.push(utterance)
+    }
+  };
+  globalThis.SpeechSynthesisUtterance = class {
+    constructor(text) {
+      this.text = text;
+    }
+  };
+  globalThis.fetch = async () => ({
+    ok: true,
+    json: async () => ({ [brokenAudioKey]: "broken.mp3" })
+  });
+  globalThis.Audio = class {
+    addEventListener() {}
+    pause() {}
+    play() {
+      return Promise.reject(new Error("cannot decode MP3"));
+    }
+  };
+  await speakFrench("des informations", { voice: "fr-FR-DeniseNeural", rate: 0.82 });
+  await Promise.resolve();
+  assert.equal(recoveredSpeech.length, 1, "A failed pre-generated MP3 must fall back to browser speech");
+  assert.equal(recoveredSpeech[0].text, "des informations");
+} finally {
+  globalThis.fetch = originalFetch;
+  globalThis.Audio = originalAudio;
+  globalThis.window = originalWindow;
+  globalThis.SpeechSynthesisUtterance = originalUtterance;
+}
 
 console.log("tts-cache.mjs OK");

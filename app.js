@@ -10,6 +10,11 @@ import {
 } from "./cards.js";
 import { checkExercise } from "./exercises.js";
 import { validateCourseCatalog } from "./course-validator.js";
+import {
+  buildPronunciationCards,
+  filterPronunciationCards,
+  validatePronunciationCourse
+} from "./pronunciation-course.js";
 import * as mastery from "./mastery.js";
 import {
   buildReviewQueue,
@@ -47,9 +52,12 @@ const saveIndicator = document.querySelector("#save-indicator");
 
 const state = {
   data: null,
+  pronunciationData: null,
   view: "today",
   currentLessonId: null,
+  pronunciationLessonId: null,
   appState: defaultAppState(),
+  pronunciationState: defaultPronunciationState(),
   settings: defaultSettings(),
   customNotes: [],
   schedules: new Map(),
@@ -64,6 +72,12 @@ const state = {
   reviewAnswerVisible: false,
   reviewRefreshTimer: null,
   reviewSaving: false,
+  pronunciationReviewMode: "review",
+  pronunciationReviewDeck: "all",
+  pronunciationReviewKind: "all",
+  pronunciationReviewSeen: new Set(),
+  pronunciationReviewAnswerVisible: false,
+  pronunciationReviewSaving: false,
   mediaRecorder: null,
   audioChunks: [],
   recordingContext: null,
@@ -79,11 +93,12 @@ const state = {
 const viewTitles = {
   today: "Сегодня",
   lessons: "Уроки",
-  pronunciation: "Произношение",
+  pronunciation: "Правила чтения",
   grammar: "Грамматика",
   vocabulary: "Словарь",
   phrases: "Фразы",
   review: "Повторение",
+  "pronunciation-review": "Повторение чтения",
   progress: "Прогресс",
   settings: "Настройки"
 };
@@ -99,14 +114,30 @@ init();
 
 async function init() {
   try {
-    const response = await fetch("data/lessons.json");
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    state.data = await response.json();
+    const [response, pronunciationResponse] = await Promise.all([
+      fetch("data/lessons.json?v=20260713-vocab-1"),
+      fetch("data/pronunciation-course.json?v=20260714-reading-4")
+    ]);
+    if (!response.ok) throw new Error(`Основной курс: HTTP ${response.status}`);
+    if (!pronunciationResponse.ok) throw new Error(`Курс чтения: HTTP ${pronunciationResponse.status}`);
+    [state.data, state.pronunciationData] = await Promise.all([response.json(), pronunciationResponse.json()]);
     validateCourseCatalog(state.data);
+    validatePronunciationCourse(state.pronunciationData);
     const catalogTitle = state.data.meta?.title || "French Study";
     document.title = catalogTitle;
     state.storage = await initializeFileStorage();
     state.appState = await migrateLegacyProgress(defaultAppState());
+    const storedPronunciationState = await getValue("pronunciationState", defaultPronunciationState());
+    const pronunciationVersionChanged = storedPronunciationState.contentVersion !== state.pronunciationData.meta.contentVersion;
+    state.pronunciationState = normalizePronunciationState(storedPronunciationState);
+    if (pronunciationVersionChanged) {
+      state.appState.scrollPositions.pronunciation = 0;
+      state.appState.scrollPositions["pronunciation-review"] = 0;
+      await Promise.all([
+        setValue("pronunciationState", state.pronunciationState),
+        setValue("appState", state.appState)
+      ]);
+    }
     const storedSettings = await getValue("settings", {});
     state.settings = { ...defaultSettings(), ...storedSettings };
     if (storedSettings.reviewSettingsVersion !== 1) {
@@ -135,6 +166,18 @@ async function init() {
       || getNextLesson()?.id
       || savedLesson?.id
       || state.data.lessons[0]?.id;
+    const savedPronunciationLesson = state.pronunciationData.lessons.find(
+      (lesson) => lesson.id === state.pronunciationState.currentLessonId
+    );
+    state.pronunciationLessonId =
+      (savedPronunciationLesson
+        && !state.pronunciationState.completedLessons.includes(savedPronunciationLesson.id)
+        && getPronunciationPrerequisites(savedPronunciationLesson).met
+        ? savedPronunciationLesson.id
+        : null)
+      || getNextPronunciationLesson()?.id
+      || savedPronunciationLesson?.id
+      || state.pronunciationData.lessons[0]?.id;
 
     bindGlobalActions();
     render();
@@ -179,6 +222,8 @@ function switchView(view) {
   state.appState.currentView = view;
   state.reviewSeen.clear();
   state.reviewAnswerVisible = false;
+  state.pronunciationReviewSeen.clear();
+  state.pronunciationReviewAnswerVisible = false;
   saveAppState();
   render();
 }
@@ -198,6 +243,7 @@ function render() {
     vocabulary: renderVocabulary,
     phrases: renderPhrases,
     review: renderReview,
+    "pronunciation-review": renderPronunciationReview,
     progress: renderProgress,
     settings: renderSettings
   };
@@ -311,10 +357,127 @@ function renderMistakeBlock(heading, items) {
 }
 
 function renderPronunciation() {
+  const completed = new Set(state.pronunciationState.completedLessons);
+  const selected = getPronunciationLesson(state.pronunciationLessonId);
+  const modules = [...state.pronunciationData.modules].sort(compareOrder);
   app.innerHTML = `
     <section class="section-band">
-      <div class="section-heading"><div><p class="eyebrow">Каждый день</p><h4>Звуки и правила чтения</h4></div></div>
-      <div class="phrase-grid">
+      <div class="section-heading pronunciation-course-heading">
+        <div>
+          <p class="eyebrow">Независимый курс · ${completed.size}/${state.pronunciationData.lessons.length} уроков</p>
+          <h4>${escapeHtml(state.pronunciationData.meta.title)}</h4>
+          <p class="note">${escapeHtml(state.pronunciationData.meta.method)}. ${escapeHtml(state.pronunciationData.meta.cardMethod)}. Прогресс и карточки не зависят от основного курса.</p>
+        </div>
+        <button class="primary-button" type="button" id="open-pronunciation-review">Повторять чтение</button>
+      </div>
+      <div class="pronunciation-module-list">
+        ${modules.map((module) => {
+          const lessons = state.pronunciationData.lessons.filter((lesson) => lesson.moduleId === module.id).sort(compareOrder);
+          const moduleCompleted = lessons.filter((lesson) => completed.has(lesson.id)).length;
+          return `
+            <section class="course-module" aria-labelledby="pronunciation-module-${escapeHtml(module.id)}">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Модуль ${module.order} · ${moduleCompleted}/${lessons.length}</p>
+                  <h5 id="pronunciation-module-${escapeHtml(module.id)}" class="compact-title">${escapeHtml(module.title)}</h5>
+                  <p class="note">${escapeHtml(module.description)}</p>
+                </div>
+              </div>
+              <div class="lesson-grid pronunciation-lesson-grid">
+                ${lessons.map((lesson) => renderPronunciationLessonTile(lesson, completed)).join("")}
+              </div>
+            </section>`;
+        }).join("")}
+      </div>
+    </section>`;
+
+  app.insertAdjacentHTML("beforeend", renderPronunciationLesson(selected));
+  app.insertAdjacentHTML("beforeend", renderPronunciationReference());
+
+  document.querySelector("#open-pronunciation-review").addEventListener("click", () => switchView("pronunciation-review"));
+  document.querySelectorAll("[data-pronunciation-lesson]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      setCurrentPronunciationLesson(button.dataset.pronunciationLesson);
+      state.appState.scrollPositions.pronunciation = 0;
+      await savePronunciationState();
+      renderPronunciation();
+    });
+  });
+  document.querySelector("#complete-pronunciation-lesson")?.addEventListener("click", () => completePronunciationLesson(selected.id));
+  bindSpeakButtons();
+  bindVoiceLabs();
+}
+
+function renderPronunciationLessonTile(lesson, completed) {
+  const prerequisites = getPronunciationPrerequisites(lesson);
+  const done = completed.has(lesson.id);
+  const selected = state.pronunciationLessonId === lesson.id;
+  return `
+    <button class="lesson-tile pronunciation-lesson-tile ${done ? "completed" : ""} ${selected ? "selected" : ""}" type="button"
+      data-pronunciation-lesson="${escapeHtml(lesson.id)}" ${prerequisites.met ? "" : "disabled"}>
+      <span class="tag ${done ? "rose" : ""}">${done ? "готово" : `урок ${lesson.order}`}</span>
+      <strong>${escapeHtml(lesson.title)}</strong>
+      <span class="fr">${escapeHtml(lesson.target)}</span>
+      <span class="note">${prerequisites.met ? escapeHtml(lesson.goal) : `Сначала: ${escapeHtml(prerequisites.missing.join(", "))}`}</span>
+    </button>`;
+}
+
+function renderPronunciationLesson(lesson) {
+  const done = state.pronunciationState.completedLessons.includes(lesson.id);
+  const module = state.pronunciationData.modules.find((item) => item.id === lesson.moduleId);
+  const cardCount = lesson.cards.length;
+  return `
+    <article class="lesson-layout pronunciation-lesson-detail with-top-gap" id="selected-pronunciation-lesson">
+      <header class="lesson-hero">
+        <div>
+          <p class="eyebrow">${escapeHtml(module?.title || "Правила чтения")} · урок ${lesson.order}</p>
+          <h3>${escapeHtml(lesson.title)}</h3>
+          <p>${escapeHtml(lesson.goal)}</p>
+          <div class="tag-row">${lesson.focus.map((item) => `<span class="tag rose">${escapeHtml(item)}</span>`).join("")}</div>
+        </div>
+        <div class="lesson-actions">
+          <button class="primary-button" id="complete-pronunciation-lesson" type="button" ${done ? "disabled" : ""}>${done ? "Урок пройден" : "Завершить урок"}</button>
+          <p class="completion-status">${done ? "Правила урока открыты в повторении чтения." : `После завершения откроются карточки урока: ${cardCount}.`}</p>
+        </div>
+      </header>
+
+      <section class="section-band">
+        <div class="section-heading"><div><p class="eyebrow">Главное правило</p><h4>${escapeHtml(lesson.target)}</h4></div></div>
+        <p class="grammar-rule pronunciation-rule">${escapeHtml(lesson.rule)}</p>
+      </section>
+
+      <section class="section-band">
+        <div class="section-heading"><div><p class="eyebrow">Буквы → звук</p><h4>Таблица чтения</h4></div></div>
+        <div class="paradigm-table pronunciation-pattern-table">${lesson.spellings.map((entry) => `
+          <div class="paradigm-row pronunciation-spelling-row">
+            <span class="paradigm-label">${escapeHtml(entry.pattern)}</span>
+            <span class="paradigm-form"><strong>${escapeHtml(entry.sound)}</strong><br>${escapeHtml(entry.examples)}</span>
+          </div>`).join("")}</div>
+      </section>
+
+      <section class="section-band">
+        <div class="section-heading"><div><p class="eyebrow">Сочетание → слово</p><h4>Разбираем примеры</h4></div></div>
+        <div class="pronunciation-example-grid">${lesson.examples.map((example) => `
+          <article class="pronunciation-example">
+            <button class="inline-audio" type="button" data-speak="${escapeHtml(example.text)}" aria-label="Прослушать ${escapeHtml(example.text)}">▶</button>
+            <strong class="fr">${escapeHtml(example.text)}</strong>
+            <span class="ipa">${escapeHtml(example.ipa)}</span>
+            <p class="note">${escapeHtml(example.note)}</p>
+          </article>`).join("")}</div>
+      </section>
+
+      <section class="section-band">
+        <div class="section-heading"><div><p class="eyebrow">Мини-практика</p><h4>От блока к целому</h4></div></div>
+        <ol class="example-list pronunciation-reading-steps">${lesson.practice.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol>
+      </section>
+    </article>`;
+}
+
+function renderPronunciationReference() {
+  return `
+    <details class="section-band with-top-gap pronunciation-reference" ${state.pendingTopicFocus?.startsWith("topic-pronunciation-") ? "open" : ""}>
+      <summary><strong>Краткий справочник основного курса</strong> · ${state.data.pronunciationTopics.length} тем</summary>
+      <div class="phrase-grid with-top-gap">
         ${state.data.pronunciationTopics.map((topic) => `
           <article class="phrase-tile" id="topic-pronunciation-${escapeHtml(topic.id)}">
             <span class="tag rose">${escapeHtml(topic.level)}</span>
@@ -328,8 +491,7 @@ function renderPronunciation() {
             ${renderVoiceLab(topic.target, `pronunciation:${topic.id}`)}
           </article>`).join("")}
       </div>
-    </section>`;
-  bindVoiceLabs();
+    </details>`;
 }
 
 function renderGrammar() {
@@ -474,6 +636,243 @@ function renderReview() {
   scheduleReviewRefresh(deckCards);
 }
 
+function renderPronunciationReview() {
+  const allCards = buildPronunciationCards(state.pronunciationData);
+  const activeCards = getActivePronunciationCards(allCards);
+  const suspendedCards = allCards.filter((card) => state.pronunciationState.suspendedCardIds.includes(card.id));
+  const deckCards = filterPronunciationCards(activeCards, {
+    deck: state.pronunciationReviewDeck,
+    kind: state.pronunciationReviewKind
+  });
+  const cardIds = new Set(allCards.map((card) => card.id));
+  const pronunciationLogs = state.reviewLogs.filter((log) => cardIds.has(log.cardId));
+  const isCatalog = state.pronunciationReviewMode === "catalog";
+  let queue = isCatalog ? [] : buildReviewQueue({
+    cards: deckCards,
+    schedules: state.schedules,
+    logs: pronunciationLogs,
+    newLimit: state.settings.pronunciationNewCardsPerDay,
+    cram: state.pronunciationReviewMode === "cram",
+    seen: state.pronunciationReviewSeen
+  });
+  const summary = getPronunciationReviewSummary(deckCards, pronunciationLogs);
+  if (!isCatalog && !queue.length && summary.due > 0 && state.pronunciationReviewSeen.size > 0) {
+    state.pronunciationReviewSeen.clear();
+    queue = buildReviewQueue({
+      cards: deckCards,
+      schedules: state.schedules,
+      logs: pronunciationLogs,
+      newLimit: state.settings.pronunciationNewCardsPerDay,
+      cram: state.pronunciationReviewMode === "cram",
+      seen: state.pronunciationReviewSeen
+    });
+  }
+  const card = queue[0];
+
+  app.innerHTML = `
+    <section class="review-stage pronunciation-review-stage">
+      <div class="review-toolbar pronunciation-review-toolbar">
+        <div class="segmented" aria-label="Режим повторения чтения">
+          <button type="button" data-pronunciation-review-mode="review" class="${state.pronunciationReviewMode === "review" ? "active" : ""}">Повторение</button>
+          <button type="button" data-pronunciation-review-mode="cram" class="${state.pronunciationReviewMode === "cram" ? "active" : ""}">Зубрёжка</button>
+          <button type="button" data-pronunciation-review-mode="catalog" class="${isCatalog ? "active" : ""}">Все карточки</button>
+        </div>
+        <select id="pronunciation-review-kind" class="select-control" aria-label="Тип карточки">
+          ${pronunciationKindOptions()}
+        </select>
+        <select id="pronunciation-review-deck" class="select-control" aria-label="Раздел правил чтения">
+          ${renderPronunciationDeckOptions()}
+        </select>
+        <button class="secondary-button" type="button" id="back-to-pronunciation-course">К урокам</button>
+      </div>
+      ${isCatalog ? "" : `
+        <div class="review-counters">
+          <span><strong>${summary.due}</strong> пора</span>
+          <span><strong>${summary.newCount}</strong> новых</span>
+          <span><strong>${queue.length}</strong> в этой сессии</span>
+        </div>`}
+      ${isCatalog
+        ? renderPronunciationCardCatalog(deckCards)
+        : (card ? renderPronunciationReviewCard(card) : renderPronunciationReviewEmpty(summary, activeCards.length))}
+      ${renderSuspendedPronunciationCards(suspendedCards)}
+    </section>`;
+
+  bindPronunciationReviewToolbar();
+  if (!isCatalog && card) bindPronunciationReviewCard(card);
+  document.querySelectorAll("[data-pronunciation-catalog-speak]").forEach((button) => {
+    button.addEventListener("click", () => speakFrench(button.dataset.pronunciationCatalogSpeak));
+  });
+  schedulePronunciationReviewRefresh(deckCards);
+}
+
+function renderPronunciationReviewCard(card) {
+  const schedule = state.schedules.get(card.id) || createSchedule(card.id);
+  const preview = state.pronunciationReviewMode === "cram"
+    ? Object.fromEntries(["again", "hard", "good", "easy"].map((rating) => [rating, { interval: "без изменения графика" }]))
+    : previewSchedule(schedule);
+  return `
+    <article class="review-card pronunciation-review-card" data-card-id="${escapeHtml(card.id)}">
+      <div class="review-context">${escapeHtml(card.moduleTitle)} · ${escapeHtml(pronunciationKindLabel(card.kind))}</div>
+      <div class="review-front">${nl2br(card.prompt)}</div>
+      <div class="control-row review-primary-actions">
+        ${state.pronunciationReviewAnswerVisible ? "" : `<button class="primary-button" type="button" id="show-answer">Показать ответ</button>`}
+      </div>
+      ${state.pronunciationReviewAnswerVisible ? `
+        <div class="review-back visible">
+          <p class="fr">${nl2br(card.answer)}</p>
+          <p class="note">${escapeHtml(card.explanation)}</p>
+          <button class="icon-text-button" type="button" data-pronunciation-card-speak>▶ Проверить по аудио</button>
+          <div class="rating-grid">
+            ${renderRatingButton("again", "Again", preview.again.interval)}
+            ${renderRatingButton("hard", "Hard", preview.hard.interval)}
+            ${renderRatingButton("good", "Good", preview.good.interval)}
+            ${renderRatingButton("easy", "Easy", preview.easy.interval)}
+          </div>
+        </div>` : ""}
+      <div class="review-card-tools">
+        <button type="button" data-pronunciation-card-skip>В конец очереди</button>
+        <button type="button" data-pronunciation-card-reset>Сбросить карточку</button>
+        <button type="button" data-pronunciation-card-suspend>Приостановить</button>
+      </div>
+    </article>`;
+}
+
+function renderPronunciationCardCatalog(cards) {
+  if (!cards.length) {
+    return `<div class="empty-state"><strong>Нет открытых карточек этого типа</strong><p>Заверши соответствующий урок чтения или измени фильтр.</p></div>`;
+  }
+  const groups = new Map();
+  for (const card of cards) {
+    if (!groups.has(card.lessonId)) groups.set(card.lessonId, { title: card.lessonTitle, cards: [] });
+    groups.get(card.lessonId).cards.push(card);
+  }
+  return `<div class="pronunciation-card-catalog">${[...groups.values()].map((group) => `
+    <section class="section-band">
+      <div class="section-heading"><div><p class="eyebrow">${group.cards.length} карточки</p><h4>${escapeHtml(group.title)}</h4></div></div>
+      <div class="history-list">${group.cards.map((card) => `
+        <div class="history-row pronunciation-catalog-row">
+          <span class="tag rose">${escapeHtml(pronunciationKindLabel(card.kind))}</span>
+          <strong>${escapeHtml(card.prompt)}</strong>
+          <span>${escapeHtml(card.answer)}</span>
+          <button class="secondary-button" type="button" data-pronunciation-catalog-speak="${escapeHtml(card.audioText)}">▶</button>
+        </div>`).join("")}</div>
+    </section>`).join("")}</div>`;
+}
+
+function renderPronunciationReviewEmpty(summary, activeCount) {
+  if (!activeCount) {
+    return `<div class="empty-state"><strong>Карточки ещё не открыты</strong><p>Заверши первый урок чтения — обычные уроки на эту колоду не влияют.</p><button class="primary-button" type="button" id="start-pronunciation-course">Открыть курс</button></div>`;
+  }
+  return `<div class="empty-state"><strong>${state.pronunciationReviewMode === "cram" ? "Колода закончилась" : "На сегодня всё"}</strong><p>${summary.newCount ? "Новые карточки появятся после увеличения отдельного дневного лимита или завтра." : "Можно открыть каталог или продолжить курс чтения."}</p></div>`;
+}
+
+function renderSuspendedPronunciationCards(cards) {
+  if (!cards.length) return "";
+  return `
+    <details class="with-top-gap">
+      <summary>Приостановленные карточки чтения (${cards.length})</summary>
+      <div class="history-list with-top-gap">${cards.map((card) => `
+        <div class="history-row">
+          <strong>${escapeHtml(card.prompt)}</strong>
+          <span>${escapeHtml(card.lessonTitle)}</span>
+          <button class="secondary-button" type="button" data-pronunciation-card-resume="${escapeHtml(card.id)}">Вернуть</button>
+        </div>`).join("")}</div>
+    </details>`;
+}
+
+function bindPronunciationReviewToolbar() {
+  document.querySelectorAll("[data-pronunciation-review-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.pronunciationReviewMode = button.dataset.pronunciationReviewMode;
+      state.pronunciationReviewSeen.clear();
+      state.pronunciationReviewAnswerVisible = false;
+      renderPronunciationReview();
+    });
+  });
+  document.querySelector("#pronunciation-review-kind")?.addEventListener("change", (event) => {
+    state.pronunciationReviewKind = event.target.value;
+    state.pronunciationReviewSeen.clear();
+    state.pronunciationReviewAnswerVisible = false;
+    renderPronunciationReview();
+  });
+  document.querySelector("#pronunciation-review-deck")?.addEventListener("change", (event) => {
+    state.pronunciationReviewDeck = event.target.value;
+    state.pronunciationReviewSeen.clear();
+    state.pronunciationReviewAnswerVisible = false;
+    renderPronunciationReview();
+  });
+  document.querySelector("#back-to-pronunciation-course")?.addEventListener("click", () => switchView("pronunciation"));
+  document.querySelector("#start-pronunciation-course")?.addEventListener("click", () => switchView("pronunciation"));
+  document.querySelectorAll("[data-pronunciation-card-resume]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      state.pronunciationState.suspendedCardIds = state.pronunciationState.suspendedCardIds.filter(
+        (id) => id !== button.dataset.pronunciationCardResume
+      );
+      await savePronunciationState();
+      renderPronunciationReview();
+    });
+  });
+}
+
+function bindPronunciationReviewCard(card) {
+  document.querySelector("#show-answer")?.addEventListener("click", () => {
+    state.pronunciationReviewAnswerVisible = true;
+    renderPronunciationReview();
+  });
+  document.querySelector("[data-pronunciation-card-speak]")?.addEventListener("click", () => speakFrench(card.audioText));
+  document.querySelectorAll("[data-score]").forEach((button) => {
+    button.addEventListener("click", () => gradePronunciationReviewCard(card, button.dataset.score));
+  });
+  document.querySelector("[data-pronunciation-card-skip]").addEventListener("click", () => {
+    state.pronunciationReviewSeen.add(card.id);
+    state.pronunciationReviewAnswerVisible = false;
+    renderPronunciationReview();
+  });
+  document.querySelector("[data-pronunciation-card-reset]").addEventListener("click", async () => {
+    const schedule = resetSchedule(card.id);
+    state.schedules.set(card.id, schedule);
+    await putRecord("schedules", schedule);
+    state.pronunciationReviewSeen.add(card.id);
+    state.pronunciationReviewAnswerVisible = false;
+    renderPronunciationReview();
+  });
+  document.querySelector("[data-pronunciation-card-suspend]").addEventListener("click", async () => {
+    if (!state.pronunciationState.suspendedCardIds.includes(card.id)) {
+      state.pronunciationState.suspendedCardIds.push(card.id);
+    }
+    await savePronunciationState();
+    state.pronunciationReviewAnswerVisible = false;
+    renderPronunciationReview();
+  });
+}
+
+async function gradePronunciationReviewCard(card, rating) {
+  if (state.pronunciationReviewSaving) return;
+  if (state.pronunciationReviewMode === "cram") {
+    state.pronunciationReviewSeen.add(card.id);
+    state.pronunciationReviewAnswerVisible = false;
+    renderPronunciationReview();
+    return;
+  }
+  state.pronunciationReviewSaving = true;
+  showSaving();
+  const schedule = state.schedules.get(card.id) || createSchedule(card.id);
+  const { schedule: nextSchedule, log } = reviewSchedule(schedule, rating);
+  log.id = `${card.id}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
+  try {
+    await putReviewResult(nextSchedule, log);
+    state.schedules.set(card.id, nextSchedule);
+    state.reviewLogs.push(log);
+    state.pronunciationReviewAnswerVisible = false;
+    showSaved();
+    renderPronunciationReview();
+  } catch (error) {
+    showSaveError(error);
+  } finally {
+    state.pronunciationReviewSaving = false;
+  }
+}
+
 function renderUnlockedWordsList(cards) {
   const rows = buildUnlockedWordRows({ cards, schedules: state.schedules, now: new Date() });
   if (!rows.length) {
@@ -557,8 +956,16 @@ function renderProgress() {
   const legacyCompleted = state.appState.legacyCompletedLessons.length;
   const cards = getAllCards();
   const activeCards = getActiveCards();
-  const reviewed = new Set(state.reviewLogs.map((log) => log.cardId)).size;
+  const cardIds = new Set(cards.map((card) => card.id));
+  const reviewed = new Set(state.reviewLogs.filter((log) => cardIds.has(log.cardId)).map((log) => log.cardId)).size;
   const due = activeCards.filter((card) => isDueSchedule(state.schedules.get(card.id))).length;
+  const pronunciationCards = buildPronunciationCards(state.pronunciationData);
+  const activePronunciationCards = getActivePronunciationCards(pronunciationCards);
+  const pronunciationCardIds = new Set(pronunciationCards.map((card) => card.id));
+  const reviewedPronunciation = new Set(
+    state.reviewLogs.filter((log) => pronunciationCardIds.has(log.cardId)).map((log) => log.cardId)
+  ).size;
+  const duePronunciation = activePronunciationCards.filter((card) => isDueSchedule(state.schedules.get(card.id))).length;
   const checkpoint = state.data.lessons.find((lesson) => lesson.id === "l38");
   const checkpointReadiness = checkpoint
     ? evaluateLessonReadiness(checkpoint, state.exerciseAttempts, state.recordings)
@@ -576,6 +983,8 @@ function renderProgress() {
       ${renderMetric("Карточки", cards.length, `${reviewed} уже изучались`)}
       ${renderMetric("Нужно повторить", due, "По расписанию FSRS")}
       ${renderMetric("Свои слова", state.customNotes.length, "Хранятся только на этом устройстве")}
+      ${renderMetric("Правила чтения", `${state.pronunciationState.completedLessons.length}/${state.pronunciationData.lessons.length}`, "Независимые уроки")}
+      ${renderMetric("Звуки FSRS", duePronunciation, `${reviewedPronunciation} карточек уже изучались`)}
     </div>
     <section class="section-band with-top-gap">
       <div class="section-heading"><div><p class="eyebrow">Практический A1</p><h4>A1 exit evidence: ${exitReady ? "готово" : "ещё не готово"}</h4></div></div>
@@ -586,8 +995,9 @@ function renderProgress() {
       <div class="section-heading"><div><p class="eyebrow">История</p><h4>Последние повторения</h4></div></div>
       ${state.reviewLogs.length ? `
         <div class="history-list">${[...state.reviewLogs].sort((a, b) => new Date(b.reviewedAt) - new Date(a.reviewedAt)).slice(0, 12).map((log) => {
-          const card = cards.find((item) => item.id === log.cardId);
-          return `<div class="history-row"><strong>${escapeHtml(card?.front || "Удалённая карточка")}</strong><span>${escapeHtml(log.rating)}</span><time>${formatDateTime(log.reviewedAt)}</time></div>`;
+          const card = cards.find((item) => item.id === log.cardId)
+            || pronunciationCards.find((item) => item.id === log.cardId);
+          return `<div class="history-row"><strong>${escapeHtml(card?.front || card?.prompt || "Удалённая карточка")}</strong><span>${escapeHtml(log.rating)}</span><time>${formatDateTime(log.reviewedAt)}</time></div>`;
         }).join("")}</div>` : `<div class="empty-state">История появится после первого повторения.</div>`}
     </section>`;
 }
@@ -619,6 +1029,14 @@ function renderSettings() {
           <input id="new-cards-per-day" type="number" min="0" max="1000" step="1" inputmode="numeric" value="${state.settings.newCardsPerDay}" />
         </label>
         <p class="note">Это лимит только на новые слова. Карточки, которым FSRS назначил повтор через 1 или 10 минут, появляются вне лимита и в первую очередь. Изменение применяется сразу.</p>
+      </section>
+
+      <section class="section-band">
+        <div class="section-heading"><div><p class="eyebrow">Повторение чтения FSRS</p><h4>Отдельный темп правил чтения</h4></div></div>
+        <label class="field-label">Новых карточек чтения в день
+          <input id="pronunciation-new-cards-per-day" type="number" min="0" max="1000" step="1" inputmode="numeric" value="${state.settings.pronunciationNewCardsPerDay}" />
+        </label>
+        <p class="note">Этот лимит действует только во вкладке «Повторение чтения» и не расходует дневной лимит слов и фраз.</p>
       </section>
 
       <section class="section-band">
@@ -1059,6 +1477,7 @@ function bindSettingsActions() {
   const voiceSelect = document.querySelector("#voice-select");
   const rate = document.querySelector("#voice-rate");
   const newCardsPerDay = document.querySelector("#new-cards-per-day");
+  const pronunciationNewCardsPerDay = document.querySelector("#pronunciation-new-cards-per-day");
   voiceSelect.addEventListener("change", async () => {
     state.settings.voiceURI = voiceSelect.value;
     await saveSettings();
@@ -1079,6 +1498,16 @@ function bindSettingsActions() {
       return;
     }
     state.settings.newCardsPerDay = limit;
+    await saveSettings();
+  });
+  pronunciationNewCardsPerDay.addEventListener("change", async () => {
+    const limit = Number(pronunciationNewCardsPerDay.value);
+    if (!Number.isInteger(limit) || limit < 0 || limit > 1000) {
+      pronunciationNewCardsPerDay.value = state.settings.pronunciationNewCardsPerDay;
+      window.alert("Укажи целое число от 0 до 1000.");
+      return;
+    }
+    state.settings.pronunciationNewCardsPerDay = limit;
     await saveSettings();
   });
   document.querySelector("#test-voice").addEventListener("click", () => speakFrench("Bonjour, je voudrais un café, s'il vous plaît."));
@@ -1377,13 +1806,29 @@ function getReviewSummary(cards = getActiveCards()) {
   const cardsById = new Map(cards.map((card) => [card.id, card]));
   const introducedToday = new Set(
     state.reviewLogs
-      .filter((log) => log.wasNew && isToday(log.reviewedAt))
-      .map((log) => cardsById.get(log.cardId)?.noteId || log.cardId)
+      .filter((log) => log.wasNew && cardsById.has(log.cardId) && isToday(log.reviewedAt))
+      .map((log) => cardsById.get(log.cardId).noteId)
   ).size;
   return {
     due,
     newCount,
     newSlots: Math.max(0, state.settings.newCardsPerDay - introducedToday)
+  };
+}
+
+function getPronunciationReviewSummary(cards, logs) {
+  const due = cards.filter((card) => isDueSchedule(state.schedules.get(card.id))).length;
+  const newCount = cards.filter((card) => isNewSchedule(state.schedules.get(card.id))).length;
+  const cardsById = new Map(cards.map((card) => [card.id, card]));
+  const introducedToday = new Set(
+    logs
+      .filter((log) => log.wasNew && isToday(log.reviewedAt) && cardsById.has(log.cardId))
+      .map((log) => cardsById.get(log.cardId).noteId)
+  ).size;
+  return {
+    due,
+    newCount,
+    newSlots: Math.max(0, state.settings.pronunciationNewCardsPerDay - introducedToday)
   };
 }
 
@@ -1425,6 +1870,15 @@ function renderVoiceLab(target, key, options = {}) {
       <audio controls hidden></audio>
       <p class="note transcript-output">STT работает по сохранённой записи через локальный Whisper; подключение к сервису распознавания не нужно.</p>
     </div>`;
+}
+
+function bindSpeakButtons(scope = document) {
+  scope.querySelectorAll("[data-speak]").forEach((button) => {
+    if (button.closest(".voice-lab-box")) return;
+    const text = button.dataset.speak;
+    if (!text) return;
+    button.addEventListener("click", () => speakFrench(text));
+  });
 }
 
 function renderCourseRoadmap() {
@@ -1613,6 +2067,40 @@ function renderDeckOptions() {
   return options.map(([value, label]) => `<option value="${value}" ${state.reviewDeck === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("");
 }
 
+function renderPronunciationDeckOptions() {
+  const completed = new Set(state.pronunciationState.completedLessons);
+  const options = [["all", "Все открытые уроки"]];
+  for (const module of [...state.pronunciationData.modules].sort(compareOrder)) {
+    options.push([module.id, `Модуль · ${module.title}`]);
+  }
+  for (const lesson of [...state.pronunciationData.lessons].sort(compareOrder)) {
+    if (completed.has(lesson.id)) options.push([lesson.id, `Урок ${lesson.order} · ${lesson.title}`]);
+  }
+  return options.map(([value, label]) => `<option value="${escapeHtml(value)}" ${state.pronunciationReviewDeck === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("");
+}
+
+function pronunciationKindOptions() {
+  const options = [
+    ["all", "Все типы"],
+    ["pattern", "Сочетание → звук"],
+    ["word", "Разбор слова"],
+    ["rule", "Позиционное правило"],
+    ["exception", "Исключение"],
+    ["flow", "Стык слов"]
+  ];
+  return options.map(([value, label]) => `<option value="${value}" ${state.pronunciationReviewKind === value ? "selected" : ""}>${label}</option>`).join("");
+}
+
+function pronunciationKindLabel(kind) {
+  return {
+    pattern: "сочетание → звук",
+    word: "разбор слова",
+    rule: "правило",
+    exception: "исключение",
+    flow: "стык слов"
+  }[kind] || kind;
+}
+
 function renderRatingButton(score, label, interval) {
   return `<button type="button" data-score="${score}" class="rating-button ${score}"><strong>${label}</strong><span>${escapeHtml(interval)}</span></button>`;
 }
@@ -1737,6 +2225,64 @@ function getLesson(id) {
   return state.data.lessons.find((lesson) => lesson.id === id) || state.data.lessons[0];
 }
 
+function getPronunciationLesson(id) {
+  return state.pronunciationData.lessons.find((lesson) => lesson.id === id) || state.pronunciationData.lessons[0];
+}
+
+function getActivePronunciationCards(allCards) {
+  const completed = new Set(state.pronunciationState.completedLessons);
+  return allCards
+    .filter((card) => completed.has(card.lessonId))
+    .filter((card) => !state.pronunciationState.suspendedCardIds.includes(card.id));
+}
+
+function getPronunciationPrerequisites(lesson) {
+  const completed = new Set(state.pronunciationState.completedLessons);
+  const prerequisites = Array.isArray(lesson?.prerequisites) ? lesson.prerequisites : [];
+  const missingIds = prerequisites.filter((id) => !completed.has(id));
+  return {
+    met: missingIds.length === 0,
+    missing: missingIds.map((id) => state.pronunciationData.lessons.find((item) => item.id === id)?.title || id)
+  };
+}
+
+function getNextPronunciationLesson() {
+  return [...state.pronunciationData.lessons]
+    .sort(compareOrder)
+    .find((lesson) =>
+      !state.pronunciationState.completedLessons.includes(lesson.id)
+      && getPronunciationPrerequisites(lesson).met
+    );
+}
+
+function setCurrentPronunciationLesson(lessonId) {
+  state.pronunciationLessonId = lessonId;
+  state.pronunciationState.currentLessonId = lessonId;
+}
+
+async function completePronunciationLesson(lessonId) {
+  const lesson = getPronunciationLesson(lessonId);
+  if (!getPronunciationPrerequisites(lesson).met) return;
+  const previousState = {
+    completedLessons: [...state.pronunciationState.completedLessons],
+    currentLessonId: state.pronunciationState.currentLessonId
+  };
+  const previousLessonId = state.pronunciationLessonId;
+  if (!state.pronunciationState.completedLessons.includes(lessonId)) {
+    state.pronunciationState.completedLessons.push(lessonId);
+  }
+  const next = getNextPronunciationLesson();
+  setCurrentPronunciationLesson(next?.id || lessonId);
+  if (!(await savePronunciationState())) {
+    state.pronunciationState.completedLessons = previousState.completedLessons;
+    state.pronunciationState.currentLessonId = previousState.currentLessonId;
+    state.pronunciationLessonId = previousLessonId;
+    return;
+  }
+  state.appState.scrollPositions.pronunciation = 0;
+  renderPronunciation();
+}
+
 function getExerciseAttempt(id, lessonId) {
   return state.exerciseAttempts.get(id) || { id, lessonId, answer: "", createdAt: new Date().toISOString() };
 }
@@ -1747,18 +2293,22 @@ function preserveScrollAndRender() {
 }
 
 function handleReviewKeyboard(event) {
-  if (state.view !== "review" || ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName)) return;
-  if ([" ", "Enter"].includes(event.key) && !state.reviewAnswerVisible) {
+  const isPronunciationReview = state.view === "pronunciation-review";
+  if (!["review", "pronunciation-review"].includes(state.view) || ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName)) return;
+  const answerVisible = isPronunciationReview ? state.pronunciationReviewAnswerVisible : state.reviewAnswerVisible;
+  if ([" ", "Enter"].includes(event.key) && !answerVisible) {
     event.preventDefault();
     document.querySelector("#show-answer")?.click();
     return;
   }
   const ratingByKey = { "1": "again", "2": "hard", "3": "good", "4": "easy" };
-  if (state.reviewAnswerVisible && ratingByKey[event.key]) {
+  if (answerVisible && ratingByKey[event.key]) {
     event.preventDefault();
     document.querySelector(`[data-score="${ratingByKey[event.key]}"]`)?.click();
   }
-  if (event.key.toLocaleLowerCase() === "s") document.querySelector("[data-card-skip]")?.click();
+  if (event.key.toLocaleLowerCase() === "s") {
+    document.querySelector(isPronunciationReview ? "[data-pronunciation-card-skip]" : "[data-card-skip]")?.click();
+  }
 }
 
 function clearReviewRefreshTimer() {
@@ -1786,10 +2336,34 @@ function scheduleReviewRefresh(cards) {
   }, Math.max(1000, nextDueAt - now + 250));
 }
 
+function schedulePronunciationReviewRefresh(cards) {
+  clearReviewRefreshTimer();
+  if (state.view !== "pronunciation-review" || ["cram", "catalog"].includes(state.pronunciationReviewMode)) return;
+  const now = Date.now();
+  const nextDueAt = cards
+    .map((card) => state.schedules.get(card.id))
+    .filter((schedule) => schedule && !isNewSchedule(schedule))
+    .map((schedule) => new Date(schedule.due).getTime())
+    .filter((dueAt) => Number.isFinite(dueAt) && dueAt > now)
+    .sort((left, right) => left - right)[0];
+  if (!nextDueAt) return;
+  state.reviewRefreshTimer = window.setTimeout(() => {
+    state.reviewRefreshTimer = null;
+    if (state.view === "pronunciation-review") {
+      state.pronunciationReviewAnswerVisible = false;
+      renderPronunciationReview();
+    }
+  }, Math.max(1000, nextDueAt - now + 250));
+}
+
 function refreshReviewOnReturn() {
-  if (state.view !== "review") return;
-  state.reviewAnswerVisible = false;
-  renderReview();
+  if (state.view === "review") {
+    state.reviewAnswerVisible = false;
+    renderReview();
+  } else if (state.view === "pronunciation-review") {
+    state.pronunciationReviewAnswerVisible = false;
+    renderPronunciationReview();
+  }
 }
 
 async function migrateLegacySchedules() {
@@ -1821,6 +2395,10 @@ async function migrateLegacySchedules() {
 
 async function saveAppState() {
   return runSave(() => setValue("appState", state.appState));
+}
+
+async function savePronunciationState() {
+  return runSave(() => setValue("pronunciationState", state.pronunciationState));
 }
 
 async function saveSettings() {
@@ -1904,8 +2482,39 @@ function defaultAppState() {
   };
 }
 
+function defaultPronunciationState() {
+  return {
+    completedLessons: [],
+    currentLessonId: null,
+    suspendedCardIds: [],
+    contentVersion: null
+  };
+}
+
+function normalizePronunciationState(value) {
+  const saved = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const lessonIds = new Set(state.pronunciationData?.lessons?.map((lesson) => lesson.id) || []);
+  const cardIds = new Set(state.pronunciationData ? buildPronunciationCards(state.pronunciationData).map((card) => card.id) : []);
+  const completedLessons = [...new Set(Array.isArray(saved.completedLessons) ? saved.completedLessons : [])]
+    .filter((id) => lessonIds.has(id));
+  const suspendedCardIds = [...new Set(Array.isArray(saved.suspendedCardIds) ? saved.suspendedCardIds : [])]
+    .filter((id) => cardIds.has(id));
+  return {
+    completedLessons,
+    currentLessonId: lessonIds.has(saved.currentLessonId) ? saved.currentLessonId : null,
+    suspendedCardIds,
+    contentVersion: state.pronunciationData.meta.contentVersion
+  };
+}
+
 function defaultSettings() {
-  return { voiceURI: "fr-FR-DeniseNeural", voiceRate: 0.82, newCardsPerDay: 20, reviewSettingsVersion: 1 };
+  return {
+    voiceURI: "fr-FR-DeniseNeural",
+    voiceRate: 0.82,
+    newCardsPerDay: 20,
+    pronunciationNewCardsPerDay: 12,
+    reviewSettingsVersion: 1
+  };
 }
 
 function resultLabel(status) {

@@ -1,0 +1,463 @@
+{
+  "meta": {
+    "title": "Как читаются французские буквосочетания",
+    "contentVersion": "2.2.0",
+    "dailyMinutes": "8-12",
+    "method": "короткое сочетание → звук → слово → несколько слов",
+    "cardMethod": "одна атомарная карточка = одно написание в одном контексте",
+    "sourceNote": "Тренажёр построен по пользовательскому гайду и учит переводить написание в звучание. Постановка отдельных звуков в этот курс не входит."
+  },
+  "sources": [
+    {
+      "name": "Пользовательский гайд «Правила французского произношения»",
+      "note": "Единственный источник тем курса: буквосочетания, позиционные правила, окончания и стыки слов."
+    }
+  ],
+  "modules": [
+    {
+      "id": "short-patterns",
+      "order": 1,
+      "title": "Короткие сочетания",
+      "description": "Начинаем с устойчивых гласных и согласных сочетаний длиной в одну–три буквы."
+    },
+    {
+      "id": "context-rules",
+      "order": 2,
+      "title": "Звук зависит от соседей",
+      "description": "Учимся смотреть на следующую букву и отличать обычное правило от исключения."
+    },
+    {
+      "id": "nasal-patterns",
+      "order": 3,
+      "title": "Носовые сочетания",
+      "description": "Читаем an, on, in и видим случаи, когда n или m снова произносится отдельно."
+    },
+    {
+      "id": "words-and-flow",
+      "order": 4,
+      "title": "Слова и стыки слов",
+      "description": "Собираем правила внутри целого слова, затем читаем два и несколько слов подряд."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "read-01",
+      "order": 1,
+      "moduleId": "short-patterns",
+      "prerequisites": [],
+      "title": "Самые короткие соответствия",
+      "target": "a · i/y · u · ou",
+      "goal": "Увидеть одну букву или короткое сочетание и сразу назвать основной звук.",
+      "focus": ["a → [a]", "i/y → [i]", "u → [y]", "ou → [u]"],
+      "rule": "Сначала ищи знакомое сочетание целиком. В слове loup сочетание ou читается как один звук [u], а не как отдельные o и u.",
+      "spellings": [
+        { "pattern": "a, à, â", "sound": "[a]", "examples": "ami, là, âge" },
+        { "pattern": "i, y, ï, î", "sound": "[i]", "examples": "il, type, naïf, île" },
+        { "pattern": "u, û", "sound": "[y]", "examples": "tu, du, sûr" },
+        { "pattern": "ou, où, oû, aou, aoû", "sound": "[u]", "examples": "loup, où, croûte, saoul, août" }
+      ],
+      "examples": [
+        { "text": "ami", "ipa": "[ami]", "note": "a даёт [a], i даёт [i]." },
+        { "text": "tu", "ipa": "[ty]", "note": "Одиночная u даёт [y]." },
+        { "text": "loup", "ipa": "[lu]", "note": "ou читается одним звуком [u], конечная p не слышна." },
+        { "text": "saoul", "ipa": "[su]", "note": "Редкое написание aou тоже даёт [u]." },
+        { "text": "août", "ipa": "[u]", "note": "Несколько букв могут передавать один звук." }
+      ],
+      "practice": [
+        "Назови звук: a, i, u, ou.",
+        "Найди знакомые части в ami, tu и loup.",
+        "Прочитай слова, затем проверь каждое по аудио."
+      ],
+      "cards": [
+        { "id": "pron-atom:01:a", "kind": "pattern", "prompt": "Как читается a в ami?", "answer": "[a] — ami", "audioText": "ami", "explanation": "Одна карточка проверяет только написание a." },
+        { "id": "pron-atom:01:a-grave", "kind": "pattern", "prompt": "Как читается à в là?", "answer": "[a] — là", "audioText": "là", "explanation": "Accent grave не меняет звук этой буквы." },
+        { "id": "pron-atom:01:a-circ", "kind": "pattern", "prompt": "Как читается â в âge?", "answer": "[a] — âge", "audioText": "âge", "explanation": "Карточка проверяет â отдельно от a и à." },
+        { "id": "pron-atom:01:i", "kind": "pattern", "prompt": "Как читается i в il?", "answer": "[i] — il", "audioText": "il", "explanation": "Одиночная i обычно даёт [i]." },
+        { "id": "pron-atom:01:y", "kind": "pattern", "prompt": "Как читается y в type?", "answer": "[i] — type", "audioText": "type", "explanation": "Здесь y передаёт тот же звук [i], но проверяется отдельно." },
+        { "id": "pron-atom:01:i-diaeresis", "kind": "pattern", "prompt": "Как читается ï в naïf?", "answer": "[i] — naïf", "audioText": "naïf", "explanation": "Трема показывает, что ï читается отдельно от соседней гласной." },
+        { "id": "pron-atom:01:i-circ", "kind": "pattern", "prompt": "Как читается î в île?", "answer": "[i] — île", "audioText": "île", "explanation": "Написание î проверяется отдельной карточкой." },
+        { "id": "pron-atom:01:u", "kind": "pattern", "prompt": "Как читается u в tu?", "answer": "[y] — tu", "audioText": "tu", "explanation": "Не путай одиночную u [y] с сочетанием ou [u]." },
+        { "id": "pron-atom:01:u-circ", "kind": "pattern", "prompt": "Как читается û в sûr?", "answer": "[y] — sûr", "audioText": "sûr", "explanation": "Это карточка для французской û; буква ú в базовой орфографии не используется." },
+        { "id": "pron-atom:01:ou", "kind": "pattern", "prompt": "Как читается ou в loup?", "answer": "[u] — loup", "audioText": "loup", "explanation": "Две буквы ou образуют один звук [u]." },
+        { "id": "pron-atom:01:ou-grave", "kind": "pattern", "prompt": "Как читается où?", "answer": "[u] — où", "audioText": "où", "explanation": "Написание où проверяется отдельно от ou." },
+        { "id": "pron-atom:01:ou-circ", "kind": "pattern", "prompt": "Как читается oû в croûte?", "answer": "[u] — croûte", "audioText": "croûte", "explanation": "Написание oû даёт один звук [u]." },
+        { "id": "pron-atom:01:aou", "kind": "pattern", "prompt": "Как читается aou в saoul?", "answer": "[u] — saoul", "audioText": "saoul", "explanation": "Редкое aou проверяется собственной карточкой." },
+        { "id": "pron-atom:01:aou-circ", "kind": "pattern", "prompt": "Как читается aoû в août?", "answer": "[u] — août", "audioText": "août", "explanation": "Несколько букв aoû передают один звук [u]." },
+        { "id": "pron-word:01:loup", "kind": "word", "prompt": "Прочитай слово loup целиком.", "answer": "l-ou-p → [lu]", "audioText": "loup", "explanation": "Это дополнительная сборочная карточка после отдельной карточки ou." },
+        { "id": "pron-word:01:aout", "kind": "word", "prompt": "Прочитай слово août целиком.", "answer": "aoû-t → [u]", "audioText": "août", "explanation": "Это дополнительная сборочная карточка после отдельной карточки aoû." }
+      ]
+    },
+    {
+      "id": "read-02",
+      "order": 2,
+      "moduleId": "short-patterns",
+      "prerequisites": ["read-01"],
+      "title": "Сочетания гласных",
+      "target": "é/er/ez · e/è/ê/ai/ei · o/au/eau · oi · ui · eu/œu",
+      "goal": "Читать частые двух- и трёхбуквенные сочетания гласных как единый блок.",
+      "focus": ["é/-er/-ez/et → [e]", "ai/ei → [ɛ]", "e → [ə] или [ɛ]", "o → [o] или [ɔ]", "eau → [o]"],
+      "rule": "Если несколько гласных стоят рядом, сначала проверь знакомое сочетание. Не раскладывай eau, oi или ai на отдельные буквы. Обычные e и o зависят от позиции, поэтому их нужно проверять внутри слога.",
+      "spellings": [
+        { "pattern": "é, -er, -ez, et (слово)", "sound": "[e]", "examples": "café, parler, nez, et" },
+        { "pattern": "è, ê, ai, aî, ei, est, -et, ey", "sound": "обычно [ɛ]", "examples": "père, pêche, lait, seize, est, effet, volley" },
+        { "pattern": "e без акцента", "sound": "[ə] или [ɛ] по позиции", "examples": "le, petit, sel" },
+        { "pattern": "o", "sound": "[o] или [ɔ] по позиции", "examples": "moto, porte" },
+        { "pattern": "au, eau, ô", "sound": "[o]", "examples": "auto, bateau, dépôt" },
+        { "pattern": "oi, oî", "sound": "[wa]", "examples": "trois, cloître" },
+        { "pattern": "ui, uî", "sound": "[ɥi]", "examples": "lui, huître" },
+        { "pattern": "eu, œu", "sound": "[ø] или [œ]", "examples": "feu, nœud, neuf" }
+      ],
+      "examples": [
+        { "text": "café", "ipa": "[kafe]", "note": "é читается [e]." },
+        { "text": "et", "ipa": "[e]", "note": "Отдельное слово et читается [e]." },
+        { "text": "effet", "ipa": "[efɛ]", "note": "Финальное -et здесь даёт [ɛ], поэтому et и -et нельзя смешивать." },
+        { "text": "le", "ipa": "[lə]", "note": "Безударная e здесь даёт [ə]." },
+        { "text": "lait", "ipa": "[lɛ]", "note": "ai читается [ɛ], конечные t не слышно." },
+        { "text": "porte", "ipa": "[pɔʁt]", "note": "Обычная o в закрытом слоге даёт [ɔ]." },
+        { "text": "bateau", "ipa": "[bato]", "note": "eau читается как один звук [o]." },
+        { "text": "trois", "ipa": "[tʁwa]", "note": "oi даёт [wa]." },
+        { "text": "lui", "ipa": "[lɥi]", "note": "ui даёт быстрое [ɥi]." }
+      ],
+      "practice": [
+        "Подчеркни сочетания в café, lait, bateau, trois и lui.",
+        "Сравни et/effet и moto/porte: одинаковая буква не всегда даёт одинаковый звук.",
+        "Замени каждое подчёркнутое сочетание его звуком.",
+        "Собери слово целиком и проверь аудио."
+      ],
+      "cards": [
+        { "id": "pron-atom:02:e-acute", "kind": "pattern", "prompt": "Как читается é в café?", "answer": "[e] — café", "audioText": "café", "explanation": "Accent aigu é обычно указывает на [e]." },
+        { "id": "pron-atom:02:er", "kind": "pattern", "prompt": "Как читается конечное -er в parler?", "answer": "[e] — parler", "audioText": "parler", "explanation": "Карточка проверяет только окончание -er." },
+        { "id": "pron-atom:02:ez", "kind": "pattern", "prompt": "Как читается конечное -ez в nez?", "answer": "[e] — nez", "audioText": "nez", "explanation": "Карточка проверяет только окончание -ez." },
+        { "id": "pron-atom:02:et-word", "kind": "pattern", "prompt": "Как читается отдельное слово et?", "answer": "[e] — et", "audioText": "et", "explanation": "Не смешивай слово et [e] с окончанием -et [ɛ]." },
+        { "id": "pron-atom:02:e-grave", "kind": "pattern", "prompt": "Как читается è в père?", "answer": "[ɛ] — père", "audioText": "père", "explanation": "Accent grave è указывает на [ɛ]." },
+        { "id": "pron-atom:02:e-circ", "kind": "pattern", "prompt": "Как читается ê в pêche?", "answer": "[ɛ] — pêche", "audioText": "pêche", "explanation": "Написание ê проверяется отдельно от è." },
+        { "id": "pron-atom:02:ai", "kind": "pattern", "prompt": "Как читается ai в lait?", "answer": "[ɛ] — lait", "audioText": "lait", "explanation": "Сочетание ai даёт один звук [ɛ]." },
+        { "id": "pron-atom:02:ai-circ", "kind": "pattern", "prompt": "Как читается aî в maître?", "answer": "[ɛ] — maître", "audioText": "maître", "explanation": "Написание aî проверяется своей карточкой." },
+        { "id": "pron-atom:02:ei", "kind": "pattern", "prompt": "Как читается ei в seize?", "answer": "[ɛ] — seize", "audioText": "seize", "explanation": "Сочетание ei читается одним звуком [ɛ]." },
+        { "id": "pron-atom:02:est", "kind": "pattern", "prompt": "Как читается est?", "answer": "[ɛ] — est", "audioText": "est", "explanation": "Форма est проверяется отдельно от слова et." },
+        { "id": "pron-atom:02:et-ending", "kind": "pattern", "prompt": "Как читается окончание -et в effet?", "answer": "[ɛ] — effet", "audioText": "effet", "explanation": "Окончание -et здесь не равно слову et [e]." },
+        { "id": "pron-atom:02:ey", "kind": "pattern", "prompt": "Как читается ey в volley?", "answer": "[ɛ] — volley", "audioText": "volley", "explanation": "Редкое ey проверяется отдельно." },
+        { "id": "pron-atom:02:e-schwa", "kind": "rule", "prompt": "Как читается e в слове le?", "answer": "[ə] — le", "audioText": "le", "explanation": "Контекст слова закреплён прямо на карточке." },
+        { "id": "pron-atom:02:e-open", "kind": "rule", "prompt": "Как читается e в закрытом слоге sel?", "answer": "[ɛ] — sel", "audioText": "sel", "explanation": "Та же буква e в другом контексте проверяется отдельной карточкой." },
+        { "id": "pron-atom:02:o-closed", "kind": "rule", "prompt": "Как читается o в moto?", "answer": "[o] — moto", "audioText": "moto", "explanation": "Карточка закрепляет закрытый [o] в конкретном слове." },
+        { "id": "pron-atom:02:o-open", "kind": "rule", "prompt": "Как читается o в porte?", "answer": "[ɔ] — porte", "audioText": "porte", "explanation": "Открытый [ɔ] проверяется отдельно от [o] в moto." },
+        { "id": "pron-atom:02:au", "kind": "pattern", "prompt": "Как читается au в auto?", "answer": "[o] — auto", "audioText": "auto", "explanation": "Сочетание au образует один звук [o]." },
+        { "id": "pron-atom:02:eau", "kind": "pattern", "prompt": "Как читается eau в bateau?", "answer": "[o] — bateau", "audioText": "bateau", "explanation": "Три буквы eau передают один звук [o]." },
+        { "id": "pron-atom:02:o-circ", "kind": "pattern", "prompt": "Как читается ô в dépôt?", "answer": "[o] — dépôt", "audioText": "dépôt", "explanation": "Написание ô проверяется отдельно." },
+        { "id": "pron-atom:02:oi", "kind": "pattern", "prompt": "Как читается oi в trois?", "answer": "[wa] — trois", "audioText": "trois", "explanation": "Сочетание oi читается целиком." },
+        { "id": "pron-atom:02:oi-circ", "kind": "pattern", "prompt": "Как читается oî в cloître?", "answer": "[wa] — cloître", "audioText": "cloître", "explanation": "Написание oî проверяется отдельно от oi." },
+        { "id": "pron-atom:02:ui", "kind": "pattern", "prompt": "Как читается ui в lui?", "answer": "[ɥi] — lui", "audioText": "lui", "explanation": "Сочетание ui образует [ɥi]." },
+        { "id": "pron-atom:02:ui-circ", "kind": "pattern", "prompt": "Как читается uî в huître?", "answer": "[ɥi] — huître", "audioText": "huître", "explanation": "Написание uî проверяется собственной карточкой." },
+        { "id": "pron-atom:02:eu-closed", "kind": "rule", "prompt": "Как читается eu в feu?", "answer": "[ø] — feu", "audioText": "feu", "explanation": "Контекст feu закрепляет закрытый вариант [ø]." },
+        { "id": "pron-atom:02:eu-open", "kind": "rule", "prompt": "Как читается eu в neuf?", "answer": "[œ] — neuf", "audioText": "neuf", "explanation": "Контекст neuf закрепляет открытый вариант [œ]." },
+        { "id": "pron-atom:02:oeu-closed", "kind": "rule", "prompt": "Как читается œu в nœud?", "answer": "[ø] — nœud", "audioText": "nœud", "explanation": "Сочетание œu здесь даёт [ø]." },
+        { "id": "pron-atom:02:oeu-open", "kind": "rule", "prompt": "Как читается œu в cœur?", "answer": "[œ] — cœur", "audioText": "cœur", "explanation": "Сочетание œu здесь даёт [œ] и проверяется отдельно." },
+        { "id": "pron-word:02:bateau", "kind": "word", "prompt": "Прочитай слово bateau целиком.", "answer": "bat-eau → [bato]", "audioText": "bateau", "explanation": "Сборочная карточка не заменяет отдельную карточку eau." }
+      ]
+    },
+    {
+      "id": "read-03",
+      "order": 3,
+      "moduleId": "short-patterns",
+      "prerequisites": ["read-02"],
+      "title": "Сочетания согласных",
+      "target": "ch · ph · gn · qu · gu · il/ill",
+      "goal": "Узнавать согласные блоки, которые нельзя читать буква за буквой.",
+      "focus": ["ch → [ʃ]", "ph → [f]", "gn → [ɲ]", "qu → [k]", "ill → [j]"],
+      "rule": "Сначала выдели устойчивый согласный блок. ch, ph, gn и qu обычно передают один согласный звук; gu сохраняет твёрдый [g] перед e, i и y.",
+      "spellings": [
+        { "pattern": "ch", "sound": "[ʃ]", "examples": "chat, vache, poche" },
+        { "pattern": "ph", "sound": "[f]", "examples": "photo" },
+        { "pattern": "gn", "sound": "[ɲ]", "examples": "ligne" },
+        { "pattern": "qu", "sound": "[k]", "examples": "qui" },
+        { "pattern": "gu + e/i/y", "sound": "[g]", "examples": "guitare, guerre" },
+        { "pattern": "il, ill", "sound": "часто [j]", "examples": "travail, travailler, feuille" }
+      ],
+      "examples": [
+        { "text": "chat", "ipa": "[ʃa]", "note": "ch даёт [ʃ], конечная t не слышна." },
+        { "text": "photo", "ipa": "[foto]", "note": "ph даёт [f]." },
+        { "text": "ligne", "ipa": "[liɲ]", "note": "gn даёт один мягкий звук [ɲ]." },
+        { "text": "qui", "ipa": "[ki]", "note": "qu читается [k]." },
+        { "text": "travail", "ipa": "[tʁavaj]", "note": "Финальное il здесь даёт [j]." }
+      ],
+      "practice": [
+        "Выдели согласный блок в chat, photo, ligne, qui и travail.",
+        "Назови звук блока, не читая его по буквам.",
+        "Добавь остальные части слова и проверь результат."
+      ],
+      "cards": [
+        { "id": "pron-atom:03:ch", "kind": "pattern", "prompt": "Как читается ch в vache?", "answer": "[ʃ] — vache", "audioText": "vache", "explanation": "Карточка проверяет обычное чтение ch; technique будет отдельным исключением." },
+        { "id": "pron-atom:03:ph", "kind": "pattern", "prompt": "Как читается ph?", "answer": "[f] — photo", "audioText": "photo", "explanation": "Две буквы передают один согласный [f]." },
+        { "id": "pron-atom:03:gn", "kind": "pattern", "prompt": "Как читается gn?", "answer": "[ɲ] — ligne", "audioText": "ligne", "explanation": "Не произноси отдельные [g] и [n]." },
+        { "id": "pron-atom:03:qu", "kind": "pattern", "prompt": "Как читается qu?", "answer": "[k] — qui", "audioText": "qui", "explanation": "Буква u внутри qu отдельно не звучит." },
+        { "id": "pron-atom:03:gu", "kind": "rule", "prompt": "Как читается gu перед i в guitare?", "answer": "[g] — guitare", "audioText": "guitare", "explanation": "u сохраняет твёрдый [g] и отдельно не произносится." },
+        { "id": "pron-atom:03:il", "kind": "pattern", "prompt": "Как читается финальное il в travail?", "answer": "[j] — travail", "audioText": "travail", "explanation": "Написание il проверяется отдельно от ill." },
+        { "id": "pron-atom:03:ill", "kind": "pattern", "prompt": "Как читается ill в travailler?", "answer": "[j] — travailler", "audioText": "travailler", "explanation": "Исключения ville, mille и tranquille будут отдельными карточками." }
+      ]
+    },
+    {
+      "id": "read-04",
+      "order": 4,
+      "moduleId": "context-rules",
+      "prerequisites": ["read-03"],
+      "title": "Смотрим на соседнюю букву",
+      "target": "c/g + e/i/y · s между гласными · ss",
+      "goal": "Определять звук c, g и s по буквам справа и слева.",
+      "focus": ["c + e/i/y → [s]", "g + e/i/y → [ʒ]", "s между гласными → [z]", "ss → [s]"],
+      "rule": "Для c и g посмотри на следующую букву: перед e, i, y они меняют звук. Для одиночной s посмотри по обе стороны: между двумя гласными она обычно даёт [z].",
+      "spellings": [
+        { "pattern": "c + e/i/y", "sound": "[s]", "examples": "merci, cycle" },
+        { "pattern": "c + a/o/u", "sound": "[k]", "examples": "café, code, culture" },
+        { "pattern": "ç", "sound": "[s]", "examples": "français, garçon" },
+        { "pattern": "g + e/i/y", "sound": "[ʒ]", "examples": "page, girafe" },
+        { "pattern": "g + a/o/u", "sound": "[g]", "examples": "gare, gomme" },
+        { "pattern": "гласная + s + гласная", "sound": "[z]", "examples": "rose, maison" },
+        { "pattern": "ss или s в начале", "sound": "[s]", "examples": "poisson, sac" }
+      ],
+      "examples": [
+        { "text": "merci", "ipa": "[mɛʁsi]", "note": "c перед i даёт [s]." },
+        { "text": "café", "ipa": "[kafe]", "note": "c перед a даёт [k]." },
+        { "text": "page", "ipa": "[paʒ]", "note": "g перед e даёт [ʒ]." },
+        { "text": "gare", "ipa": "[gaʁ]", "note": "g перед a даёт [g]." },
+        { "text": "maison", "ipa": "[mɛzɔ̃]", "note": "s между гласными даёт [z]." },
+        { "text": "poisson", "ipa": "[pwasɔ̃]", "note": "ss сохраняет [s]." }
+      ],
+      "practice": [
+        "В каждом слове сначала найди c, g или s.",
+        "Посмотри на соседние буквы и выбери правило.",
+        "Прочитай merci/café, page/gare и maison/poisson парами."
+      ],
+      "cards": [
+        { "id": "pron-atom:04:c-e", "kind": "rule", "prompt": "Как читается c перед e в ce?", "answer": "[s] — ce", "audioText": "ce", "explanation": "Позиция c+e проверяется отдельно." },
+        { "id": "pron-atom:04:c-i", "kind": "rule", "prompt": "Как читается c перед i в merci?", "answer": "[s] — merci", "audioText": "merci", "explanation": "Позиция c+i проверяется отдельно." },
+        { "id": "pron-atom:04:c-y", "kind": "rule", "prompt": "Как читается c перед y в cycle?", "answer": "[s] — cycle", "audioText": "cycle", "explanation": "Позиция c+y проверяется отдельно." },
+        { "id": "pron-atom:04:c-a", "kind": "rule", "prompt": "Как читается c перед a в café?", "answer": "[k] — café", "audioText": "café", "explanation": "Позиция c+a проверяется отдельно." },
+        { "id": "pron-atom:04:c-o", "kind": "rule", "prompt": "Как читается c перед o в code?", "answer": "[k] — code", "audioText": "code", "explanation": "Позиция c+o проверяется отдельно." },
+        { "id": "pron-atom:04:c-u", "kind": "rule", "prompt": "Как читается c перед u в culture?", "answer": "[k] — culture", "audioText": "culture", "explanation": "Позиция c+u проверяется отдельно." },
+        { "id": "pron-atom:04:cedilla", "kind": "pattern", "prompt": "Как читается ç в garçon?", "answer": "[s] — garçon", "audioText": "garçon", "explanation": "Седиль показывает звук [s]." },
+        { "id": "pron-atom:04:g-e", "kind": "rule", "prompt": "Как читается g перед e в page?", "answer": "[ʒ] — page", "audioText": "page", "explanation": "Позиция g+e проверяется отдельно." },
+        { "id": "pron-atom:04:g-i", "kind": "rule", "prompt": "Как читается g перед i в girafe?", "answer": "[ʒ] — girafe", "audioText": "girafe", "explanation": "Позиция g+i проверяется отдельно." },
+        { "id": "pron-atom:04:g-y", "kind": "rule", "prompt": "Как читается g перед y в gymnase?", "answer": "[ʒ] — gymnase", "audioText": "gymnase", "explanation": "Позиция g+y проверяется отдельно." },
+        { "id": "pron-atom:04:g-a", "kind": "rule", "prompt": "Как читается g перед a в gare?", "answer": "[g] — gare", "audioText": "gare", "explanation": "Позиция g+a проверяется отдельно." },
+        { "id": "pron-atom:04:g-o", "kind": "rule", "prompt": "Как читается g перед o в gomme?", "answer": "[g] — gomme", "audioText": "gomme", "explanation": "Позиция g+o проверяется отдельно." },
+        { "id": "pron-atom:04:g-u", "kind": "rule", "prompt": "Как читается g перед u в figure?", "answer": "[g] — figure", "audioText": "figure", "explanation": "Позиция g+u проверяется отдельно." },
+        { "id": "pron-atom:04:s-between", "kind": "rule", "prompt": "Как читается одиночная s между гласными в rose?", "answer": "[z] — rose", "audioText": "rose", "explanation": "Только это положение s проверяется на карточке." },
+        { "id": "pron-atom:04:ss", "kind": "pattern", "prompt": "Как читается ss в poisson?", "answer": "[s] — poisson", "audioText": "poisson", "explanation": "Удвоенное ss сохраняет [s]." },
+        { "id": "pron-atom:04:s-start", "kind": "rule", "prompt": "Как читается s в начале слова sac?", "answer": "[s] — sac", "audioText": "sac", "explanation": "Начальная s проверяется отдельно от s между гласными." }
+      ]
+    },
+    {
+      "id": "read-05",
+      "order": 5,
+      "moduleId": "nasal-patterns",
+      "prerequisites": ["read-04"],
+      "title": "Носовые сочетания",
+      "target": "an/en/aon/aen · on · in/ain/ein/aim/yn/ym · ien · un/um",
+      "goal": "Узнавать три основные группы носовых написаний внутри слова.",
+      "focus": ["an/en/aon/aen → [ɑ̃]", "on → [ɔ̃]", "in/ain/ein/aim/yn/ym → [ɛ̃]", "ien → [jɛ̃]", "un/um → [œ̃] или [ɛ̃]"],
+      "rule": "Гласная вместе с n или m образует носовой звук, когда n/m закрывает сочетание. Перед b и p обычно пишется m. В ien сначала появляется [j], а традиционный звук un/um у многих носителей сливается с [ɛ̃].",
+      "spellings": [
+        { "pattern": "an, en", "sound": "[ɑ̃]", "examples": "dans, entre" },
+        { "pattern": "aon, aen", "sound": "[ɑ̃] в редких словах", "examples": "faon, Caen" },
+        { "pattern": "am/em + b или p", "sound": "[ɑ̃]", "examples": "champ, temps" },
+        { "pattern": "on", "sound": "[ɔ̃]", "examples": "bon" },
+        { "pattern": "om + b или p", "sound": "[ɔ̃]", "examples": "nombre" },
+        { "pattern": "in, ain, ein, aim, yn", "sound": "[ɛ̃]", "examples": "pin, pain, plein, faim, synthèse" },
+        { "pattern": "im/ym + b или p", "sound": "[ɛ̃]", "examples": "impossible, symbole" },
+        { "pattern": "ien", "sound": "[jɛ̃]", "examples": "chien, bien" },
+        { "pattern": "un, um", "sound": "[œ̃], часто сливается с [ɛ̃]", "examples": "un, lundi, humble" }
+      ],
+      "examples": [
+        { "text": "dans", "ipa": "[dɑ̃]", "note": "an даёт один носовой звук." },
+        { "text": "champ", "ipa": "[ʃɑ̃]", "note": "am перед p относится к той же группе." },
+        { "text": "faon", "ipa": "[fɑ̃]", "note": "Редкое aon даёт [ɑ̃]." },
+        { "text": "Caen", "ipa": "[kɑ̃]", "note": "Редкое aen в названии Caen тоже даёт [ɑ̃]." },
+        { "text": "bon", "ipa": "[bɔ̃]", "note": "on даёт [ɔ̃]." },
+        { "text": "pain", "ipa": "[pɛ̃]", "note": "ain даёт [ɛ̃]." },
+        { "text": "plein", "ipa": "[plɛ̃]", "note": "ein относится к той же группе." },
+        { "text": "faim", "ipa": "[fɛ̃]", "note": "aim даёт [ɛ̃]." },
+        { "text": "synthèse", "ipa": "[sɛ̃tɛz]", "note": "yn перед согласной даёт [ɛ̃]." },
+        { "text": "symbole", "ipa": "[sɛ̃bɔl]", "note": "ym перед b относится к той же группе." },
+        { "text": "chien", "ipa": "[ʃjɛ̃]", "note": "В ien слышно скольжение [j] перед носовым [ɛ̃]." },
+        { "text": "humble", "ipa": "[œ̃bl]", "note": "um сохраняет традиционный [œ̃], который часто сливается с [ɛ̃]." }
+      ],
+      "practice": [
+        "Разложи написания по трём группам: an/en, on, in/ain/ein/aim/yn/ym.",
+        "Отдельно отметь редкие aon/aen, сочетание ien и варианты un/um.",
+        "В champ и nombre найди m перед b или p.",
+        "Прочитай каждое слово как цельный блок и проверь аудио."
+      ],
+      "cards": [
+        { "id": "pron-atom:05:an", "kind": "pattern", "prompt": "Как читается an в dans?", "answer": "[ɑ̃] — dans", "audioText": "dans", "explanation": "Написание an проверяется отдельно." },
+        { "id": "pron-atom:05:en", "kind": "pattern", "prompt": "Как читается en в entre?", "answer": "[ɑ̃] — entre", "audioText": "entre", "explanation": "Написание en проверяется отдельно от an." },
+        { "id": "pron-atom:05:aon", "kind": "exception", "prompt": "Как читается aon в faon?", "answer": "[ɑ̃] — faon", "audioText": "faon", "explanation": "Редкое aon имеет собственную карточку." },
+        { "id": "pron-atom:05:aen", "kind": "exception", "prompt": "Как читается aen в Caen?", "answer": "[ɑ̃] — Caen", "audioText": "Caen", "explanation": "Редкое aen запоминается отдельно." },
+        { "id": "pron-atom:05:am", "kind": "rule", "prompt": "Как читается am перед p в champ?", "answer": "[ɑ̃] — champ", "audioText": "champ", "explanation": "Карточка проверяет только am перед b/p." },
+        { "id": "pron-atom:05:em", "kind": "rule", "prompt": "Как читается em перед p в temps?", "answer": "[ɑ̃] — temps", "audioText": "temps", "explanation": "Карточка проверяет только em перед b/p." },
+        { "id": "pron-atom:05:on", "kind": "pattern", "prompt": "Как читается on в bon?", "answer": "[ɔ̃] — bon", "audioText": "bon", "explanation": "Написание on образует один носовой звук." },
+        { "id": "pron-atom:05:om", "kind": "rule", "prompt": "Как читается om перед b в nombre?", "answer": "[ɔ̃] — nombre", "audioText": "nombre", "explanation": "Написание om проверяется отдельно от on." },
+        { "id": "pron-atom:05:in", "kind": "pattern", "prompt": "Как читается in в pin?", "answer": "[ɛ̃] — pin", "audioText": "pin", "explanation": "Написание in проверяется отдельно." },
+        { "id": "pron-atom:05:ain", "kind": "pattern", "prompt": "Как читается ain в pain?", "answer": "[ɛ̃] — pain", "audioText": "pain", "explanation": "Написание ain проверяется отдельно." },
+        { "id": "pron-atom:05:ein", "kind": "pattern", "prompt": "Как читается ein в plein?", "answer": "[ɛ̃] — plein", "audioText": "plein", "explanation": "Написание ein проверяется отдельно." },
+        { "id": "pron-atom:05:aim", "kind": "pattern", "prompt": "Как читается aim в faim?", "answer": "[ɛ̃] — faim", "audioText": "faim", "explanation": "Написание aim проверяется отдельно." },
+        { "id": "pron-atom:05:yn", "kind": "pattern", "prompt": "Как читается yn в synthèse?", "answer": "[ɛ̃] — synthèse", "audioText": "synthèse", "explanation": "Написание yn перед согласной имеет собственную карточку." },
+        { "id": "pron-atom:05:im", "kind": "rule", "prompt": "Как читается im перед p в impossible?", "answer": "[ɛ̃] — impossible", "audioText": "impossible", "explanation": "Написание im перед b/p проверяется отдельно." },
+        { "id": "pron-atom:05:ym", "kind": "rule", "prompt": "Как читается ym перед b в symbole?", "answer": "[ɛ̃] — symbole", "audioText": "symbole", "explanation": "Написание ym перед b/p проверяется отдельно." },
+        { "id": "pron-atom:05:ien", "kind": "pattern", "prompt": "Как читается ien в chien?", "answer": "[jɛ̃] — chien", "audioText": "chien", "explanation": "Вся последовательность ien проверяется одной атомарной карточкой." },
+        { "id": "pron-atom:05:un", "kind": "pattern", "prompt": "Как читается un?", "answer": "[œ̃] или [ɛ̃] — un", "audioText": "un", "explanation": "Традиционный [œ̃] у многих носителей сливается с [ɛ̃]." },
+        { "id": "pron-atom:05:um", "kind": "rule", "prompt": "Как читается um в humble?", "answer": "[œ̃] или [ɛ̃] — humble", "audioText": "humble", "explanation": "Написание um проверяется отдельно от un." },
+        { "id": "pron-word:05:plein", "kind": "word", "prompt": "Прочитай слово plein целиком.", "answer": "pl-ein → [plɛ̃]", "audioText": "plein", "explanation": "Сборочная карточка появляется дополнительно к отдельной карточке ein." }
+      ]
+    },
+    {
+      "id": "read-06",
+      "order": 6,
+      "moduleId": "nasal-patterns",
+      "prerequisites": ["read-05"],
+      "title": "Когда знакомое правило не срабатывает",
+      "target": "bonne · année · femme · Noël · alcool · ville · technique",
+      "goal": "Замечать букву после n/m, удвоение и редкие написания, которые нужно запоминать со словом.",
+      "focus": ["гласная после n/m", "nn/mm", "e+mm/e+nn", "ë/œ", "oo/u+m", "ville/mille", "ch → [k]"],
+      "rule": "Носовой блок распадается, если за n/m идёт гласная или n/m удваивается. Написания e+mm/e+nn, ë, œ, oo и u+m не образуют универсальных правил: запоминай их вместе с частыми словами из таблицы.",
+      "spellings": [
+        { "pattern": "гласная + n/m + гласная", "sound": "гласная не носовая, n/m слышно", "examples": "année" },
+        { "pattern": "nn, mm", "sound": "гласная не носовая", "examples": "bonne, immense" },
+        { "pattern": "e+mm/e+nn в отдельных словах", "sound": "[a]", "examples": "femme, solennel" },
+        { "pattern": "ë и œ без u", "sound": "зависит от слова", "examples": "canoë [e], Noël [ɛ], fœtus [e], cœur [œ]" },
+        { "pattern": "oo и u+m в отдельных заимствованиях", "sound": "[ɔ]", "examples": "alcool, album" },
+        { "pattern": "ville, mille, tranquille", "sound": "[il], не [ij]", "examples": "ville, mille, tranquille" },
+        { "pattern": "ch в отдельных греческих словах", "sound": "[k]", "examples": "technique" }
+      ],
+      "examples": [
+        { "text": "bon", "ipa": "[bɔ̃]", "note": "on закрывает слог и остаётся носовым." },
+        { "text": "bonne", "ipa": "[bɔn]", "note": "nn разрушает носовой блок." },
+        { "text": "année", "ipa": "[ane]", "note": "n произносится отдельно перед гласной." },
+        { "text": "femme", "ipa": "[fam]", "note": "e перед mm в этом частом слове даёт [a]." },
+        { "text": "solennel", "ipa": "[sɔlanɛl]", "note": "Первое e перед nn даёт [a]; это словарное исключение." },
+        { "text": "canoë", "ipa": "[kanoe]", "note": "ë разделяет гласные и здесь даёт [e]." },
+        { "text": "Noël", "ipa": "[nɔɛl]", "note": "Та же ë здесь даёт [ɛ], поэтому нужен контекст слова." },
+        { "text": "fœtus", "ipa": "[fetys]", "note": "œ без u здесь даёт [e]." },
+        { "text": "cœur", "ipa": "[kœʁ]", "note": "В другом слове œ даёт [œ]." },
+        { "text": "alcool", "ipa": "[alkɔl]", "note": "Редкое oo в этом слове даёт [ɔ]." },
+        { "text": "album", "ipa": "[albɔm]", "note": "u перед m в этом заимствовании даёт [ɔ]." },
+        { "text": "ville", "ipa": "[vil]", "note": "ill здесь не даёт [j]." },
+        { "text": "technique", "ipa": "[tɛknik]", "note": "ch в этом слове читается [k]." }
+      ],
+      "practice": [
+        "Сравни написание bon и bonne справа от n.",
+        "Реши, образуется ли носовой блок в an и année.",
+        "Отдельно запомни femme/solennel, canoë/Noël, fœtus/cœur, alcool/album.",
+        "Затем повтори ville, mille, tranquille и technique."
+      ],
+      "cards": [
+        { "id": "pron-atom:06:nn-bonne", "kind": "exception", "prompt": "Как читается on перед nn в bonne?", "answer": "[ɔn] — bonne", "audioText": "bonne", "explanation": "Удвоенная nn разрушает носовой on." },
+        { "id": "pron-atom:06:nn-annee", "kind": "exception", "prompt": "Как читается ann в année?", "answer": "[an] — année", "audioText": "année", "explanation": "Удвоенная nn произносится как обычный [n], без носового звука." },
+        { "id": "pron-atom:06:mm-immense", "kind": "exception", "prompt": "Как читается im перед mm в immense?", "answer": "[im] — immense", "audioText": "immense", "explanation": "Удвоенная mm не образует носовой звук с предыдущей i." },
+        { "id": "pron-atom:06:e-mm", "kind": "exception", "prompt": "Как читается e перед mm в femme?", "answer": "[a] — femme", "audioText": "femme", "explanation": "Это словарное исключение e+mm." },
+        { "id": "pron-atom:06:e-nn", "kind": "exception", "prompt": "Как читается e перед nn в solennel?", "answer": "[a] — solennel", "audioText": "solennel", "explanation": "Это словарное исключение e+nn." },
+        { "id": "pron-atom:06:e-diaeresis-e", "kind": "exception", "prompt": "Как читается ë в canoë?", "answer": "[e] — canoë", "audioText": "canoë", "explanation": "Трема разделяет гласные; этот контекст даёт [e]." },
+        { "id": "pron-atom:06:e-diaeresis-open", "kind": "exception", "prompt": "Как читается ë в Noël?", "answer": "[ɛ] — Noël", "audioText": "Noël", "explanation": "Та же ë в другом слове проверяется отдельно." },
+        { "id": "pron-atom:06:oe-e", "kind": "exception", "prompt": "Как читается œ в fœtus?", "answer": "[e] — fœtus", "audioText": "fœtus", "explanation": "Контекст fœtus закрепляет [e]." },
+        { "id": "pron-atom:06:oe-open", "kind": "exception", "prompt": "Как читается œ в cœur?", "answer": "[œ] — cœur", "audioText": "cœur", "explanation": "Контекст cœur закрепляет [œ]." },
+        { "id": "pron-atom:06:oo", "kind": "exception", "prompt": "Как читается oo в alcool?", "answer": "[ɔ] — alcool", "audioText": "alcool", "explanation": "Редкое oo проверяется своей карточкой." },
+        { "id": "pron-atom:06:u-m", "kind": "exception", "prompt": "Как читается u перед m в album?", "answer": "[ɔ] — album", "audioText": "album", "explanation": "Это словарный случай в заимствовании album." },
+        { "id": "pron-atom:06:ill-ville", "kind": "exception", "prompt": "Как читается ill в ville?", "answer": "[il] — ville", "audioText": "ville", "explanation": "Ville проверяется отдельно от общего ill → [j]." },
+        { "id": "pron-atom:06:ill-mille", "kind": "exception", "prompt": "Как читается ill в mille?", "answer": "[il] — mille", "audioText": "mille", "explanation": "Mille имеет собственную карточку исключения." },
+        { "id": "pron-atom:06:ill-tranquille", "kind": "exception", "prompt": "Как читается ill в tranquille?", "answer": "[il] — tranquille", "audioText": "tranquille", "explanation": "Tranquille имеет собственную карточку исключения." },
+        { "id": "pron-atom:06:ch-technique", "kind": "exception", "prompt": "Как читается ch в technique?", "answer": "[k] — technique", "audioText": "technique", "explanation": "Это отдельное исключение из обычного ch → [ʃ]." }
+      ]
+    },
+    {
+      "id": "read-07",
+      "order": 7,
+      "moduleId": "words-and-flow",
+      "prerequisites": ["read-06"],
+      "title": "Собираем целое слово",
+      "target": "немая e · конечные согласные · CaReFuL · -er/-ez",
+      "goal": "Применять несколько знакомых правил слева направо и не произносить лишние окончания.",
+      "focus": ["конечная e немая", "конечные согласные обычно немые", "c/r/f/l часто слышны", "-er/-ez → [e]"],
+      "rule": "Раздели слово на знакомые блоки, прочитай их слева направо, затем проверь окончание. Конечная e и большинство конечных согласных не звучат; c, r, f, l часто произносятся.",
+      "spellings": [
+        { "pattern": "-e в конце", "sound": "обычно не произносится", "examples": "ligne, rose" },
+        { "pattern": "конечные t, d, p, s", "sound": "обычно не произносятся", "examples": "petit, nid, beaucoup, trois" },
+        { "pattern": "конечные c, r, f, l", "sound": "обычно произносятся", "examples": "sac, finir, chef, animal" },
+        { "pattern": "-er, -ez", "sound": "[e]", "examples": "parler, nez" }
+      ],
+      "examples": [
+        { "text": "beaucoup", "ipa": "[boku]", "note": "eau → [o], ou → [u], конечная p немая." },
+        { "text": "petit", "ipa": "[pəti]", "note": "Конечная t не слышна." },
+        { "text": "parler", "ipa": "[paʁle]", "note": "Конечное -er читается [e], не [ɛʁ]." },
+        { "text": "avec", "ipa": "[avɛk]", "note": "Конечная c произносится." },
+        { "text": "animal", "ipa": "[animal]", "note": "Конечная l произносится." }
+      ],
+      "practice": [
+        "Подчеркни знакомые блоки в beaucoup и parler.",
+        "Отдельно проверь последнюю букву каждого слова.",
+        "Прочитай слово целиком и только потом включи аудио."
+      ],
+      "cards": [
+        { "id": "pron-atom:07:e-final", "kind": "rule", "prompt": "Как читается конечная e в ligne?", "answer": "Не произносится — ligne", "audioText": "ligne", "explanation": "Карточка проверяет только конечную e." },
+        { "id": "pron-atom:07:t-final", "kind": "rule", "prompt": "Как читается конечная t в petit?", "answer": "Не произносится — petit", "audioText": "petit", "explanation": "Конечная t проверяется отдельно." },
+        { "id": "pron-atom:07:d-final", "kind": "rule", "prompt": "Как читается конечная d в nid?", "answer": "Не произносится — nid", "audioText": "nid", "explanation": "Конечная d проверяется отдельно." },
+        { "id": "pron-atom:07:p-final", "kind": "rule", "prompt": "Как читается конечная p в beaucoup?", "answer": "Не произносится — beaucoup", "audioText": "beaucoup", "explanation": "Конечная p проверяется отдельно." },
+        { "id": "pron-atom:07:s-final", "kind": "rule", "prompt": "Как читается конечная s в trois?", "answer": "Не произносится — trois", "audioText": "trois", "explanation": "Конечная s проверяется отдельно." },
+        { "id": "pron-atom:07:c-final", "kind": "rule", "prompt": "Как читается конечная c в sac?", "answer": "[k] — sac", "audioText": "sac", "explanation": "Конечная c часто произносится и имеет собственную карточку." },
+        { "id": "pron-atom:07:r-final", "kind": "rule", "prompt": "Как читается конечная r в finir?", "answer": "[ʁ] — finir", "audioText": "finir", "explanation": "Конечная r проверяется отдельно; глагольное -er — другое правило." },
+        { "id": "pron-atom:07:f-final", "kind": "rule", "prompt": "Как читается конечная f в chef?", "answer": "[f] — chef", "audioText": "chef", "explanation": "Конечная f проверяется отдельно." },
+        { "id": "pron-atom:07:l-final", "kind": "rule", "prompt": "Как читается конечная l в animal?", "answer": "[l] — animal", "audioText": "animal", "explanation": "Конечная l проверяется отдельно." },
+        { "id": "pron-atom:07:er", "kind": "pattern", "prompt": "Как читается конечное -er в parler?", "answer": "[e] — parler", "audioText": "parler", "explanation": "Окончание -er имеет отдельную карточку." },
+        { "id": "pron-atom:07:ez", "kind": "pattern", "prompt": "Как читается конечное -ez в nez?", "answer": "[e] — nez", "audioText": "nez", "explanation": "Окончание -ez имеет отдельную карточку." },
+        { "id": "pron-word:07:beaucoup", "kind": "word", "prompt": "Прочитай слово beaucoup целиком.", "answer": "b-eau-c-ou-p → [boku]", "audioText": "beaucoup", "explanation": "Сборочная карточка использует уже изученные eau, c, ou и немую p." },
+        { "id": "pron-word:07:petit", "kind": "word", "prompt": "Прочитай слово petit целиком.", "answer": "peti-t → [pəti]", "audioText": "petit", "explanation": "Сборочная карточка появляется дополнительно к отдельной карточке конечной t." },
+        { "id": "pron-word:07:animal", "kind": "word", "prompt": "Прочитай слово animal целиком.", "answer": "animal → [animal]", "audioText": "animal", "explanation": "Сборочная карточка появляется дополнительно к отдельной карточке конечной l." }
+      ]
+    },
+    {
+      "id": "read-08",
+      "order": 8,
+      "moduleId": "words-and-flow",
+      "prerequisites": ["read-07"],
+      "title": "Читаем несколько слов подряд",
+      "target": "l’ami · j’ai · les amis · un ami · les héros",
+      "goal": "Узнавать апостроф и основные изменения звука на стыке двух слов.",
+      "focus": ["elision", "s/x → [z]", "t/d → [t]", "n на стыке", "h muet/h aspiré"],
+      "rule": "Буква h сама по себе не произносится. Сначала прочитай каждое слово, затем проверь стык: h muet допускает апостроф и liaison, а h aspiré блокирует их. Апостроф показывает выпадение гласной; при обязательном liaison немая конечная согласная соединяется со следующим словом.",
+      "spellings": [
+        { "pattern": "h", "sound": "собственного звука нет", "examples": "hibou, homme, héros" },
+        { "pattern": "l’, j’, qu’, c’", "sound": "гласная до апострофа выпала", "examples": "l’ami, j’ai, qu’il, c’est" },
+        { "pattern": "s/x + гласная", "sound": "[z] на стыке", "examples": "les amis, deux enfants" },
+        { "pattern": "t/d + гласная", "sound": "[t] на стыке", "examples": "c’est ici, grand homme" },
+        { "pattern": "n + гласная", "sound": "слышно [n] на стыке", "examples": "un ami" },
+        { "pattern": "h muet", "sound": "возможны elision/liaison", "examples": "l’homme, les hommes" },
+        { "pattern": "h aspiré", "sound": "стык не связывается", "examples": "le héros, les héros" }
+      ],
+      "examples": [
+        { "text": "hibou", "ipa": "[ibu]", "note": "Начальная h не произносится." },
+        { "text": "l’ami", "ipa": "[lami]", "note": "Апостроф показывает исчезнувшую гласную le/la." },
+        { "text": "j’ai", "ipa": "[ʒe]", "note": "je теряет e перед ai." },
+        { "text": "les amis", "ipa": "[lezami]", "note": "Конечная s артикля даёт [z] на стыке." },
+        { "text": "un ami", "ipa": "[œ̃nami]", "note": "На стыке появляется слышимое [n]." },
+        { "text": "les héros", "ipa": "[le eʁo]", "note": "Перед h aspiré liaison не делается." }
+      ],
+      "practice": [
+        "Сначала прочитай слова по отдельности, затем отметь стык.",
+        "Найди апостроф или потенциальную конечную согласную.",
+        "Прочитай сочетание целиком и проверь по аудио."
+      ],
+      "cards": [
+        { "id": "pron-atom:08:h", "kind": "rule", "prompt": "Как читается h в hibou?", "answer": "Не произносится — hibou", "audioText": "hibou", "explanation": "Карточка проверяет только отсутствие собственного звука у h." },
+        { "id": "pron-atom:08:l-apostrophe", "kind": "flow", "prompt": "Как читается l’ перед гласной в l’ami?", "answer": "[l] соединяется со словом: l’ami [lami]", "audioText": "l’ami", "explanation": "Апостроф показывает выпадение гласной le/la." },
+        { "id": "pron-atom:08:j-apostrophe", "kind": "flow", "prompt": "Как читается j’ перед гласной в j’ai?", "answer": "[ʒ] соединяется со словом: j’ai [ʒe]", "audioText": "j’ai", "explanation": "Написание j’ проверяется отдельно." },
+        { "id": "pron-atom:08:qu-apostrophe", "kind": "flow", "prompt": "Как читается qu’ перед гласной в qu’il?", "answer": "[k] соединяется со словом: qu’il [kil]", "audioText": "qu’il", "explanation": "Написание qu’ проверяется отдельно." },
+        { "id": "pron-atom:08:c-apostrophe", "kind": "flow", "prompt": "Как читается c’ перед гласной в c’est?", "answer": "[s] соединяется со словом: c’est [sɛ]", "audioText": "c’est", "explanation": "Написание c’ проверяется отдельно." },
+        { "id": "pron-atom:08:s-liaison", "kind": "flow", "prompt": "Как читается конечная s на стыке les amis?", "answer": "[z] — les amis [lezami]", "audioText": "les amis", "explanation": "Только liaison с s проверяется на карточке." },
+        { "id": "pron-atom:08:x-liaison", "kind": "flow", "prompt": "Как читается конечная x на стыке deux enfants?", "answer": "[z] — deux enfants [døzɑ̃fɑ̃]", "audioText": "deux enfants", "explanation": "Liaison с x проверяется отдельно от s." },
+        { "id": "pron-atom:08:t-liaison", "kind": "flow", "prompt": "Как читается конечная t на стыке c’est ici?", "answer": "[t] — c’est ici [sɛtisi]", "audioText": "c’est ici", "explanation": "Liaison с t проверяется отдельно." },
+        { "id": "pron-atom:08:d-liaison", "kind": "flow", "prompt": "Как читается конечная d на стыке grand homme?", "answer": "[t] — grand homme", "audioText": "grand homme", "explanation": "Liaison с d даёт [t] и имеет отдельную карточку." },
+        { "id": "pron-atom:08:n-liaison", "kind": "flow", "prompt": "Как читается конечная n на стыке un ami?", "answer": "[n] — un ami [œ̃nami]", "audioText": "un ami", "explanation": "Liaison с n проверяется отдельно." },
+        { "id": "pron-atom:08:h-muet", "kind": "flow", "prompt": "Что разрешает h muet в l’homme?", "answer": "Elision и liaison: l’homme, les hommes", "audioText": "l’homme, les hommes", "explanation": "Сам h не звучит и не блокирует стык." },
+        { "id": "pron-atom:08:h-aspire", "kind": "exception", "prompt": "Что делает h aspiré в les héros?", "answer": "Блокирует elision и liaison: le héros, les héros", "audioText": "le héros, les héros", "explanation": "Сам h не звучит, но стык остаётся раздельным." }
+      ]
+    }
+  ]
+}

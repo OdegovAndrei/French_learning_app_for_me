@@ -1,8 +1,9 @@
 import { getRecord, putRecord } from "./storage.js";
 
 const TTS_STORE = "ttsAudio";
-const MANIFEST_URL = "data/audio/manifest.json";
+const MANIFEST_URL = "data/audio/manifest.json?v=20260713-vocab-edge-1";
 const AUDIO_BASE_URL = "data/audio/";
+const AUDIO_CACHE_VERSION = "2026-07-13-vocab-edge-1";
 
 let manifestPromise = null;
 let currentAudio = null;
@@ -42,7 +43,9 @@ export async function speakFrench(text, { voice, rate }) {
 
   const manifest = await loadManifest();
   if (manifest[key]) {
-    playUrl(`${AUDIO_BASE_URL}${manifest[key]}`);
+    playUrl(`${AUDIO_BASE_URL}${manifest[key]}?v=${AUDIO_CACHE_VERSION}`, {
+      fallback: () => speakFrenchFallback(text, rate, voice)
+    });
     return;
   }
 
@@ -70,15 +73,28 @@ function playBlob(blob) {
   playUrl(URL.createObjectURL(blob), { revokeOnEnd: true });
 }
 
-function playUrl(url, { revokeOnEnd = false } = {}) {
+function playUrl(url, { revokeOnEnd = false, fallback } = {}) {
   if (currentAudio) currentAudio.pause();
   const audio = new Audio(url);
   currentAudio = audio;
+  let fallbackUsed = false;
+  const useFallback = () => {
+    if (fallbackUsed) return;
+    fallbackUsed = true;
+    fallback?.();
+  };
   if (revokeOnEnd) {
     audio.addEventListener("ended", () => URL.revokeObjectURL(url));
-    audio.addEventListener("error", () => URL.revokeObjectURL(url));
   }
-  audio.play().catch((error) => console.warn("[tts] playback failed", error));
+  audio.addEventListener("error", () => {
+    if (revokeOnEnd) URL.revokeObjectURL(url);
+    console.warn("[tts] playback failed; using the browser's French voice");
+    useFallback();
+  });
+  audio.play().catch((error) => {
+    console.warn("[tts] playback failed", error);
+    useFallback();
+  });
 }
 
 export function selectBrowserVoice(voices, requestedVoice) {
@@ -95,13 +111,12 @@ export function speakFrenchFallback(text, rate, requestedVoice = "fr-FR-DeniseNe
   if (!window.speechSynthesis) return;
   const voice = selectBrowserVoice(window.speechSynthesis.getVoices(), requestedVoice);
   if (!voice) {
-    console.warn(`[tts] no matching browser voice for ${requestedVoice}; suppressing a mismatched fallback voice`);
-    return false;
+    console.warn(`[tts] no matching browser voice for ${requestedVoice}; using the browser's French default`);
   }
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(normalizeSpeechText(text));
-  utterance.lang = voice.lang || "fr-FR";
-  utterance.voice = voice;
+  utterance.lang = voice?.lang || "fr-FR";
+  if (voice) utterance.voice = voice;
   utterance.rate = rate;
   window.speechSynthesis.speak(utterance);
   return true;
