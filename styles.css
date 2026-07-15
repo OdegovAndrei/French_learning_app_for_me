@@ -1330,6 +1330,23 @@ audio {
   grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.6fr);
 }
 
+.pronunciation-sound-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.pronunciation-sound-actions .inline-audio {
+  width: auto;
+  height: auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .pronunciation-example-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));

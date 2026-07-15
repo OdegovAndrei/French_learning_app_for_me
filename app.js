@@ -452,6 +452,10 @@ function renderPronunciationLesson(lesson) {
           <div class="paradigm-row pronunciation-spelling-row">
             <span class="paradigm-label">${escapeHtml(entry.pattern)}</span>
             <span class="paradigm-form"><strong>${escapeHtml(entry.sound)}</strong><br>${escapeHtml(entry.examples)}</span>
+            <div class="pronunciation-sound-actions">
+              <button class="inline-audio" type="button" data-speak="${escapeHtml(entry.soundText)}" aria-label="Прослушать звук ${escapeHtml(entry.pattern)}">▶ Звук</button>
+              <button class="inline-audio" type="button" data-speak="${escapeHtml(entry.examples)}" aria-label="Прослушать примеры для ${escapeHtml(entry.pattern)}">▶ Слова</button>
+            </div>
           </div>`).join("")}</div>
       </section>
 
