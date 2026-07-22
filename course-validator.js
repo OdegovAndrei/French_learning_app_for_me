@@ -180,7 +180,7 @@ export function collectCourseValidationErrors(catalog) {
         errors.push(`${exercisePath}.type: unsupported exercise type "${exercise.type}"`);
       }
       validateTextArray(exercise?.acceptedAnswers, `${exercisePath}.acceptedAnswers`, errors);
-      validateTextArray(exercise?.hints, `${exercisePath}.hints`, errors, { nonEmpty: true });
+      validateOptionalHints(exercise?.hints, `${exercisePath}.hints`, errors);
       validateTextArray(exercise?.requiredTokens, `${exercisePath}.requiredTokens`, errors);
       validateRequiredTokenGroups(exercise?.requiredTokenGroups, `${exercisePath}.requiredTokenGroups`, errors);
       if (exercise?.requiresRecording != null && typeof exercise.requiresRecording !== "boolean") {
@@ -431,6 +431,18 @@ function validateTextArray(value, path, errors, { nonEmpty = false, unique = fal
     if (unique && seen.has(item)) errors.push(`${path}[${index}]: duplicate reference "${item}"`);
     seen.add(item);
   });
+}
+
+function validateOptionalHints(value, path, errors) {
+  if (value === undefined) return;
+  if (!Array.isArray(value)) {
+    errors.push(`${path}: expected an array`);
+    return;
+  }
+  if (value.length < 1 || value.length > 3) {
+    errors.push(`${path}: expected from 1 to 3 items`);
+  }
+  validateTextArray(value, path, errors, { unique: true });
 }
 
 function validateStructuredArray(value, path, itemSchema, errors, { nonEmpty = false } = {}) {

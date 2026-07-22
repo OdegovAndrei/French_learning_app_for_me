@@ -42,7 +42,7 @@ http://localhost:5173
 - `pronunciation-course.js` - независимая валидация, построение и фильтрация карточек правил чтения.
 - `srs.js` - локальная обёртка над FSRS.
 - `course-schema.js` и `course-validator.js` - schema/validator курса, стабильных ссылок и roadmap.
-- `exercises.js` - нормализация и проверка ответов.
+- `exercises.js` и `exercise-help.js` - проверка ответов и логика поэтапной помощи в упражнениях.
 - `mastery.js` - правила prerequisites, готовности урока и допуска к завершению.
 - `anki.js` - чистая генерация TSV для Anki.
 - `data/lessons.json` - уроки (starter + практический A1, 40 уроков), грамматика, произношение, словарь, открытые ресурсы и roadmap A2-B2.

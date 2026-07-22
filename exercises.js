@@ -120,7 +120,9 @@ export function checkExercise(exercise, input) {
 
   return {
     status: "incorrect",
-    message: exercise.hints?.[0] || "Пока не совпало. Посмотри подсказку и попробуй ещё раз."
+    message: Array.isArray(exercise.hints) && exercise.hints.length
+      ? "Пока не совпало. Проверь форму: следующий шаг помощи уже открыт."
+      : "Пока не совпало. Проверь форму и попробуй ещё раз."
   };
 }
 

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { buildAnkiTsv } from "../anki.js";
 import { buildCards, buildVocabularyNotes, filterCards, filterCardsByDirection, normalizeCardText } from "../cards.js";
-import { checkExercise } from "../exercises.js";
+import { checkExercise, normalizeAnswer } from "../exercises.js";
 import { collectCourseValidationErrors, validateCourseCatalog } from "../course-validator.js";
 import {
   buildReviewQueue,
@@ -75,11 +75,21 @@ for (const axis of [
 const exercises = data.lessons.flatMap((lesson) => lesson.exercises);
 assert.equal(exercises.length, 124, "40 lessons include 124 exercises with a seven-part checkpoint");
 assert.ok(exercises.length >= data.lessons.length, "Every lesson needs assessable practice");
+assert.ok(
+  exercises.every((exercise) => Array.isArray(exercise.hints) && exercise.hints.length === 3),
+  "The published catalog must provide each exercise with a full three-step help ladder"
+);
+assert.ok(
+  exercises.every((exercise) => exercise.hints.every((hint) => normalizeAnswer(hint) !== normalizeAnswer(exercise.modelAnswer))),
+  "A help step must never reveal the complete model answer"
+);
 for (const exercise of exercises) {
   assert.ok(exercise.id, "Every exercise needs a stable id");
   assert.ok(Array.isArray(exercise.acceptedAnswers));
   assert.ok(exercise.modelAnswer);
-  assert.ok(Array.isArray(exercise.hints) && exercise.hints.length > 0);
+  if (exercise.hints !== undefined) {
+    assert.ok(Array.isArray(exercise.hints) && exercise.hints.length >= 1 && exercise.hints.length <= 3);
+  }
   assert.ok(Array.isArray(exercise.requiredTokens));
   assert.ok(Array.isArray(exercise.objectiveIds) && exercise.objectiveIds.length > 0);
   assert.ok(exercise.explanation);
@@ -413,6 +423,49 @@ exerciseById(unsupportedExerciseType, "l09-e2").type = "telepathy-drill";
 assert.ok(
   collectCourseValidationErrors(unsupportedExerciseType).some((error) => error.includes("unsupported exercise type")),
   "Unsupported exercise types must be rejected"
+);
+
+const exerciseWithoutHints = structuredClone(data);
+delete exerciseById(exerciseWithoutHints, "l09-e2").hints;
+assert.equal(validateCourseCatalog(exerciseWithoutHints), true, "Exercise hints must be optional");
+
+const validThreeHints = structuredClone(data);
+exerciseById(validThreeHints, "l09-e2").hints = ["Первый шаг.", "Второй шаг.", "Третий шаг."];
+assert.equal(validateCourseCatalog(validThreeHints), true, "One to three unique hints must be accepted");
+
+const emptyHints = structuredClone(data);
+exerciseById(emptyHints, "l09-e2").hints = [];
+assert.ok(
+  collectCourseValidationErrors(emptyHints).some((error) => error.includes("hints: expected from 1 to 3 items")),
+  "Present hints must contain at least one item"
+);
+
+const blankHint = structuredClone(data);
+exerciseById(blankHint, "l09-e2").hints = ["   "];
+assert.ok(
+  collectCourseValidationErrors(blankHint).some((error) => error.includes("hints[0]: expected a non-empty string")),
+  "Hints must not contain blank strings"
+);
+
+const duplicateHints = structuredClone(data);
+exerciseById(duplicateHints, "l09-e2").hints = ["Повтори правило.", "Повтори правило."];
+assert.ok(
+  collectCourseValidationErrors(duplicateHints).some((error) => error.includes("hints[1]: duplicate reference")),
+  "Hints must be unique"
+);
+
+const tooManyHints = structuredClone(data);
+exerciseById(tooManyHints, "l09-e2").hints = ["Один.", "Два.", "Три.", "Четыре."];
+assert.ok(
+  collectCourseValidationErrors(tooManyHints).some((error) => error.includes("hints: expected from 1 to 3 items")),
+  "Hints must contain no more than three items"
+);
+
+const nonArrayHints = structuredClone(data);
+exerciseById(nonArrayHints, "l09-e2").hints = "Подсказка";
+assert.ok(
+  collectCourseValidationErrors(nonArrayHints).some((error) => error.includes("hints: expected an array")),
+  "Present hints must be an array"
 );
 
 const missingReadingSource = structuredClone(data);

@@ -113,7 +113,7 @@ export const COURSE_SCHEMA = Object.freeze({
   }),
   exercise: Object.freeze({
     requiredText: Object.freeze(["id", "type", "prompt", "modelAnswer", "explanation"]),
-    requiredArrays: Object.freeze(["acceptedAnswers", "hints", "requiredTokens", "objectiveIds"])
+    requiredArrays: Object.freeze(["acceptedAnswers", "requiredTokens", "objectiveIds"])
   }),
   lessonCard: Object.freeze({
     requiredText: Object.freeze(["id", "front", "back", "type"])

@@ -109,6 +109,7 @@ assert.deepEqual(
 );
 
 const appSource = await readFile(new URL("../app.js", import.meta.url), "utf8");
+const exercisesSource = await readFile(new URL("../exercises.js", import.meta.url), "utf8");
 const storageSource = await readFile(new URL("../storage.js", import.meta.url), "utf8");
 const indexSource = await readFile(new URL("../index.html", import.meta.url), "utf8");
 assert.match(appSource, /function switchView\(view\) \{\s+stopRecording\(\);/);
@@ -153,8 +154,14 @@ assert.match(appSource, /getIntroducedLessonIds\(/);
 assert.match(appSource, /phrases: renderPhrases/);
 assert.match(appSource, /state\.reviewDeck = "phrases"/);
 assert.match(appSource, /isPhrasesDeck \? renderUnlockedPhrasesList\(deckCards\) : renderUnlockedWordsList\(deckCards\)/);
-assert.match(indexSource, /app\.js\?v=20260714-reading-4/);
+assert.match(indexSource, /app\.js\?v=20260722-help-ladder-1/);
 assert.match(appSource, /data-self-review/);
+assert.match(appSource, /from "\.\/exercise-help\.js"/);
+assert.match(appSource, /function renderExerciseHelp\(hints, hintLevel, availableHintCount\)/);
+assert.match(appSource, /attempt\.helpFailures = getNonNegativeInteger\(attempt\.helpFailures\) \+ 1/);
+assert.match(appSource, /Следующий шаг откроется после ещё одной попытки/);
+assert.doesNotMatch(appSource, /exercise\.hints\?\.join\(" "\)/, "help steps must not be concatenated");
+assert.doesNotMatch(exercisesSource, /exercise\.hints\?\.\[0\]/, "wrong-answer feedback must not repeat the first hint");
 assert.match(appSource, /checkCatalogLessonPrerequisites\(state\.data, lesson, state\.appState\.completedLessons\)/);
 assert.match(appSource, /if \(!\(await saveAppState\(\)\)\) \{[\s\S]*?completedLessons = previousCompletedLessons/);
 assert.match(appSource, /levels\.get\(firstModule\?\.levelId \|\| first\.level\)/);

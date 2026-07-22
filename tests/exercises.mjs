@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { checkExercise } from "../exercises.js";
+import {
+  HELP_STEP_LABELS,
+  getAvailableHintCount,
+  getExerciseHintLevel,
+  getExerciseHints,
+  getHintButtonLabel,
+  shouldUnlockNextHint
+} from "../exercise-help.js";
 
 const raw = await readFile(new URL("../data/lessons.json", import.meta.url), "utf8");
 const data = JSON.parse(raw);
@@ -60,5 +68,31 @@ const accentTranslation = {
   hints: ["Accent needed"]
 };
 assert.equal(checkExercise(accentTranslation, "un cafe").status, "almost");
+
+const incorrectWithHelp = checkExercise({ type: "translate", acceptedAnswers: ["bonjour"], hints: ["Шаг 1."] }, "salut");
+assert.match(incorrectWithHelp.message, /следующий шаг помощи уже открыт/);
+const incorrectWithoutHelp = checkExercise({ type: "translate", acceptedAnswers: ["bonjour"] }, "salut");
+assert.match(incorrectWithoutHelp.message, /попробуй ещё раз/);
+
+const helpExercise = { hints: ["Начни с вопроса.", "Проверь форму.", "Каркас: …"] };
+assert.deepEqual(HELP_STEP_LABELS, ["Подход", "Фокус", "Каркас"]);
+assert.deepEqual(getExerciseHints(helpExercise), helpExercise.hints);
+assert.deepEqual(getExerciseHints({ hints: ["", "Фокус."] }), ["Фокус."]);
+assert.deepEqual(getExerciseHints({}), []);
+assert.equal(getExerciseHintLevel({}, 3), 0);
+assert.equal(getAvailableHintCount({}, 3), 1, "The first help step is available before an attempt");
+assert.equal(getExerciseHintLevel({ showHint: true }, 3), 1, "Legacy revealed help stays visible");
+assert.equal(getAvailableHintCount({ helpFailures: 1 }, 3), 2, "First failed attempt unlocks the focus step");
+assert.equal(getAvailableHintCount({ helpFailures: 2 }, 3), 3, "Second failed attempt unlocks the scaffold");
+assert.equal(getAvailableHintCount({ helpFailures: "broken" }, 3), 1, "Malformed persisted counts fall back safely");
+assert.equal(getHintButtonLabel(3, 0, 1), "Помочь начать");
+assert.equal(getHintButtonLabel(3, 1, 2), "Ещё один шаг");
+assert.equal(getHintButtonLabel(3, 2, 2), "Следующий шаг после попытки");
+assert.equal(getHintButtonLabel(3, 3, 3), "Вся помощь открыта");
+assert.equal(shouldUnlockNextHint({ status: "incorrect" }), true);
+assert.equal(shouldUnlockNextHint({ status: "almost" }), true);
+assert.equal(shouldUnlockNextHint({ status: "open", coverageComplete: false }), true);
+assert.equal(shouldUnlockNextHint({ status: "open", coverageComplete: true }), false);
+assert.equal(shouldUnlockNextHint({ status: "empty" }), false);
 
 console.log("Exercise adversarial tests passed.");

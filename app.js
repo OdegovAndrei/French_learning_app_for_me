@@ -15,6 +15,15 @@ import {
   filterPronunciationCards,
   validatePronunciationCourse
 } from "./pronunciation-course.js";
+import {
+  HELP_STEP_LABELS,
+  getAvailableHintCount,
+  getExerciseHintLevel,
+  getExerciseHints,
+  getHintButtonLabel,
+  getNonNegativeInteger,
+  shouldUnlockNextHint
+} from "./exercise-help.js";
 import * as mastery from "./mastery.js";
 import {
   buildReviewQueue,
@@ -115,7 +124,7 @@ init();
 async function init() {
   try {
     const [response, pronunciationResponse] = await Promise.all([
-      fetch("data/lessons.json?v=20260713-vocab-1"),
+      fetch("data/lessons.json?v=20260722-help-ladder-1"),
       fetch("data/pronunciation-course.json?v=20260714-reading-4")
     ]);
     if (!response.ok) throw new Error(`Основной курс: HTTP ${response.status}`);
@@ -1119,7 +1128,11 @@ function renderExercise(lesson, exercise, index) {
   const attempt = state.exerciseAttempts.get(id) || { id, lessonId: lesson.id, answer: "" };
   const result = attempt.result;
   const modelVisible = attempt.showModel;
-  const hintVisible = attempt.showHint;
+  const hints = getExerciseHints(exercise);
+  const hintLevel = getExerciseHintLevel(attempt, hints.length);
+  const availableHintCount = getAvailableHintCount(attempt, hints.length);
+  const canRevealHint = hintLevel < availableHintCount;
+  const hintButtonLabel = getHintButtonLabel(hints.length, hintLevel, availableHintCount);
   const canSelfReview = isSelfReviewExercise(exercise)
     && modelVisible
     && result?.needsReview === true
@@ -1133,15 +1146,27 @@ function renderExercise(lesson, exercise, index) {
       <textarea placeholder="${escapeHtml(exercisePlaceholder(exercise))}">${escapeHtml(attempt.answer || "")}</textarea>
       <div class="control-row">
         <button class="primary-button compact-button" type="button" data-check-exercise>Проверить</button>
-        <button class="pill-button" type="button" data-show-hint>Подсказка</button>
+        ${hints.length ? `<button class="pill-button" type="button" data-show-hint ${canRevealHint ? "" : "disabled"}>${escapeHtml(hintButtonLabel)}</button>` : ""}
         <button class="pill-button" type="button" data-show-model>Показать пример</button>
       </div>
       ${result ? `<div class="exercise-feedback ${escapeHtml(result.status)}">${escapeHtml(result.message)}${result.missing?.length ? `<br><strong>Добавь:</strong> ${result.missing.map(escapeHtml).join(", ")}` : ""}</div>` : ""}
-      ${hintVisible ? `<div class="exercise-help"><strong>Подсказка:</strong> ${escapeHtml(exercise.hints?.join(" ") || "Вернись к диалогу и найди нужную конструкцию.")}</div>` : ""}
+      ${renderExerciseHelp(hints, hintLevel, availableHintCount)}
       ${modelVisible ? `<div class="model-answer"><strong>Возможный ответ</strong><p>${nl2br(exercise.modelAnswer || exercise.acceptedAnswers?.[0] || "Ответ зависит от твоей ситуации.")}</p>${exercise.explanation ? `<span>${escapeHtml(exercise.explanation)}</span>` : ""}</div>` : ""}
       ${isRecordingRequired(exercise) ? `<div class="exercise-recording">${renderVoiceLab(exercise.modelAnswer, `exercise:${lesson.id}:${id}`, { lessonId: lesson.id, exerciseId: id, minimumSeconds: exercise.minimumRecordingSeconds || 5 })}</div>` : ""}
       ${canSelfReview ? `<button class="secondary-button self-review-button" type="button" data-self-review ${attempt.selfReviewed ? "disabled" : ""}>${attempt.selfReviewed ? "Сравнение подтверждено" : "Я сравнил и исправил"}</button>` : ""}
     </div>`;
+}
+
+function renderExerciseHelp(hints, hintLevel, availableHintCount) {
+  if (!hintLevel) return "";
+  const nextStepLocked = hintLevel < hints.length && hintLevel >= availableHintCount;
+  return `<div class="exercise-help" aria-live="polite">
+    <strong>Помощь по шагам</strong>
+    <ol class="exercise-help-steps">
+      ${hints.slice(0, hintLevel).map((hint, index) => `<li><span class="exercise-help-label">${escapeHtml(HELP_STEP_LABELS[index] || `Шаг ${index + 1}`)}</span>${escapeHtml(hint)}</li>`).join("")}
+    </ol>
+    ${nextStepLocked ? `<p class="exercise-help-next">Следующий шаг откроется после ещё одной попытки.</p>` : ""}
+  </div>`;
 }
 
 function renderExerciseSupport(exercise, modelVisible) {
@@ -1227,15 +1252,28 @@ function bindExercise(box, lesson) {
     const attempt = getExerciseAttempt(id, lesson.id);
     attempt.answer = textarea.value;
     attempt.result = checkExercise(exercise, textarea.value);
+    if (shouldUnlockNextHint(attempt.result)) {
+      attempt.helpFailures = getNonNegativeInteger(attempt.helpFailures) + 1;
+      const hints = getExerciseHints(exercise);
+      attempt.hintLevel = Math.max(
+        getExerciseHintLevel(attempt, hints.length),
+        getAvailableHintCount(attempt, hints.length)
+      );
+    }
     attempt.selfReviewed = false;
     attempt.checkedAt = new Date().toISOString();
     state.exerciseAttempts.set(id, attempt);
     await putRecord("exercises", attempt);
     preserveScrollAndRender();
   });
-  box.querySelector("[data-show-hint]").addEventListener("click", async () => {
+  box.querySelector("[data-show-hint]")?.addEventListener("click", async () => {
     const attempt = getExerciseAttempt(id, lesson.id);
-    attempt.showHint = true;
+    const hints = getExerciseHints(exercise);
+    attempt.hintLevel = Math.min(
+      hints.length,
+      getExerciseHintLevel(attempt, hints.length) + 1
+    );
+    delete attempt.showHint;
     state.exerciseAttempts.set(id, attempt);
     await putRecord("exercises", attempt);
     preserveScrollAndRender();

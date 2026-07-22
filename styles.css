@@ -1135,6 +1135,34 @@ audio {
 .exercise-help { background: var(--amber-soft); }
 .exercise-feedback.incorrect { background: var(--rose-soft); }
 
+.exercise-help {
+  border: 1px solid var(--amber);
+}
+
+.exercise-help-steps {
+  margin: 8px 0 0;
+  padding-left: 23px;
+}
+
+.exercise-help-steps li + li {
+  margin-top: 7px;
+}
+
+.exercise-help-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.exercise-help-next {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .model-answer {
   border: 1px solid var(--blue);
   background: var(--blue-soft);
