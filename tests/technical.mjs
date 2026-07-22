@@ -15,6 +15,7 @@ import {
   evaluateLessonReadiness,
   getCompletedLessonIds
 } from "../mastery.js";
+import { createRecordingRuntime } from "../recording-runtime.js";
 
 assert.deepEqual(CACHE_STORE_NAMES, ["ttsAudio"], "ttsAudio is the only cache-only store");
 assert.ok(!STORE_NAMES.includes("ttsAudio"), "ttsAudio must never be part of the backup contract");
@@ -200,11 +201,12 @@ assert.match(appSource, /checkCatalogLessonPrerequisites\(state\.data, lesson, s
 assert.match(appSource, /if \(!\(await saveAppState\(\)\)\) \{[\s\S]*?completedLessons = previousCompletedLessons/);
 assert.match(appSource, /levels\.get\(firstModule\?\.levelId \|\| first\.level\)/);
 assert.match(appSource, /blob\.size > MAX_BACKUP_FILE_BYTES/);
-assert.match(appSource, /Старый прогресс/);
+assert.match(appSource, /Итоговые задания/);
+assert.doesNotMatch(appSource, /Старый прогресс/, "migrated lessons must not be presented as a second progress model");
 assert.match(appSource, /state\.data\.resources\.map/);
 assert.match(appSource, /objective\?\.canDo \|\| objective\?\.cefrCanDo/);
 assert.match(appSource, /module\.level \|\| module\.levelId/);
-assert.match(appSource, /function transcribeRecording\(key, target, output, button\)/);
+assert.match(appSource, /function transcribeRecording\(key, target, targetAvailable, output, button\)/);
 assert.match(appSource, /fetch\("\/stt", \{/);
 assert.doesNotMatch(appSource, /webkitSpeechRecognition/);
 assert.match(appSource, /await initializeFileStorage\(\);[\s\S]*?migrateLegacyProgress/);
@@ -236,7 +238,23 @@ assert.match(a2Source, /buildCumulativeReviewQueue/, "A2 combines due A1\/A2 car
 assert.match(a2Source, /newCards: a2Cards/, "new review cards must come only from A2");
 assert.match(a2Source, /createRecordingRuntime/, "the first A2 block includes local oral recording");
 assert.match(recordingRuntimeSource, /fetch\("\/stt", \{/, "the shared recording runtime keeps local STT");
+const recordingRuntime = createRecordingRuntime({ storage: {}, speak: () => {}, getExerciseAttempt: () => ({}) });
+const hiddenTargetLab = recordingRuntime.renderVoiceLab("Réponse modèle", "exercise:test", { showTarget: false, targetAvailable: false });
+assert.doesNotMatch(hiddenTargetLab, />Réponse modèle</, "an oral model answer stays hidden before the learner reveals it");
+assert.doesNotMatch(hiddenTargetLab, /data-speak/, "the hidden oral model cannot be played before it is revealed");
+const visibleTargetLab = recordingRuntime.renderVoiceLab("Réponse modèle", "lesson:test");
+assert.match(visibleTargetLab, />Réponse modèle</, "standalone pronunciation targets stay visible by default");
+assert.match(a2Source, /showTarget: false,[\s\S]*?targetAvailable: attempt\.showModel === true/, "A2 oral exercises reveal playback with the model answer without duplicating its text");
+assert.match(a2Source, /scheduleSettingsSave\(\{ learnerName: name \}\)/, "A2 saves profile edits while the learner types");
+assert.match(a2Source, /scheduleSettingsSave\(\{ newCardsPerDay: value \}\)/, "A2 saves a valid review limit while the learner types");
 assert.match(a2Source, /обычный урок в едином учебном прогрессе/, "A2 progress follows the responsible-learner premise");
+assert.doesNotMatch(appSource, /if \(!prerequisites\.met \|\| !readiness\.canComplete\)/, "A1 completion must trust the learner instead of gating the lesson");
+assert.doesNotMatch(a2Source, /if \(!getLessonPrerequisites\(lesson\)\.met \|\| !readiness\.canComplete\)/, "A2 completion must trust the learner instead of gating the lesson");
+assert.match(appSource, /const disabled = isDone;/, "A1 completion is disabled only after the lesson is marked done");
+assert.match(a2Source, /button\.disabled = done;/, "A2 completion is disabled only after the lesson is marked done");
+assert.doesNotMatch(appSource, /data-pronunciation-lesson="\$\{escapeHtml\(lesson\.id\)\}" \$\{prerequisites\.met \? "" : "disabled"\}/, "reading lessons remain open in any order");
+assert.match(appSource, /Checkpoint l38 — обычный итоговый урок курса/, "A1 checkpoint stays part of one learning progress model");
+assert.match(appSource, /showTarget: false,[\s\S]*?targetAvailable: modelVisible === true/, "A1 oral exercises keep their model and playback hidden until the example is shown");
 assert.match(storageSource, /return levelId === LEGACY_A1_LEVEL \? key : `\$\{levelId\}:\$\{key\}`;/, "storage namespacing must not hard-code A2");
 
 console.log("Technical regression tests passed: file storage, shared runtime, cumulative review, recording, mastery, resources, save flush.");

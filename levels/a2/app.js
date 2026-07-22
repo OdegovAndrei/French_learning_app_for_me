@@ -80,7 +80,8 @@ const state = {
   reviewSeen: new Set(),
   reviewAnswerVisible: false,
   reviewSaving: false,
-  saveTimers: new Map()
+  saveTimers: new Map(),
+  settingsSavePending: false
 };
 
 const saveIndicator = createSaveIndicator({ getStoragePath: () => state.storage.path });
@@ -251,7 +252,7 @@ function renderLessons() {
   document.querySelectorAll("[data-lesson-id]").forEach((button) => {
     button.addEventListener("click", () => {
       const lesson = getLesson(button.dataset.lessonId);
-      if (!lesson || !getLessonPrerequisites(lesson).met) return;
+      if (!lesson) return;
       state.currentLessonId = lesson.id;
       state.appState.currentLessonId = lesson.id;
       void saveA2State();
@@ -473,9 +474,13 @@ function renderExercise(lesson, exercise) {
     ${renderExerciseHelp(hints, hintLevel, availableHintCount)}
     ${attempt.showModel ? `<div class="model-answer"><strong>Возможный ответ</strong><p>${nl2br(exercise.modelAnswer)}</p><span>${escapeHtml(exercise.explanation)}</span></div>` : ""}
     ${isRecordingRequired(exercise) ? `<div class="exercise-recording">${recordingRuntime.renderVoiceLab(exercise.modelAnswer, `exercise:${lesson.id}:${exercise.id}`, {
-      lessonId: lesson.id, exerciseId: exercise.id, minimumSeconds: exercise.minimumRecordingSeconds || 5
+      lessonId: lesson.id,
+      exerciseId: exercise.id,
+      minimumSeconds: exercise.minimumRecordingSeconds || 5,
+      showTarget: false,
+      targetAvailable: attempt.showModel === true
     })}</div>` : ""}
-    ${canSelfReview ? `<button class="secondary-button self-review-button" type="button" data-self-review ${attempt.selfReviewed ? "disabled" : ""}>${attempt.selfReviewed ? "Сравнение подтверждено" : "Я сравнил и исправил"}</button>` : ""}
+    ${canSelfReview ? `<button class="secondary-button self-review-button" type="button" data-self-review ${attempt.selfReviewed ? "disabled" : ""}>${attempt.selfReviewed ? "Сравнение выполнено" : "Я сравнил и исправил"}</button>` : ""}
   </div>`;
 }
 
@@ -677,11 +682,7 @@ function ratingButton(score, label, interval) {
 
 async function markLessonComplete(lessonId) {
   const lesson = getLesson(lessonId);
-  const readiness = mastery.evaluateLessonReadiness(lesson, state.exerciseAttempts, state.recordings);
-  if (!getLessonPrerequisites(lesson).met || !readiness.canComplete) {
-    updateVisibleLessonCompletion(lessonId);
-    return;
-  }
+  if (!lesson) return;
   if (!state.appState.completedLessons.includes(lessonId)) state.appState.completedLessons.push(lessonId);
   state.currentLessonId = getNextLesson()?.id || null;
   state.appState.currentLessonId = state.currentLessonId;
@@ -709,12 +710,16 @@ function updateLessonCompletionUI(scope, lesson) {
   const done = state.appState.completedLessons.includes(lesson.id);
   const prerequisites = getLessonPrerequisites(lesson);
   const readiness = mastery.evaluateLessonReadiness(lesson, state.exerciseAttempts, state.recordings);
-  button.disabled = done || !prerequisites.met || !readiness.canComplete;
+  button.disabled = done;
   button.textContent = done ? "Урок пройден" : "Отметить урок пройденным";
   if (done) status.textContent = "Урок отмечен пройденным; его карточки включены в повторение.";
-  else if (!prerequisites.met) status.textContent = prerequisiteMessage(prerequisites);
-  else if (readiness.needsReview) status.textContent = `${readiness.mastered}/${readiness.total} готово. Сравни открытые ответы с моделью и подтверди исправления.`;
-  else status.textContent = `${readiness.mastered}/${readiness.total} обязательных заданий готово.`;
+  else {
+    const orderNote = prerequisites.met ? "" : `${prerequisiteMessage(prerequisites)} `;
+    const practiceNote = readiness.needsReview
+      ? `${readiness.mastered}/${readiness.total} заданий готово. Сравни открытые ответы с моделью и исправь их.`
+      : `${readiness.mastered}/${readiness.total} заданий готово.`;
+    status.textContent = `${orderNote}${practiceNote}`;
+  }
 }
 
 function updateVisibleLessonCompletion(lessonId) {
@@ -724,17 +729,17 @@ function updateVisibleLessonCompletion(lessonId) {
 
 function getCurrentLesson() {
   const current = getLesson(state.currentLessonId);
-  if (current && !state.appState.completedLessons.includes(current.id) && getLessonPrerequisites(current).met) return current;
+  if (current && !state.appState.completedLessons.includes(current.id)) return current;
   return getNextLesson();
 }
 
 function getNextLesson() {
-  return state.data.lessons.find((lesson) => !state.appState.completedLessons.includes(lesson.id) && getLessonPrerequisites(lesson).met);
+  return state.data.lessons.find((lesson) => !state.appState.completedLessons.includes(lesson.id));
 }
 
 function chooseCurrentLessonId() {
   const saved = getLesson(state.appState.currentLessonId);
-  if (saved && !state.appState.completedLessons.includes(saved.id) && getLessonPrerequisites(saved).met) return saved.id;
+  if (saved && !state.appState.completedLessons.includes(saved.id)) return saved.id;
   return getNextLesson()?.id || null;
 }
 
@@ -748,7 +753,7 @@ function getLessonPrerequisites(lesson) {
 
 function prerequisiteMessage(prerequisites) {
   const titles = prerequisites.missing.map((id) => getLesson(id)?.title || id);
-  return `Сначала заверши: ${titles.join(", ")}.`;
+  return `Рекомендуемый порядок: сначала ${titles.join(", ")}.`;
 }
 
 function getExerciseAttempt(id, lessonId) {
@@ -801,7 +806,10 @@ async function saveAttempt(attempt) {
 
 async function flushPendingSaves() {
   const attempts = [...state.saveTimers.keys()].map((id) => state.exerciseAttempts.get(id)).filter(Boolean);
-  await Promise.all(attempts.map(saveAttempt));
+  await Promise.all([
+    ...attempts.map(saveAttempt),
+    state.settingsSavePending ? flushSettingsSave() : Promise.resolve(true)
+  ]);
 }
 
 async function saveA2State() {
@@ -833,16 +841,26 @@ function bindSettingsActions() {
   const voiceSelect = document.querySelector("#voice-select");
   const rate = document.querySelector("#voice-rate");
   const newCards = document.querySelector("#new-cards-per-day");
-  learnerName.addEventListener("input", () => window.dispatchEvent(new CustomEvent("french-study:learner-name", { detail: normalizeLearnerName(learnerName.value) })));
+  learnerName.addEventListener("input", () => {
+    const name = normalizeLearnerName(learnerName.value);
+    window.dispatchEvent(new CustomEvent("french-study:learner-name", { detail: name }));
+    scheduleSettingsSave({ learnerName: name });
+  });
   learnerName.addEventListener("change", () => {
     const name = normalizeLearnerName(learnerName.value);
     learnerName.value = name;
-    void saveSettings({ learnerName: name });
+    void flushSettingsSave();
   });
   voiceSelect.addEventListener("change", () => void saveSettings({ voiceURI: voiceSelect.value }));
   rate.addEventListener("input", () => {
     document.querySelector("#voice-rate-output").textContent = Number(rate.value).toFixed(2);
     void saveSettings({ voiceRate: Number(rate.value) });
+  });
+  newCards.addEventListener("input", () => {
+    const value = Number(newCards.value);
+    if (newCards.value.trim() && Number.isInteger(value) && value >= 0 && value <= 1000) {
+      scheduleSettingsSave({ newCardsPerDay: value });
+    }
   });
   newCards.addEventListener("change", () => void saveNewCardsLimit(newCards));
   document.querySelector("#test-voice").addEventListener("click", () => speakFrench("Ce week-end, j'ai visité le marché et j'ai retrouvé des amis."));
@@ -861,6 +879,9 @@ function bindSettingsActions() {
 }
 
 async function saveSettings(patch) {
+  window.clearTimeout(state.saveTimers.get("settings"));
+  state.saveTimers.delete("settings");
+  state.settingsSavePending = false;
   state.settings = { ...state.settings, ...patch };
   saveIndicator.saving();
   try {
@@ -869,6 +890,19 @@ async function saveSettings(patch) {
   } catch (error) {
     saveIndicator.failed(error);
   }
+}
+
+function scheduleSettingsSave(patch) {
+  state.settings = { ...state.settings, ...patch };
+  state.settingsSavePending = true;
+  saveIndicator.saving();
+  window.clearTimeout(state.saveTimers.get("settings"));
+  state.saveTimers.set("settings", window.setTimeout(() => void flushSettingsSave(), 250));
+}
+
+function flushSettingsSave() {
+  if (!state.settingsSavePending) return Promise.resolve(true);
+  return saveSettings({});
 }
 
 async function saveNewCardsLimit(input) {

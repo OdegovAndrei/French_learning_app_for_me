@@ -17,13 +17,16 @@ export function createRecordingRuntime({
   const audioUrls = new Set();
 
   function renderVoiceLab(target, key, options = {}) {
+    const showTarget = options.showTarget !== false;
+    const targetAvailable = options.targetAvailable !== false;
     return `<div class="voice-lab-box" data-target="${escapeHtml(target)}" data-key="${escapeHtml(key)}"
+      data-target-available="${targetAvailable}"
       ${options.lessonId ? `data-lesson-id="${escapeHtml(options.lessonId)}"` : ""}
       ${options.exerciseId ? `data-exercise-id="${escapeHtml(options.exerciseId)}"` : ""}
       ${options.minimumSeconds ? `data-minimum-seconds="${escapeHtml(options.minimumSeconds)}"` : ""}>
-      <p class="target-phrase">${escapeHtml(target)}</p>
+      ${showTarget ? `<p class="target-phrase">${escapeHtml(target)}</p>` : ""}
       <div class="control-row">
-        <button class="secondary-button compact-button" type="button" data-speak>▶ Прослушать</button>
+        ${targetAvailable ? `<button class="secondary-button compact-button" type="button" data-speak>▶ Прослушать</button>` : ""}
         <button class="primary-button compact-button" type="button" data-record-start>Записать</button>
         <button class="secondary-button compact-button" type="button" data-record-stop disabled>Стоп</button>
         <button class="pill-button" type="button" data-transcribe>Распознать запись</button>
@@ -38,11 +41,12 @@ export function createRecordingRuntime({
     scope.querySelectorAll(".voice-lab-box").forEach((box) => {
       const target = box.dataset.target;
       const key = box.dataset.key;
+      const targetAvailable = box.dataset.targetAvailable !== "false";
       const startButton = box.querySelector("[data-record-start]");
       const stopButton = box.querySelector("[data-record-stop]");
       const status = box.querySelector(".recording-status");
       const audio = box.querySelector("audio");
-      box.querySelector("[data-speak]").addEventListener("click", () => speak(target));
+      box.querySelector("[data-speak]")?.addEventListener("click", () => speak(target));
       const lessonId = box.dataset.lessonId || null;
       const exerciseId = box.dataset.exerciseId || null;
       const minimumSeconds = Number(box.dataset.minimumSeconds || 0);
@@ -54,6 +58,7 @@ export function createRecordingRuntime({
       transcribeButton.addEventListener("click", () => transcribeRecording(
         key,
         target,
+        targetAvailable,
         box.querySelector(".transcript-output"),
         transcribeButton
       ));
@@ -172,7 +177,7 @@ export function createRecordingRuntime({
     audio.hidden = false;
   }
 
-  async function transcribeRecording(key, target, output, button) {
+  async function transcribeRecording(key, target, targetAvailable, output, button) {
     const recording = await storage.getRecord("recordings", key);
     if (!recording?.blob) {
       output.textContent = "Сначала запиши и сохрани свою фразу.";
@@ -190,7 +195,7 @@ export function createRecordingRuntime({
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || `Локальный STT вернул HTTP ${response.status}.`);
       if (!result.transcript?.trim()) throw new Error("В записи не удалось распознать речь.");
-      output.innerHTML = `<strong>Распознано:</strong> ${escapeHtml(result.transcript)}<br><span class="note">Цель: ${escapeHtml(target)}</span>`;
+      output.innerHTML = `<strong>Распознано:</strong> ${escapeHtml(result.transcript)}${targetAvailable ? `<br><span class="note">Цель: ${escapeHtml(target)}</span>` : ""}`;
     } catch (error) {
       const message = error instanceof TypeError
         ? "Локальный STT-сервер недоступен. Перезапусти приложение командой python3 server.py."

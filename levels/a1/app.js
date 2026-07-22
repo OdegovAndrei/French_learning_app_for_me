@@ -227,7 +227,6 @@ async function init() {
     state.currentLessonId =
       (savedLesson
         && !state.appState.completedLessons.includes(savedLesson.id)
-        && getLessonPrerequisites(savedLesson).met
         ? savedLesson.id
         : null)
       || getNextLesson()?.id
@@ -239,7 +238,6 @@ async function init() {
     state.pronunciationLessonId =
       (savedPronunciationLesson
         && !state.pronunciationState.completedLessons.includes(savedPronunciationLesson.id)
-        && getPronunciationPrerequisites(savedPronunciationLesson).met
         ? savedPronunciationLesson.id
         : null)
       || getNextPronunciationLesson()?.id
@@ -290,7 +288,6 @@ function renderToday() {
   const current = state.data.lessons.find((lesson) => lesson.id === state.currentLessonId);
   const lesson = current
     && !state.appState.completedLessons.includes(current.id)
-    && getLessonPrerequisites(current).met
     ? current
     : getNextLesson() || current || state.data.lessons[0];
   if (state.currentLessonId !== lesson.id) setCurrentLesson(lesson.id);
@@ -680,11 +677,11 @@ function renderPronunciationLessonTile(lesson, completed) {
   const selected = state.pronunciationLessonId === lesson.id;
   return `
     <button class="lesson-tile pronunciation-lesson-tile ${done ? "completed" : ""} ${selected ? "selected" : ""}" type="button"
-      data-pronunciation-lesson="${escapeHtml(lesson.id)}" ${prerequisites.met ? "" : "disabled"}>
+      data-pronunciation-lesson="${escapeHtml(lesson.id)}">
       <span class="tag ${done ? "rose" : ""}">${done ? "готово" : `урок ${lesson.order}`}</span>
       <strong>${escapeHtml(lesson.title)}</strong>
       <span class="fr">${escapeHtml(lesson.target)}</span>
-      <span class="note">${prerequisites.met ? escapeHtml(lesson.goal) : `Сначала: ${escapeHtml(prerequisites.missing.join(", "))}`}</span>
+      <span class="note">${escapeHtml(lesson.goal)}${prerequisites.met ? "" : ` Рекомендуемый порядок: сначала ${escapeHtml(prerequisites.missing.join(", "))}.`}</span>
     </button>`;
 }
 
@@ -1240,7 +1237,6 @@ function renderUnlockedPhrasesList(cards, existingRows = null) {
 
 function renderProgress() {
   const completed = state.appState.completedLessons.length;
-  const legacyCompleted = state.appState.legacyCompletedLessons.length;
   const cards = getAllCards();
   const activeCards = getActiveCards();
   const cardIds = new Set(cards.map((card) => card.id));
@@ -1262,11 +1258,11 @@ function renderProgress() {
     skill: objective.skill,
     state: exitStates.get(objective.id) || "incomplete"
   }));
-  const exitReady = Boolean(checkpointReadiness?.canComplete && exitAxes.length === 7 && exitAxes.every((item) => item.state === "mastered"));
+  const practicedExitAxes = exitAxes.filter((item) => item.state === "mastered").length;
   app.innerHTML = `
     <div class="metrics-grid">
       ${renderMetric("Пройдено уроков", `${completed}/${state.data.lessons.length}`, "Разговорные сценарии")}
-      ${renderMetric("Старый прогресс", legacyCompleted, "Сохранён; уроки нужно подтвердить по новой модели")}
+      ${renderMetric("Итоговые задания", `${practicedExitAxes}/${exitAxes.length || 7}`, "Обычная часть учебного прогресса")}
       ${renderMetric("Карточки", cards.length, `${reviewed} уже изучались`)}
       ${renderMetric("Нужно повторить", due, "По расписанию FSRS")}
       ${renderMetric("Свои слова", state.customNotes.length, "Хранятся только на этом устройстве")}
@@ -1274,9 +1270,9 @@ function renderProgress() {
       ${renderMetric("Звуки FSRS", duePronunciation, `${reviewedPronunciation} карточек уже изучались`)}
     </div>
     <section class="section-band with-top-gap">
-      <div class="section-heading"><div><p class="eyebrow">Практический A1</p><h4>A1 exit evidence: ${exitReady ? "готово" : "ещё не готово"}</h4></div></div>
-      <p class="note">Checkpoint l38 подтверждает все семь навыков; карточки к повторению (${due}) рекомендуются, но не блокируют путь.</p>
-      <div class="skill-evidence-grid">${exitAxes.map((item) => `<div class="skill-evidence ${escapeHtml(item.state)}"><strong>${escapeHtml(item.skill)}</strong><span>${item.state === "mastered" ? "подтверждено" : "нужно checkpoint-задание"}</span></div>`).join("")}</div>
+      <div class="section-heading"><div><p class="eyebrow">Практический A1</p><h4>Итоговый урок: ${practicedExitAxes}/${exitAxes.length || 7} заданий</h4></div></div>
+      <p class="note">Checkpoint l38 — обычный итоговый урок курса. Карточки к повторению (${due}) не блокируют путь.</p>
+      <div class="skill-evidence-grid">${exitAxes.map((item) => `<div class="skill-evidence ${escapeHtml(item.state)}"><strong>${escapeHtml(item.skill)}</strong><span>${item.state === "mastered" ? "выполнено" : "можно выполнить"}</span></div>`).join("")}</div>
     </section>
     <section class="section-band with-top-gap">
       <div class="section-heading"><div><p class="eyebrow">История</p><h4>Последние повторения</h4></div></div>
@@ -1434,8 +1430,14 @@ function renderExercise(lesson, exercise, index) {
       ${result ? `<div class="exercise-feedback ${escapeHtml(result.status)}">${escapeHtml(result.message)}${result.missing?.length ? `<br><strong>Добавь:</strong> ${result.missing.map(escapeHtml).join(", ")}` : ""}</div>` : ""}
       ${renderExerciseHelp(hints, hintLevel, availableHintCount)}
       ${modelVisible ? `<div class="model-answer"><strong>Возможный ответ</strong><p>${nl2br(exercise.modelAnswer || exercise.acceptedAnswers?.[0] || "Ответ зависит от твоей ситуации.")}</p>${exercise.explanation ? `<span>${escapeHtml(exercise.explanation)}</span>` : ""}</div>` : ""}
-      ${isRecordingRequired(exercise) ? `<div class="exercise-recording">${renderVoiceLab(exercise.modelAnswer, `exercise:${lesson.id}:${id}`, { lessonId: lesson.id, exerciseId: id, minimumSeconds: exercise.minimumRecordingSeconds || 5 })}</div>` : ""}
-      ${canSelfReview ? `<button class="secondary-button self-review-button" type="button" data-self-review ${attempt.selfReviewed ? "disabled" : ""}>${attempt.selfReviewed ? "Сравнение подтверждено" : "Я сравнил и исправил"}</button>` : ""}
+      ${isRecordingRequired(exercise) ? `<div class="exercise-recording">${renderVoiceLab(exercise.modelAnswer, `exercise:${lesson.id}:${id}`, {
+        lessonId: lesson.id,
+        exerciseId: id,
+        minimumSeconds: exercise.minimumRecordingSeconds || 5,
+        showTarget: false,
+        targetAvailable: modelVisible === true
+      })}</div>` : ""}
+      ${canSelfReview ? `<button class="secondary-button self-review-button" type="button" data-self-review ${attempt.selfReviewed ? "disabled" : ""}>${attempt.selfReviewed ? "Сравнение выполнено" : "Я сравнил и исправил"}</button>` : ""}
     </div>`;
 }
 
@@ -1907,11 +1909,12 @@ function bindVoiceLabs(scope = document) {
   scope.querySelectorAll(".voice-lab-box").forEach((box) => {
     const target = box.dataset.target;
     const key = box.dataset.key;
+    const targetAvailable = box.dataset.targetAvailable !== "false";
     const startButton = box.querySelector("[data-record-start]");
     const stopButton = box.querySelector("[data-record-stop]");
     const status = box.querySelector(".recording-status");
     const audio = box.querySelector("audio");
-    box.querySelector("[data-speak]").addEventListener("click", () => speakFrench(target));
+    box.querySelector("[data-speak]")?.addEventListener("click", () => speakFrench(target));
     const lessonId = box.dataset.lessonId || null;
     const exerciseId = box.dataset.exerciseId || null;
     const minimumSeconds = Number(box.dataset.minimumSeconds || 0);
@@ -1921,6 +1924,7 @@ function bindVoiceLabs(scope = document) {
     transcribeButton.addEventListener("click", () => transcribeRecording(
       key,
       target,
+      targetAvailable,
       box.querySelector(".transcript-output"),
       transcribeButton
     ));
@@ -2061,7 +2065,7 @@ function setAudioSource(audio, blob) {
   audio.hidden = false;
 }
 
-async function transcribeRecording(key, target, output, button) {
+async function transcribeRecording(key, target, targetAvailable, output, button) {
   const recording = await getRecord("recordings", key);
   if (!recording?.blob) {
     output.textContent = "Сначала запиши и сохрани свою фразу, затем распознай эту запись.";
@@ -2080,7 +2084,7 @@ async function transcribeRecording(key, target, output, button) {
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || `Локальный STT вернул HTTP ${response.status}.`);
     if (!result.transcript?.trim()) throw new Error("В записи не удалось распознать речь.");
-    output.innerHTML = `<strong>Распознано:</strong> ${escapeHtml(result.transcript)}<br><span class="note">Цель: ${escapeHtml(target)}</span>`;
+    output.innerHTML = `<strong>Распознано:</strong> ${escapeHtml(result.transcript)}${targetAvailable ? `<br><span class="note">Цель: ${escapeHtml(target)}</span>` : ""}`;
   } catch (error) {
     const message = error instanceof TypeError
       ? "Локальный STT-сервер недоступен. Перезапусти приложение командой python3 server.py."
@@ -2239,10 +2243,12 @@ function renderGrammarForLesson(lesson) {
 
 function renderVoiceLab(target, key, options = {}) {
   const minimumSeconds = Number(options.minimumSeconds || 0);
+  const showTarget = options.showTarget !== false;
+  const targetAvailable = options.targetAvailable !== false;
   return `
-    <div class="voice-lab-box" data-key="${escapeHtml(key)}" data-target="${escapeHtml(target)}"${options.lessonId ? ` data-lesson-id="${escapeHtml(options.lessonId)}"` : ""}${options.exerciseId ? ` data-exercise-id="${escapeHtml(options.exerciseId)}"` : ""}${minimumSeconds ? ` data-minimum-seconds="${minimumSeconds}"` : ""}>
-      <div class="target-phrase"><span class="tag rose">voice</span><strong>${escapeHtml(target)}</strong><span class="note">Прослушай выбранный голос, затем запиши себя.${minimumSeconds ? ` Не менее ${minimumSeconds} сек.` : ""}</span></div>
-      <div class="control-row"><button class="pill-button" type="button" data-speak>Эталон</button><button class="pill-button" type="button" data-record-start>Записать</button><button class="pill-button" type="button" data-record-stop disabled>Стоп</button><button class="pill-button" type="button" data-transcribe>Распознать запись</button><span class="recording-status">Готово к записи</span></div>
+    <div class="voice-lab-box" data-key="${escapeHtml(key)}" data-target="${escapeHtml(target)}" data-target-available="${targetAvailable}"${options.lessonId ? ` data-lesson-id="${escapeHtml(options.lessonId)}"` : ""}${options.exerciseId ? ` data-exercise-id="${escapeHtml(options.exerciseId)}"` : ""}${minimumSeconds ? ` data-minimum-seconds="${minimumSeconds}"` : ""}>
+      ${showTarget ? `<div class="target-phrase"><span class="tag rose">voice</span><strong>${escapeHtml(target)}</strong><span class="note">Прослушай выбранный голос, затем запиши себя.${minimumSeconds ? ` Не менее ${minimumSeconds} сек.` : ""}</span></div>` : ""}
+      <div class="control-row">${targetAvailable ? `<button class="pill-button" type="button" data-speak>Эталон</button>` : ""}<button class="pill-button" type="button" data-record-start>Записать</button><button class="pill-button" type="button" data-record-stop disabled>Стоп</button><button class="pill-button" type="button" data-transcribe>Распознать запись</button><span class="recording-status">Готово к записи</span></div>
       <audio controls hidden></audio>
       <p class="note transcript-output">STT работает по сохранённой записи через локальный Whisper; подключение к сервису распознавания не нужно.</p>
     </div>`;
@@ -2376,7 +2382,7 @@ function buildLessonGroups() {
 
 function prerequisiteMessage(prerequisites) {
   const titles = prerequisites.missing.map((id) => state.data.lessons.find((lesson) => lesson.id === id)?.title || id);
-  return `Сначала заверши: ${titles.join(", ")}.`;
+  return `Рекомендуемый порядок: сначала ${titles.join(", ")}.`;
 }
 
 function renderLessonTile(lesson) {
@@ -2503,14 +2509,6 @@ function renderMetric(label, value, note) {
 
 async function markLessonComplete(lessonId) {
   const lesson = getLesson(lessonId);
-  const prerequisites = getLessonPrerequisites(lesson);
-  const readiness = evaluateLessonReadiness(lesson, state.exerciseAttempts, state.recordings);
-  if (!prerequisites.met || !readiness.canComplete) {
-    const lessonRoot = document.querySelector(".lesson-layout");
-    updateLessonCompletionUI(lessonRoot, lesson);
-    lessonRoot?.querySelector(".completion-status")?.focus?.();
-    return;
-  }
   const previousCompletedLessons = [...state.appState.completedLessons];
   const previousCurrentLessonId = state.currentLessonId;
   const previousStoredLessonId = state.appState.currentLessonId;
@@ -2556,21 +2554,17 @@ function updateLessonCompletionUI(scope, lesson) {
   const isDone = state.appState.completedLessons.includes(lesson.id);
   const prerequisites = getLessonPrerequisites(lesson);
   const readiness = evaluateLessonReadiness(lesson, state.exerciseAttempts, state.recordings);
-  const disabled = isDone || !prerequisites.met || !readiness.canComplete;
+  const disabled = isDone;
   button.disabled = disabled;
   button.setAttribute("aria-disabled", String(disabled));
   button.textContent = isDone ? "Урок пройден" : "Отметить урок пройденным";
   status.tabIndex = -1;
   if (isDone) {
-    status.textContent = "Все обязательные задания подтверждены.";
-  } else if (!prerequisites.met) {
-    status.textContent = prerequisiteMessage(prerequisites);
-  } else if (!readiness.total) {
-    status.textContent = "В уроке пока нет обязательных заданий, поэтому завершение недоступно.";
+    status.textContent = "Урок отмечен пройденным; его карточки включены в повторение.";
   } else if (readiness.needsReview) {
-    status.textContent = `${readiness.mastered}/${readiness.total} готово. Сравни открытые ответы с примером и подтверди исправления.`;
+    status.textContent = `${prerequisites.met ? "" : `${prerequisiteMessage(prerequisites)} `}${readiness.mastered}/${readiness.total} заданий готово. Сравни открытые ответы с примером и исправь их.`;
   } else {
-    status.textContent = `${readiness.mastered}/${readiness.total} обязательных заданий готово.`;
+    status.textContent = `${prerequisites.met ? "" : `${prerequisiteMessage(prerequisites)} `}${readiness.mastered}/${readiness.total} заданий готово.`;
   }
 }
 
@@ -2583,10 +2577,7 @@ function setCurrentLesson(lessonId, save = true) {
 function getNextLesson() {
   return [...state.data.lessons]
     .sort(compareLessons)
-    .find((lesson) =>
-      !state.appState.completedLessons.includes(lesson.id)
-      && getLessonPrerequisites(lesson).met
-    );
+    .find((lesson) => !state.appState.completedLessons.includes(lesson.id));
 }
 
 function getLessonPrerequisites(lesson) {
@@ -2621,10 +2612,7 @@ function getPronunciationPrerequisites(lesson) {
 function getNextPronunciationLesson() {
   return [...state.pronunciationData.lessons]
     .sort(compareOrder)
-    .find((lesson) =>
-      !state.pronunciationState.completedLessons.includes(lesson.id)
-      && getPronunciationPrerequisites(lesson).met
-    );
+    .find((lesson) => !state.pronunciationState.completedLessons.includes(lesson.id));
 }
 
 function setCurrentPronunciationLesson(lessonId) {
@@ -2633,8 +2621,6 @@ function setCurrentPronunciationLesson(lessonId) {
 }
 
 async function completePronunciationLesson(lessonId) {
-  const lesson = getPronunciationLesson(lessonId);
-  if (!getPronunciationPrerequisites(lesson).met) return;
   const previousState = {
     completedLessons: [...state.pronunciationState.completedLessons],
     currentLessonId: state.pronunciationState.currentLessonId
