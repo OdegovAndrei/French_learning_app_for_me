@@ -118,6 +118,9 @@ export const COURSE_SCHEMA = Object.freeze({
   interactionTurn: Object.freeze({
     requiredText: Object.freeze(["speaker", "prompt"])
   }),
+  audioTurn: Object.freeze({
+    requiredText: Object.freeze(["speaker", "text", "voice"])
+  }),
   lessonCard: Object.freeze({
     requiredText: Object.freeze(["id", "front", "back", "type"])
   })

@@ -610,6 +610,53 @@ button:disabled {
   padding-left: 24px;
 }
 
+.sequential-interaction {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent-soft);
+}
+
+.sequential-turn-list {
+  display: grid;
+  gap: 12px;
+}
+
+.sequential-turn {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.sequential-turn.current {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.sequential-speaker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sequential-turn textarea {
+  min-height: 82px;
+}
+
+.interaction-progress {
+  margin: 0;
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+
+.audio-scene .note {
+  margin: 7px 0 0;
+}
+
 .tag-row {
   display: flex;
   flex-wrap: wrap;

@@ -8,6 +8,7 @@ import {
 
 const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9:._-]*$/;
 const ORAL_EXERCISE_TYPES = new Set(["speaking", "roleplay", "conversation-prompt", "recorded-monologue"]);
+const SUPPORTED_FRENCH_VOICES = new Set(["fr-FR-DeniseNeural", "fr-FR-HenriNeural"]);
 
 export function collectCourseValidationErrors(catalog) {
   const errors = [];
@@ -207,6 +208,27 @@ export function collectCourseValidationErrors(catalog) {
       }
       if (Array.isArray(exercise?.interactionTurns) && exercise.interactionTurns.length < 2) {
         errors.push(`${exercisePath}.interactionTurns: expected at least two turns`);
+      }
+      validateStructuredArray(exercise?.audioScene, `${exercisePath}.audioScene`, COURSE_SCHEMA.audioTurn, errors);
+      if (exercise?.audioScene != null && exercise?.type !== "listening-comprehension") {
+        errors.push(`${exercisePath}.audioScene: supported only for listening-comprehension`);
+      }
+      if (Array.isArray(exercise?.audioScene)) {
+        if (exercise.audioScene.length < 2) {
+          errors.push(`${exercisePath}.audioScene: expected at least two turns`);
+        }
+        const sceneVoices = new Set();
+        exercise.audioScene.forEach((turn, turnIndex) => {
+          if (hasText(turn?.voice)) {
+            sceneVoices.add(turn.voice);
+            if (!SUPPORTED_FRENCH_VOICES.has(turn.voice)) {
+              errors.push(`${exercisePath}.audioScene[${turnIndex}].voice: unsupported voice "${turn.voice}"`);
+            }
+          }
+        });
+        if (sceneVoices.size < 2) {
+          errors.push(`${exercisePath}.audioScene: expected at least two different voices`);
+        }
       }
       if (exercise?.type === "reading-comprehension" && !hasText(exercise?.sourceText)) {
         errors.push(`${exercisePath}.sourceText: reading-comprehension requires a source text`);

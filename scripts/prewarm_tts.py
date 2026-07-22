@@ -15,11 +15,16 @@ sys.path.insert(0, str(REPO_ROOT))
 import server  # noqa: E402
 
 LESSONS_PATH = REPO_ROOT / "data" / "lessons.json"
+A2_LESSONS_PATH = REPO_ROOT / "data" / "a2" / "course.json"
 PRONUNCIATION_PATH = REPO_ROOT / "data" / "pronunciation-course.json"
 AUDIO_DIR = REPO_ROOT / "data" / "audio"
 VOICE = "fr-FR-DeniseNeural"
 RATE = 0.82
 LOCAL_MACOS_VOICE = "Flo"
+LOCAL_MACOS_VOICES = {
+    "fr-FR-DeniseNeural": "Flo",
+    "fr-FR-HenriNeural": "Thomas",
+}
 LOCAL_MP3_BITRATE = "96k"
 CLOZE_PATTERN = re.compile(r"\{\{c\d+::(.*?)(?:::.+?)?\}\}")
 RECORDING_EXERCISE_TYPES = {"speaking", "roleplay", "conversation-prompt", "recorded-monologue"}
@@ -38,39 +43,56 @@ def card_audio_text(card):
     return CLOZE_PATTERN.sub(r"\1", source)
 
 
-def collect_texts(data, pronunciation_data=None):
-    texts = set()
+def collect_audio_items(data, pronunciation_data=None, default_voice=VOICE):
+    items = set()
+
+    def add(text, voice=default_voice):
+        if str(text or "").strip():
+            items.add((str(text), voice))
+
     for lesson in data["lessons"]:
-        texts.add(lesson["targetPhrase"])
+        add(lesson["targetPhrase"])
         for line in lesson["dialogue"]:
-            texts.add(line["fr"])
+            add(line["fr"])
         for item in lesson["vocabulary"]:
-            texts.add(item["fr"])
+            add(item["fr"])
         for exercise in lesson.get("exercises", []):
             if exercise.get("listenText"):
-                texts.add(exercise["listenText"])
+                add(exercise["listenText"])
             if exercise.get("transcript"):
-                texts.add(exercise["transcript"])
+                add(exercise["transcript"])
+            for turn in exercise.get("audioScene", []):
+                add(turn.get("text", ""), turn.get("voice", default_voice))
             if is_recording_required(exercise) and exercise.get("modelAnswer"):
-                texts.add(exercise["modelAnswer"])
+                add(exercise["modelAnswer"])
         for card in lesson.get("cards", []):
             text = card_audio_text(card)
-            if text.strip():
-                texts.add(text)
+            add(text)
     for topic in data["pronunciationTopics"]:
-        texts.add(topic["target"])
+        add(topic["target"])
     if pronunciation_data:
         for lesson in pronunciation_data.get("lessons", []):
             for example in lesson.get("examples", []):
-                texts.add(example.get("text", ""))
+                add(example.get("text", ""))
             for card in lesson.get("cards", []):
-                texts.add(card.get("audioText", ""))
+                add(card.get("audioText", ""))
             for spelling in lesson.get("spellings", []):
                 if spelling.get("soundText"):
-                    texts.add(spelling["soundText"])
+                    add(spelling["soundText"])
                 if spelling.get("examples"):
-                    texts.add(spelling["examples"])
-    return sorted(text for text in texts if text.strip())
+                    add(spelling["examples"])
+    return sorted(items)
+
+
+def collect_texts(data, pronunciation_data=None):
+    return sorted({text for text, _voice in collect_audio_items(data, pronunciation_data)})
+
+
+def merge_course_catalogs(*catalogs):
+    return {
+        "lessons": [lesson for catalog in catalogs for lesson in catalog.get("lessons", [])],
+        "pronunciationTopics": [topic for catalog in catalogs for topic in catalog.get("pronunciationTopics", [])],
+    }
 
 
 def local_macos_rate(rate):
@@ -83,12 +105,13 @@ def synthesize_with_macos(text, voice, rate):
     if shutil.which("say") is None or shutil.which("ffmpeg") is None:
         raise RuntimeError("Для локальной генерации нужны системный say и ffmpeg.")
 
+    local_voice = LOCAL_MACOS_VOICES.get(voice, LOCAL_MACOS_VOICE)
     with tempfile.TemporaryDirectory(prefix="french-study-tts-") as temporary_directory:
         workdir = Path(temporary_directory)
         source_path = workdir / "speech.aiff"
         target_path = workdir / "speech.mp3"
         say_result = subprocess.run(
-            ["say", "-v", LOCAL_MACOS_VOICE, "-r", str(local_macos_rate(rate)), "-o", str(source_path), text],
+            ["say", "-v", local_voice, "-r", str(local_macos_rate(rate)), "-o", str(source_path), text],
             capture_output=True,
             text=True,
             check=False,
@@ -120,18 +143,19 @@ async def prewarm(data, audio_dir=AUDIO_DIR, voice=VOICE, rate=RATE, synthesizer
     replace_texts = set(replace_texts or [])
     audio_dir.mkdir(parents=True, exist_ok=True)
     manifest = {}
-    available_texts = collect_texts(data, pronunciation_data)
+    available_items = collect_audio_items(data, pronunciation_data, voice)
+    available_texts = {text for text, _item_voice in available_items}
     unknown_texts = replace_texts.difference(available_texts)
     if unknown_texts:
         raise ValueError(f"Нет таких фраз в курсе: {', '.join(sorted(unknown_texts))}")
 
-    for text in available_texts:
-        key = server.cache_key(text, voice, rate)
+    for text, item_voice in available_items:
+        key = server.cache_key(text, item_voice, rate)
         filename = f"{key}.mp3"
         path = audio_dir / filename
         if text in replace_texts or not path.exists():
-            print(f"Synthesizing: {text}")
-            audio = await synthesizer(text, voice, rate)
+            print(f"Synthesizing [{item_voice}]: {text}")
+            audio = await synthesizer(text, item_voice, rate)
             path.write_bytes(audio)
         manifest[key] = filename
     (audio_dir / "manifest.json").write_text(
@@ -157,7 +181,7 @@ def main():
     )
     args = parser.parse_args()
     synthesizer = synthesize_locally
-    source = f"локальный голос macOS {LOCAL_MACOS_VOICE}"
+    source = f"локальные голоса macOS {', '.join(sorted(set(LOCAL_MACOS_VOICES.values())))}"
     if not args.local_macos:
         try:
             import edge_tts  # noqa: F401
@@ -166,7 +190,10 @@ def main():
             sys.exit(1)
         synthesizer = server.synthesize
         source = "Edge TTS"
-    data = json.loads(LESSONS_PATH.read_text(encoding="utf-8"))
+    data = merge_course_catalogs(
+        json.loads(LESSONS_PATH.read_text(encoding="utf-8")),
+        json.loads(A2_LESSONS_PATH.read_text(encoding="utf-8")),
+    )
     pronunciation_data = json.loads(PRONUNCIATION_PATH.read_text(encoding="utf-8"))
     manifest = asyncio.run(prewarm(
         data,

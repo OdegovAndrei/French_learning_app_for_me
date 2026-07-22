@@ -118,6 +118,42 @@ export function checkExercise(exercise, input) {
     };
   }
 
+  const required = exercise.requiredTokens || [];
+  const groups = Array.isArray(exercise.requiredTokenGroups) ? exercise.requiredTokenGroups : [];
+  if (required.length || groups.length) {
+    const matched = required.filter((token) => containsRequiredToken(normalizedInput, normalizeAnswer(token)));
+    const groupResults = groups.map((group) => ({
+      label: group?.label || "один из вариантов",
+      matched: (group?.anyOf || []).some((token) => containsRequiredToken(normalizedInput, normalizeAnswer(token)))
+    }));
+    const complete = matched.length === required.length && groupResults.every((group) => group.matched);
+    const accentMatched = required.filter((token) => containsRequiredToken(accentlessInput, stripDiacritics(normalizeAnswer(token))));
+    const accentGroupsComplete = groups.every((group) => (group?.anyOf || []).some((token) =>
+      containsRequiredToken(accentlessInput, stripDiacritics(normalizeAnswer(token)))
+    ));
+    const accentComplete = accentMatched.length === required.length && accentGroupsComplete;
+    const missing = [
+      ...required.filter((token) => !matched.includes(token)),
+      ...groupResults.filter((group) => !group.matched).map((group) => group.label)
+    ];
+    if (complete) {
+      return { status: "correct", message: exercise.explanation || "Все ключевые элементы ответа на месте." };
+    }
+    if (accentComplete) {
+      return { status: "almost", message: "Все ключевые элементы найдены, но проверь французские акценты и диакритику." };
+    }
+    return {
+      status: "incorrect",
+      message: "Ответ понятен не полностью. Проверь все смысловые пункты задания.",
+      missing
+    };
+  }
+
+  const flexibleMatch = accepted.find((answer) => matchesFlexibleAcceptedAnswer(normalizedInput, normalizeAnswer(answer)));
+  if (flexibleMatch) {
+    return { status: "correct", message: exercise.explanation || "Ключевые элементы ответа на месте." };
+  }
+
   return {
     status: "incorrect",
     message: Array.isArray(exercise.hints) && exercise.hints.length
@@ -144,6 +180,26 @@ function containsRequiredToken(answer, token) {
   if (!token) return false;
   const pattern = escapeRegExp(token).replace(/\s+/g, "\\s+");
   return new RegExp(`(?:^|[^\\p{L}\\p{N}])${pattern}(?=$|[^\\p{L}\\p{N}])`, "u").test(answer);
+}
+
+const FLEXIBLE_STOP_WORDS = new Set([
+  "avec", "avant", "dans", "des", "elle", "elles", "est", "sont", "pour", "puis", "que", "qui", "une", "les", "leur", "aux",
+  "или", "как", "для", "при", "это", "нужно", "после", "перед", "потом"
+]);
+
+function matchesFlexibleAcceptedAnswer(input, reference) {
+  const referenceTokens = significantTokens(reference);
+  if (referenceTokens.length < 3) return false;
+  const inputTokens = new Set(significantTokens(input));
+  const matched = referenceTokens.filter((token) => inputTokens.has(token)).length;
+  const required = referenceTokens.length <= 4 ? referenceTokens.length : Math.ceil(referenceTokens.length * 0.8);
+  return matched >= required;
+}
+
+function significantTokens(value) {
+  return [...new Set(String(value).split(/\s+/).filter((token) =>
+    token && (/^\d+$/.test(token) || (token.length >= 3 && !FLEXIBLE_STOP_WORDS.has(token)))
+  ))];
 }
 
 function escapeRegExp(value) {

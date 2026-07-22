@@ -1,4 +1,5 @@
 import { buildAnkiTsv } from "../../anki.js";
+import { validateA2Contracts } from "../../a2-validator.js";
 import { buildCards, renderClozeFront, revealCloze } from "../../cards.js";
 import {
   createCourseRuntime,
@@ -43,7 +44,7 @@ import {
   setValue,
   validateBackup
 } from "../../storage.js";
-import { speakFrench as synthesizeFrench } from "../../tts.js";
+import { speakFrench as synthesizeFrench, speakFrenchSequence } from "../../tts.js";
 
 const app = document.querySelector("#app");
 const a1Storage = createLevelStorage("a1");
@@ -129,8 +130,8 @@ void init();
 async function init() {
   try {
     const [courseResponse, matrixResponse, a1Response] = await Promise.all([
-      fetch("data/a2/course.json?v=20260722-a2-block-6"),
-      fetch("data/a2/can-do.json?v=20260722-a2-matrix-6"),
+      fetch("data/a2/course.json?v=20260722-a2-closure-1"),
+      fetch("data/a2/can-do.json?v=20260722-a2-closure-1"),
       fetch("data/lessons.json?v=20260722-help-ladder-1")
     ]);
     if (!courseResponse.ok) throw new Error(`Курс A2: HTTP ${courseResponse.status}`);
@@ -142,6 +143,7 @@ async function init() {
       a1Response.json()
     ]);
     validateCourseCatalog(state.data);
+    validateA2Contracts(state.data, state.matrix);
 
     const [storedA2State, storedA1State, storedSettings, a1CustomNotes, a2CustomNotes,
       a1Schedules, a2Schedules, a1Logs, a2Logs, attempts, recordings] = await Promise.all([
@@ -470,6 +472,8 @@ function renderExercise(lesson, exercise) {
   const hints = getExerciseHints(exercise);
   const hintLevel = getExerciseHintLevel(attempt, hints.length);
   const availableHintCount = getAvailableHintCount(attempt, hints.length);
+  const sequentialInteraction = isSequentialInteraction(exercise);
+  const interactionComplete = !sequentialInteraction || isInteractionComplete(attempt, exercise);
   const canSelfReview = isSelfReviewExercise(exercise)
     && attempt.showModel
     && result?.needsReview === true
@@ -479,9 +483,11 @@ function renderExercise(lesson, exercise) {
     <div class="exercise-header"><span class="tag">${escapeHtml(exercise.type)}</span>${result ? `<span class="result-badge ${escapeHtml(result.status)}">${resultLabel(result.status)}</span>` : ""}</div>
     <p><strong>${escapeHtml(exercise.prompt)}</strong></p>
     ${renderExerciseSupport(exercise, attempt.showModel)}
-    <textarea placeholder="${escapeHtml(exercisePlaceholder(exercise))}">${escapeHtml(attempt.answer || "")}</textarea>
+    ${sequentialInteraction
+      ? renderSequentialInteraction(exercise, attempt)
+      : `<textarea data-exercise-answer placeholder="${escapeHtml(exercisePlaceholder(exercise))}">${escapeHtml(attempt.answer || "")}</textarea>`}
     <div class="control-row">
-      <button class="primary-button compact-button" type="button" data-check-exercise>Проверить</button>
+      <button class="primary-button compact-button" type="button" data-check-exercise ${interactionComplete ? "" : "disabled"}>Проверить</button>
       ${hints.length ? `<button class="pill-button" type="button" data-show-hint ${hintLevel < availableHintCount ? "" : "disabled"}>${escapeHtml(getHintButtonLabel(hints.length, hintLevel, availableHintCount))}</button>` : ""}
       <button class="pill-button" type="button" data-show-model>Показать пример</button>
     </div>
@@ -502,15 +508,80 @@ function renderExercise(lesson, exercise) {
 function renderExerciseSupport(exercise, modelVisible) {
   const parts = [];
   if (exercise.sourceText) parts.push(`<div class="exercise-source"><strong>Материал</strong><p>${nl2br(exercise.sourceText)}</p></div>`);
-  if (exercise.listenText || (["listening-comprehension", "dictation"].includes(exercise.type) && exercise.transcript)) {
+  if (exercise.audioScene?.length) {
+    parts.push(`<div class="audio-scene"><button class="pill-button exercise-listen" type="button" data-speak-scene="${escapeHtml(exercise.id)}">▶ Прослушать сцену · ${exercise.audioScene.length} реплики</button><p class="note">Голоса собеседников чередуются; текст откроется вместе с примером.</p></div>`);
+  } else if (exercise.listenText || (["listening-comprehension", "dictation"].includes(exercise.type) && exercise.transcript)) {
     parts.push(`<button class="pill-button exercise-listen" type="button" data-speak="${escapeHtml(exercise.listenText || exercise.transcript)}">▶ Прослушать</button>`);
   }
-  if (exercise.interactionTurns?.length) {
-    parts.push(`<div class="interaction-turns"><strong>Ходы собеседника</strong><ol>${exercise.interactionTurns.map((turn) => `<li><span class="tag">${escapeHtml(turn.speaker)}</span> ${escapeHtml(turn.prompt)}</li>`).join("")}</ol></div>`);
-  }
-  if (exercise.rubric?.length) parts.push(`<div class="exercise-rubric"><strong>Критерии</strong><ul>${exercise.rubric.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>`);
+  const rubric = getReviewRubric(exercise);
+  if (rubric.length) parts.push(`<div class="exercise-rubric"><strong>Критерии</strong><ul>${rubric.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>`);
   if (modelVisible && exercise.transcript) parts.push(`<div class="exercise-transcript"><strong>Транскрипт</strong><p>${nl2br(exercise.transcript)}</p></div>`);
   return parts.join("");
+}
+
+function renderSequentialInteraction(exercise, attempt) {
+  const responses = getInteractionResponses(attempt, exercise);
+  const step = getInteractionStep(attempt, exercise);
+  const finalStep = step === exercise.interactionTurns.length - 1;
+  return `<div class="sequential-interaction">
+    <strong>Диалог по очереди</strong>
+    <p class="note">Ответь на текущую реплику своими словами — только после этого появится следующий ход.</p>
+    <div class="sequential-turn-list">${exercise.interactionTurns.slice(0, step + 1).map((turn, index) => `
+      <article class="sequential-turn ${index === step ? "current" : "answered"}">
+        <div class="sequential-speaker"><span class="tag">${escapeHtml(turn.speaker)}</span><button class="inline-audio" type="button" data-speak="${escapeHtml(turn.prompt)}" data-speak-voice="${escapeHtml(turn.voice || "fr-FR-HenriNeural")}" aria-label="Прослушать реплику">▶</button></div>
+        <p>${escapeHtml(turn.prompt)}</p>
+        <label class="field-label">Твоя реплика ${index + 1}<textarea data-interaction-response="${index}" placeholder="Ответь на этот ход…">${escapeHtml(responses[index] || "")}</textarea></label>
+      </article>`).join("")}</div>
+    ${finalStep
+      ? `<p class="interaction-progress">Все ${exercise.interactionTurns.length} хода открыты. Проверь собранный диалог и запиши его вслух.</p>`
+      : `<button class="secondary-button compact-button" type="button" data-next-interaction ${responses[step]?.trim() ? "" : "disabled"}>Сохранить реплику и открыть ход ${step + 2}</button>`}
+  </div>`;
+}
+
+function isSequentialInteraction(exercise) {
+  return exercise.type === "conversation-prompt" && Array.isArray(exercise.interactionTurns) && exercise.interactionTurns.length >= 2;
+}
+
+function getInteractionResponses(attempt, exercise) {
+  return Array.from({ length: exercise.interactionTurns.length }, (_, index) => String(attempt.interactionResponses?.[index] || ""));
+}
+
+function getInteractionStep(attempt, exercise) {
+  return Math.min(exercise.interactionTurns.length - 1, Math.max(0, getNonNegativeInteger(attempt.interactionStep)));
+}
+
+function isInteractionComplete(attempt, exercise) {
+  return getInteractionResponses(attempt, exercise).every((response) => response.trim().length > 0);
+}
+
+function composeInteractionAnswer(responses) {
+  return responses.map((response, index) => `${index + 1}. ${response.trim()}`).filter((line) => !/^\d+\.\s*$/.test(line)).join("\n");
+}
+
+function getReviewRubric(exercise) {
+  const rubric = [...(exercise.rubric || [])];
+  const frenchPrompt = !/[А-Яа-яЁё]/.test(exercise.prompt || "");
+  if (isSelfReviewExercise(exercise)) {
+    rubric.push(frenchPrompt
+      ? "Les formes de base et les mots de liaison restent assez corrects pour que le sens soit clair."
+      : "Основные формы и связки достаточно точны, чтобы смысл оставался понятным.");
+  }
+  if (isRecordingRequired(exercise)) {
+    rubric.push(frenchPrompt
+      ? "La prononciation reste compréhensible; les pauses et les reformulations n'empêchent pas de suivre le message."
+      : "Произношение остаётся понятным; паузы и переформулировки не мешают следить за мыслью.");
+  }
+  if (exercise.type === "conversation-prompt") {
+    rubric.push(frenchPrompt
+      ? "L'échange commence, répond à chaque tour et se termine par une décision, une confirmation ou une question."
+      : "Диалог начат, каждый ход получил ответ, а в конце есть решение, подтверждение или вопрос.");
+  }
+  if (["guided-writing", "message-reply", "rubric-writing", "summarize-for-a-friend"].includes(exercise.type)) {
+    rubric.push(frenchPrompt
+      ? "L'orthographe et la mise en phrases permettent une lecture claire."
+      : "Орфография и оформление фраз позволяют легко прочитать сообщение.");
+  }
+  return [...new Set(rubric)];
 }
 
 function renderExerciseHelp(hints, hintLevel, availableHintCount) {
@@ -523,31 +594,73 @@ function renderExerciseHelp(hints, hintLevel, availableHintCount) {
 function bindLessonActions(container, lesson) {
   container.querySelectorAll("[data-speak]").forEach((button) => {
     if (button.closest(".voice-lab-box")) return;
-    button.addEventListener("click", () => speakFrench(button.dataset.speak));
+    button.addEventListener("click", () => speakFrench(button.dataset.speak, button.dataset.speakVoice));
+  });
+  container.querySelectorAll("[data-speak-scene]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const exercise = lesson.exercises.find((item) => item.id === button.dataset.speakScene);
+      if (!exercise?.audioScene?.length || button.disabled) return;
+      const label = button.textContent;
+      button.disabled = true;
+      button.textContent = "Воспроизводим сцену…";
+      try {
+        await speakFrenchSequence(exercise.audioScene, { rate: state.settings.voiceRate });
+      } finally {
+        if (button.isConnected) {
+          button.disabled = false;
+          button.textContent = label;
+        }
+      }
+    });
   });
   container.querySelectorAll(".exercise").forEach((box) => bindExercise(box, lesson));
 }
 
 function bindExercise(box, lesson) {
   const exercise = lesson.exercises.find((item) => item.id === box.dataset.exerciseId);
-  const textarea = box.querySelector("textarea");
-  textarea.addEventListener("input", () => {
-    const attempt = getExerciseAttempt(exercise.id, lesson.id);
-    if (attempt.answer !== textarea.value) {
+  const answerInput = box.querySelector("[data-exercise-answer]");
+  const updateAttemptAnswer = (attempt, answer) => {
+    if (attempt.answer !== answer) {
       delete attempt.result;
       delete attempt.checkedAt;
       attempt.selfReviewed = false;
     }
-    attempt.answer = textarea.value;
+    attempt.answer = answer;
     attempt.updatedAt = new Date().toISOString();
     state.exerciseAttempts.set(attempt.id, attempt);
     scheduleAttemptSave(attempt);
     updateLessonCompletionUI(box.closest(".lesson-layout"), lesson);
+  };
+  answerInput?.addEventListener("input", () => {
+    const attempt = getExerciseAttempt(exercise.id, lesson.id);
+    updateAttemptAnswer(attempt, answerInput.value);
+  });
+  box.querySelectorAll("[data-interaction-response]").forEach((textarea) => {
+    textarea.addEventListener("input", () => {
+      const attempt = getExerciseAttempt(exercise.id, lesson.id);
+      const responses = getInteractionResponses(attempt, exercise);
+      responses[Number(textarea.dataset.interactionResponse)] = textarea.value;
+      attempt.interactionResponses = responses;
+      updateAttemptAnswer(attempt, composeInteractionAnswer(responses));
+      const nextButton = box.querySelector("[data-next-interaction]");
+      if (nextButton) nextButton.disabled = !responses[getInteractionStep(attempt, exercise)].trim();
+      box.querySelector("[data-check-exercise]").disabled = !responses.every((response) => response.trim());
+    });
+  });
+  box.querySelector("[data-next-interaction]")?.addEventListener("click", async () => {
+    const attempt = getExerciseAttempt(exercise.id, lesson.id);
+    const responses = getInteractionResponses(attempt, exercise);
+    const step = getInteractionStep(attempt, exercise);
+    if (!responses[step].trim()) return;
+    attempt.interactionStep = Math.min(step + 1, exercise.interactionTurns.length - 1);
+    state.exerciseAttempts.set(attempt.id, attempt);
+    await saveAttempt(attempt);
+    preserveVisibleLesson(lesson);
   });
   box.querySelector("[data-check-exercise]").addEventListener("click", async () => {
     const attempt = getExerciseAttempt(exercise.id, lesson.id);
-    attempt.answer = textarea.value;
-    attempt.result = checkExercise(exercise, textarea.value);
+    attempt.answer = answerInput?.value ?? composeInteractionAnswer(getInteractionResponses(attempt, exercise));
+    attempt.result = checkExercise(exercise, attempt.answer);
     if (shouldUnlockNextHint(attempt.result)) {
       attempt.helpFailures = getNonNegativeInteger(attempt.helpFailures) + 1;
       const hints = getExerciseHints(exercise);
@@ -698,14 +811,26 @@ function ratingButton(score, label, interval) {
 async function markLessonComplete(lessonId) {
   const lesson = getLesson(lessonId);
   if (!lesson) return;
+  const previousCompletedLessons = [...state.appState.completedLessons];
+  const previousCurrentLessonId = state.currentLessonId;
+  const previousStoredLessonId = state.appState.currentLessonId;
   if (!state.appState.completedLessons.includes(lessonId)) state.appState.completedLessons.push(lessonId);
   state.currentLessonId = getNextLesson()?.id || null;
   state.appState.currentLessonId = state.currentLessonId;
-  await saveA2State();
+  if (!(await saveA2State())) {
+    state.appState.completedLessons = previousCompletedLessons;
+    state.currentLessonId = previousCurrentLessonId;
+    state.appState.currentLessonId = previousStoredLessonId;
+    updateLessonCompletionUI(document.querySelector(".lesson-layout"), lesson);
+    return;
+  }
   courseRuntime.render();
 }
 
 async function toggleLessonComplete(lessonId) {
+  const previousCompletedLessons = [...state.appState.completedLessons];
+  const previousCurrentLessonId = state.currentLessonId;
+  const previousStoredLessonId = state.appState.currentLessonId;
   if (state.appState.completedLessons.includes(lessonId)) {
     state.appState.completedLessons = state.appState.completedLessons.filter((id) => id !== lessonId);
   } else {
@@ -713,7 +838,12 @@ async function toggleLessonComplete(lessonId) {
   }
   state.currentLessonId = getNextLesson()?.id || lessonId;
   state.appState.currentLessonId = state.currentLessonId;
-  await saveA2State();
+  if (!(await saveA2State())) {
+    state.appState.completedLessons = previousCompletedLessons;
+    state.currentLessonId = previousCurrentLessonId;
+    state.appState.currentLessonId = previousStoredLessonId;
+    return;
+  }
   renderLessons();
 }
 
@@ -785,7 +915,9 @@ function getLessonPrerequisites(lesson) {
 
 function prerequisiteMessage(prerequisites) {
   const titles = prerequisites.missing.map((id) => getLesson(id)?.title || id);
-  return `Рекомендуемый порядок: сначала ${titles.join(", ")}.`;
+  const visible = titles.slice(0, 2);
+  const remainder = titles.length - visible.length;
+  return `Рекомендуемый порядок: сначала ${visible.join(", ")}${remainder ? ` и ещё ${remainder}` : ""}.`;
 }
 
 function getExerciseAttempt(id, lessonId) {
@@ -864,8 +996,8 @@ function storageForCard(card) {
   return card.storageLevel === "a1" ? a1Storage : a2Storage;
 }
 
-function speakFrench(text) {
-  return synthesizeFrench(text, { voice: state.settings.voiceURI, rate: state.settings.voiceRate });
+function speakFrench(text, voice = state.settings.voiceURI) {
+  return synthesizeFrench(text, { voice, rate: state.settings.voiceRate });
 }
 
 function bindSettingsActions() {

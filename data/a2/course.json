@@ -2,7 +2,7 @@
   "meta": {
     "title": "French Study A2",
     "catalogSchemaVersion": 3,
-    "contentVersion": "1.5.0",
+    "contentVersion": "1.6.0",
     "dailyMinutes": "45-60",
     "method": "real tasks, connected input, active output, cumulative A1+A2 review"
   },
@@ -66,18 +66,53 @@
       "prerequisites": ["module:a2:study-work-messages"]
     }
   ],
-  "resources": [],
+  "resources": [
+    {
+      "name": "CEFR Companion Volume — descriptors",
+      "type": "official-reference",
+      "url": "https://rm.coe.int/cefr-companion-volume-with-new-descriptors-2020/16809ea0d4",
+      "note": "Can-do-дескрипторы и деятельностный подход для проверки полноты маршрута A2."
+    },
+    {
+      "name": "Council of Europe — CEFR descriptors",
+      "type": "official-reference",
+      "url": "https://www.coe.int/en/web/common-european-framework-reference-languages/cefr-descriptors",
+      "note": "Официальная точка входа к шкалам и дескрипторам CEFR."
+    },
+    {
+      "name": "France Éducation international — DELF A2",
+      "type": "official-reference",
+      "url": "https://www.france-education-international.fr/diplome/delf-tout-public/niveau-a2?langue=fr",
+      "note": "Внешний ориентир по четырём видам речевой деятельности; не используется как барьер или отдельное подтверждение уровня."
+    }
+  ],
   "courseRoadmap": {
     "status": "published",
     "claimPolicy": "A2 развивается по can-do-матрице A2.1/A2.2. Завершённые уроки и bilan образуют единый учебный прогресс ответственного ученика.",
-    "sources": [],
+    "sources": [
+      {
+        "name": "CEFR Companion Volume",
+        "url": "https://rm.coe.int/cefr-companion-volume-with-new-descriptors-2020/16809ea0d4",
+        "note": "Can-do-дескрипторы и деятельностный подход."
+      },
+      {
+        "name": "Council of Europe — CEFR descriptors",
+        "url": "https://www.coe.int/en/web/common-european-framework-reference-languages/cefr-descriptors",
+        "note": "Официальные шкалы CEFR для адаптации под учебный маршрут."
+      },
+      {
+        "name": "France Éducation international — DELF A2",
+        "url": "https://www.france-education-international.fr/diplome/delf-tout-public/niveau-a2?langue=fr",
+        "note": "Внешняя проверка баланса аудирования, чтения, письма и устной речи."
+      }
+    ],
     "skillAxes": [
       { "id": "listening", "title": "Аудирование", "evidenceTypes": ["listening-comprehension", "dictation"] },
-      { "id": "reading", "title": "Чтение", "evidenceTypes": ["reading-comprehension", "information-search"] },
-      { "id": "spoken-interaction", "title": "Устное взаимодействие", "evidenceTypes": ["conversation-prompt", "roleplay"] },
-      { "id": "spoken-production", "title": "Устный монолог", "evidenceTypes": ["recorded-monologue", "rubric-speaking"] },
+      { "id": "reading", "title": "Чтение", "evidenceTypes": ["reading-comprehension"] },
+      { "id": "spoken-interaction", "title": "Устное взаимодействие", "evidenceTypes": ["conversation-prompt"] },
+      { "id": "spoken-production", "title": "Устный монолог", "evidenceTypes": ["recorded-monologue"] },
       { "id": "written-production", "title": "Письмо", "evidenceTypes": ["guided-writing", "message-reply"] },
-      { "id": "mediation", "title": "Медиация", "evidenceTypes": ["summarize-for-a-friend", "explain-information"] },
+      { "id": "mediation", "title": "Медиация", "evidenceTypes": ["summarize-for-a-friend"] },
       { "id": "language-system", "title": "Грамматика и словарь в действии", "evidenceTypes": ["gap-fill", "sentence-transform"] }
     ],
     "levels": [
@@ -158,7 +193,7 @@
           { "skill": "listening", "evidence": "Понять основные факты рассказа, объявления, рекомендации, инструкции или разговора с несколькими вариантами." },
           { "skill": "reading", "evidence": "Извлечь порядок действий, условия и причины выбора из сообщения, памятки, задания, приглашения или отзыва." },
           { "skill": "spoken-interaction", "evidence": "Поддержать несколько ходов общения: уточнить условие, предложить альтернативу и договориться о следующем действии или общем выборе." },
-          { "skill": "spoken-production", "evidence": "Записать связный рассказ, краткий отчёт или впечатление длительностью 60–90 секунд." },
+          { "skill": "spoken-production", "evidence": "Записать связный рассказ, краткий отчёт или впечатление длительностью 30–90 секунд в зависимости от задачи." },
           { "skill": "written-production", "evidence": "Написать связный текст от 60 слов в уместном регистре: сообщение, запрос, отзыв или объяснение выбора." },
           { "skill": "mediation", "evidence": "Передать другому человеку основную практическую информацию, причины и порядок действий." },
           { "skill": "language-system", "evidence": "Использовать знакомые формы A2, включая passé composé, начальное различение imparfait, comparatif / superlatif и средства связи." }
@@ -469,7 +504,7 @@
         { "label": "одинаково", "form": "aussi calme que" }
       ],
       "commonMistakes": [
-        { "wrong": "plus mieux", "right": "meilleur", "note": "Meilleur уже означает «лучше»." }
+        { "wrong": "plus mieux", "right": "mieux", "note": "Mieux — сравнительная форма bien; meilleur — сравнительная форма bon." }
       ],
       "exceptions": [
         { "wrong": "bon → plus bon", "right": "bon → meilleur", "note": "У bon особая сравнительная форма." }
@@ -764,11 +799,11 @@
           "id": "a2-l01-e3", "type": "recorded-monologue",
           "prompt": "Расскажи о трёх событиях своих выходных по порядку. Запиши 30–60 секунд.",
           "acceptedAnswers": [], "requiredTokens": ["d'abord", "ensuite", "finalement"],
-          "modelAnswer": "D'abord, j'ai fait les courses. Ensuite, j'ai retrouvé des amis. Finalement, je suis rentré chez moi.",
+          "modelAnswer": "D'abord, samedi matin, j'ai fait les courses au marché près de chez moi. Ensuite, j'ai retrouvé deux amis dans un café et nous avons déjeuné ensemble. Puis, nous avons fait une longue promenade au parc. Finalement, je suis rentré chez moi vers huit heures parce que j'étais fatigué.",
           "explanation": "Важны связность, понятный порядок и формы прошлого времени.",
           "hints": ["Выбери три простых события.", "Начни каждое событие с временной связки.", "Используй j'ai + participe passé; для rentrer — je suis rentré(e)."],
           "rubric": ["Три события идут по порядку.", "Есть d'abord, ensuite и finalement.", "Речь понятна без чтения полного текста."],
-          "requiresRecording": true, "minimumRecordingSeconds": 15,
+          "requiresRecording": true, "minimumRecordingSeconds": 30,
           "objectiveIds": ["obj:a2-l01-speaking"]
         }
       ],
@@ -830,7 +865,7 @@
           "id": "a2-l02-e3", "type": "guided-writing",
           "prompt": "Напиши 45–70 слов о вчерашнем дне: утро, день, вечер и причина одного действия.",
           "acceptedAnswers": [], "requiredTokens": ["le matin", "ensuite", "le soir", "parce que"],
-          "modelAnswer": "Le matin, j'ai étudié à la bibliothèque. Ensuite, j'ai déjeuné avec un ami parce que nous avions un projet à préparer. L'après-midi, j'ai fait les courses. Le soir, j'ai cuisiné et j'ai regardé un film. C'était une journée bien remplie.",
+          "modelAnswer": "Le matin, j'ai étudié à la bibliothèque. Ensuite, j'ai déjeuné avec un ami parce que nous avions un projet à préparer. L'après-midi, j'ai fait les courses et j'ai appelé ma sœur. Le soir, j'ai cuisiné et j'ai regardé un film. C'était une journée bien remplie.",
           "explanation": "Сравни порядок, связки, формы прошлого и понятность причины.",
           "hints": ["Раздели день на три части.", "Добавь ensuite и одну причину с parce que.", "Проверь avoir + participe passé."],
           "rubric": ["Есть утро, день и вечер.", "События связаны, а не перечислены отдельными словами.", "Одна причина выражена через parce que."],
@@ -901,11 +936,11 @@
             { "label": "форма arriver с согласованием", "anyOf": ["je suis arrivé", "je suis arrivée"] },
             { "label": "форма rentrer с согласованием", "anyOf": ["je suis rentré", "je suis rentrée"] }
           ],
-          "modelAnswer": "Je suis parti tôt samedi matin. D'abord, j'ai pris le bus, puis le train. Je suis arrivé à Almaty vers midi. Dimanche soir, je suis rentré chez moi.",
+          "modelAnswer": "Je suis parti tôt samedi matin avec un petit sac. D'abord, j'ai pris le bus jusqu'à la gare, puis j'ai voyagé en train pendant trois heures. Je suis arrivé à Almaty vers midi, un peu plus tard que prévu. Ensuite, j'ai rejoint mes amis au centre-ville. Dimanche soir, je suis rentré chez moi en taxi.",
           "explanation": "Можно адаптировать окончания к своему роду; оцени связность и понятность маршрута.",
           "hints": ["Назови отправление, транспорт, прибытие и возвращение.", "Используй partir, arriver и rentrer с être.", "Свяжи этапы с d'abord и puis."],
           "rubric": ["Маршрут понятен по порядку.", "Формы с être согласованы с говорящим.", "Названы хотя бы два временных ориентира."],
-          "requiresRecording": true, "minimumRecordingSeconds": 20,
+          "requiresRecording": true, "minimumRecordingSeconds": 45,
           "objectiveIds": ["obj:a2-l03-speaking"]
         }
       ],
@@ -1227,7 +1262,7 @@
       ],
       "dialogue": [
         { "speaker": "Nina", "fr": "Le studio est moins cher que l'appartement du centre.", "ipa": "/lə stydjo ɛ mwɛ̃ ʃɛʁ kə lapaʁtəmɑ̃ dy sɑ̃tʁ/", "ru": "Студия дешевле квартиры в центре." },
-        { "speaker": "Sami", "fr": "Oui, mais elle est aussi plus petite.", "ipa": "/wi mɛ ɛl ɛt osi ply pətit/", "ru": "Да, но она ещё и меньше." },
+        { "speaker": "Sami", "fr": "Oui, mais il est aussi plus petit.", "ipa": "/wi mɛ il ɛt osi ply pəti/", "ru": "Да, но он ещё и меньше." },
         { "speaker": "Nina", "fr": "L'autre appartement est plus lumineux et mieux situé.", "ipa": "/lotʁ apaʁtəmɑ̃ ɛ ply lyminø e mjø sitɥe/", "ru": "Другая квартира светлее и лучше расположена." },
         { "speaker": "Sami", "fr": "Pour moi, le quartier calme est plus important que la surface.", "ipa": "/puʁ mwa lə kaʁtje kalm ɛ ply ɛ̃pɔʁtɑ̃ kə la syʁfas/", "ru": "Для меня спокойный район важнее площади." }
       ],
@@ -1265,7 +1300,7 @@
           "explanation": "Важны три ясных основания сравнения и личная причина, а не конкретный выбор.",
           "hints": ["Назови три критерия: например цену, площадь и транспорт.", "Для каждого критерия используй plus, moins или aussi.", "Заверши Je choisis… parce que…"],
           "rubric": ["Сравнены минимум три характеристики.", "Выбор сформулирован прямо.", "Причина связана с названными условиями."],
-          "requiresRecording": true, "minimumRecordingSeconds": 20,
+          "requiresRecording": true, "minimumRecordingSeconds": 45,
           "objectiveIds": ["obj:a2-l08-speaking"]
         }
       ],
@@ -1505,7 +1540,7 @@
         { "speaker": "Agent", "fr": "Le logement que vous avez choisi n'est plus disponible.", "ipa": "/lə lɔʒmɑ̃ kə vu zave ʃwazi nɛ ply dispɔnibl/", "ru": "Выбранное вами жильё больше недоступно." },
         { "speaker": "Aya", "fr": "D'accord. Est-ce que vous avez un appartement similaire ?", "ipa": "/dakɔʁ ɛs kə vu zave œ̃n apaʁtəmɑ̃ similɛʁ/", "ru": "Хорошо. У вас есть похожая квартира?" },
         { "speaker": "Agent", "fr": "Oui, il est un peu plus cher, mais les charges sont comprises.", "ipa": "/wi il ɛt œ̃ pø ply ʃɛʁ mɛ le ʃaʁʒ sɔ̃ kɔ̃pʁiz/", "ru": "Да, она немного дороже, но расходы включены." },
-        { "speaker": "Aya", "fr": "Je voudrais la visiter et vérifier si mon chat est accepté.", "ipa": "/ʒə vudʁɛ la vizite e veʁifje si mɔ̃ ʃa ɛt aksɛpte/", "ru": "Я хотела бы её посмотреть и уточнить, разрешён ли мой кот." }
+        { "speaker": "Aya", "fr": "Je voudrais le visiter et vérifier si mon chat est accepté.", "ipa": "/ʒə vudʁɛ lə vizite e veʁifje si mɔ̃ ʃa ɛt aksɛpte/", "ru": "Я хотела бы его посмотреть и уточнить, разрешён ли мой кот." }
       ],
       "vocabulary": [
         { "id": "vocab:a2-l12-file", "fr": "un dossier", "ipa": "/œ̃ dosje/", "ru": "пакет документов, досье", "note": "Préparer un dossier de location." },
@@ -1587,7 +1622,7 @@
       ],
       "dialogue": [
         { "speaker": "Lina", "fr": "Ton train arrive à l'heure ?", "ipa": "/tɔ̃ tʁɛ̃ aʁiv a lœʁ/", "ru": "Твой поезд прибывает вовремя?" },
-        { "speaker": "Noé", "fr": "Non, il a vingt-cinq minutes de retard.", "ipa": "/nɔ̃ il a vɛ̃tsɛ̃k minyt də ʁətaʁ/", "ru": "Нет, он задерживается на двадцать пять минут." },
+        { "speaker": "Noé", "fr": "Non, il a vingt-cinq minutes de retard.", "ipa": "/nɔ̃ il a vɛ̃ sɛ̃k minyt də ʁətaʁ/", "ru": "Нет, он задерживается на двадцать пять минут." },
         { "speaker": "Noé", "fr": "À cause d'un problème technique, le départ se fait voie six.", "ipa": "/a koz dœ̃ pʁɔblɛm tɛknik lə depaʁ sə fɛ vwa sis/", "ru": "Из-за технической проблемы отправление будет с шестого пути." },
         { "speaker": "Lina", "fr": "D'accord, je vais t'attendre près du café.", "ipa": "/dakɔʁ ʒə vɛ tatɑ̃dʁ pʁɛ dy kafe/", "ru": "Хорошо, я подожду тебя возле кафе." }
       ],
@@ -1865,7 +1900,8 @@
       "objectives": [
         { "id": "obj:a2-l17-listening", "skill": "listening", "cefrCanDo": "Понимаю причину отмены и предложенную замену.", "required": true },
         { "id": "obj:a2-l17-system", "skill": "language-system", "cefrCanDo": "Связываю причину с практическим следствием через parce que, à cause de и donc.", "required": true },
-        { "id": "obj:a2-l17-mediation", "skill": "mediation", "cefrCanDo": "Передаю группе новый маршрут, время и точку встречи.", "required": true }
+        { "id": "obj:a2-l17-mediation", "skill": "mediation", "cefrCanDo": "Передаю группе новый маршрут, время и точку встречи.", "required": true },
+        { "id": "obj:a2-l17-speaking", "skill": "spoken-production", "cefrCanDo": "Связно объясняю группе причину изменения и новый план.", "required": true }
       ],
       "dialogue": [
         { "speaker": "Nora", "fr": "Le bateau est annulé à cause du vent.", "ipa": "/lə bato ɛt anyle a koz dy vɑ̃/", "ru": "Катер отменён из-за ветра." },
@@ -1901,15 +1937,16 @@
           "objectiveIds": ["obj:a2-l17-system"]
         },
         {
-          "id": "a2-l17-e3", "type": "summarize-for-a-friend",
-          "prompt": "Передай группе обновлённый план экскурсии: сохрани причину, точку встречи, транспорт и новое время начала.",
+          "id": "a2-l17-e3", "type": "recorded-monologue",
+          "prompt": "Передай группе обновлённый план экскурсии и запиши объяснение на 45–60 секунд: сохрани причину, точку встречи, транспорт и новое время начала.",
           "sourceText": "La visite du château ne peut pas commencer à 10h, car la route principale est fermée après un accident. Le groupe doit se retrouver à 9h20 devant l'hôtel. Un minibus partira à 9h30 par une autre route. La visite commencera à 10h45; les billets restent valables.",
           "acceptedAnswers": [], "requiredTokens": ["route", "9h20", "minibus", "10h45"],
-          "modelAnswer": "À cause de la route fermée, la visite commencera plus tard. On se retrouve à 9h20 devant l'hôtel, puis un minibus part à 9h30 par une autre route. Nous allons commencer la visite à 10h45 et les billets restent valables.",
+          "modelAnswer": "À cause de la route fermée, la visite va commencer plus tard. On se retrouve à 9h20 devant l'hôtel, puis un minibus va partir à 9h30 par une autre route. Nous allons commencer la visite à 10h45 et les billets restent valables. Merci d'arriver quelques minutes avant le départ.",
           "explanation": "Группе нужны причина изменения и четыре практические опоры, а не полный пересказ сообщения.",
           "hints": ["Начни с причины изменения.", "Затем назови место встречи и отправление минивэна.", "Заверши новым временем и статусом билетов."],
           "rubric": ["Причина изменения передана понятно.", "Место встречи и транспорт названы точно.", "Новое время начала не перепутано с временем сбора."],
-          "objectiveIds": ["obj:a2-l17-mediation"]
+          "requiresRecording": true, "minimumRecordingSeconds": 45,
+          "objectiveIds": ["obj:a2-l17-mediation", "obj:a2-l17-speaking"]
         }
       ],
       "cards": [
@@ -2052,7 +2089,7 @@
           "explanation": "Une description utile distingue ce qui est présent, depuis quand, et ce qui n'est pas présent.",
           "hints": ["Commence par J'ai mal à…", "Ajoute la durée avec depuis.", "Termine par mais je n'ai pas…"],
           "rubric": ["Le symptôme principal est précis.", "L'intensité et la durée sont indiquées.", "Une information négative utile complète la description."],
-          "requiresRecording": true, "minimumRecordingSeconds": 15,
+          "requiresRecording": true, "minimumRecordingSeconds": 30,
           "objectiveIds": ["obj:a2-l19-speaking"]
         },
         {
@@ -2116,8 +2153,15 @@
           "id": "a2-l20-e2", "type": "reading-comprehension",
           "prompt": "Que faut-il faire aujourd'hui et quelle activité faut-il éviter tant que la fatigue continue ?",
           "sourceText": "Conseils après la consultation : restez au calme aujourd'hui, mangez léger et buvez selon vos habitudes. Évitez les activités sportives tant que vous vous sentez fatigué. Si votre état ne s'améliore pas, contactez un professionnel de santé.",
-          "acceptedAnswers": ["rester au calme, manger léger et éviter le sport", "repos et repas léger; pas de sport pendant la fatigue", "отдыхать, легко есть и избегать спорта при усталости"], "requiredTokens": [],
-          "modelAnswer": "Il faut rester au calme et manger léger aujourd'hui; il faut éviter le sport tant que la fatigue continue.",
+          "acceptedAnswers": ["rester au calme, manger léger, boire normalement et éviter le sport", "repos, repas léger et boisson habituelle; pas de sport pendant la fatigue", "отдыхать, легко есть, пить как обычно и избегать спорта при усталости"], "requiredTokens": [],
+          "requiredTokenGroups": [
+            { "label": "repos aujourd'hui", "anyOf": ["rester au calme", "se reposer", "repos"] },
+            { "label": "repas léger", "anyOf": ["manger léger", "repas léger"] },
+            { "label": "boire normalement", "anyOf": ["boire selon ses habitudes", "boire normalement", "boisson habituelle"] },
+            { "label": "éviter le sport", "anyOf": ["éviter le sport", "pas de sport", "éviter les activités sportives"] },
+            { "label": "pendant la fatigue", "anyOf": ["tant que la fatigue continue", "tant qu'on est fatigué", "pendant la fatigue"] }
+          ],
+          "modelAnswer": "Il faut rester au calme, manger léger et boire selon ses habitudes aujourd'hui; il faut éviter le sport tant que la fatigue continue.",
           "explanation": "Les actions conseillées viennent avant Évitez; la durée de la restriction suit tant que.",
           "hints": ["Les premières instructions concernent aujourd'hui.", "Cherche la phrase qui commence par Évitez.", "La restriction dure tant que la personne est fatiguée."],
           "objectiveIds": ["obj:a2-l20-reading"]
@@ -2172,7 +2216,13 @@
           "id": "a2-l21-e1", "type": "listening-comprehension",
           "prompt": "Quelles sont les deux questions posées avant de proposer un produit ?",
           "listenText": "Avant de vous proposer un produit, j'ai deux questions. Est-ce que vous avez des allergies connues ? Est-ce que vous prenez déjà un autre médicament ou un traitement régulier ?",
-          "transcript": "Avant de vous proposer un produit, j'ai deux questions. Est-ce que vous avez des allergies connues ? Est-ce que vous prenez déjà un autre médicament ou un traitement régulier ?",
+          "transcript": "Cliente : Bonjour, j'ai une toux sèche depuis trois jours.\nPharmacien : Avant de vous proposer un produit, est-ce que vous avez des allergies connues ?\nCliente : Non, aucune allergie connue.\nPharmacien : Est-ce que vous prenez déjà un autre médicament ou un traitement régulier ?",
+          "audioScene": [
+            { "speaker": "Cliente", "text": "Bonjour, j'ai une toux sèche depuis trois jours.", "voice": "fr-FR-DeniseNeural" },
+            { "speaker": "Pharmacien", "text": "Avant de vous proposer un produit, est-ce que vous avez des allergies connues ?", "voice": "fr-FR-HenriNeural" },
+            { "speaker": "Cliente", "text": "Non, aucune allergie connue.", "voice": "fr-FR-DeniseNeural" },
+            { "speaker": "Pharmacien", "text": "Est-ce que vous prenez déjà un autre médicament ou un traitement régulier ?", "voice": "fr-FR-HenriNeural" }
+          ],
           "acceptedAnswers": ["les allergies et les médicaments ou traitements actuels", "si la personne a des allergies et prend déjà un traitement", "об аллергиях и текущих лекарствах или лечении"], "requiredTokens": [],
           "modelAnswer": "Le pharmacien demande si la personne a des allergies et si elle prend déjà un médicament ou un traitement régulier.",
           "explanation": "Chaque question commence par Est-ce que; les deux thèmes sont allergies et traitement actuel.",
@@ -2399,7 +2449,15 @@
           "prompt": "Dans quel ordre faut-il agir après la perte de la carte et que peut-on utiliser en attendant ?",
           "sourceText": "Carte municipale perdue : déclarez d'abord la perte dans votre espace en ligne. Téléchargez ensuite l'attestation provisoire. Pour demander une nouvelle carte, prenez rendez-vous et apportez une photo récente ainsi qu'une pièce d'identité. L'attestation provisoire reste valable pendant trente jours.",
           "acceptedAnswers": ["déclarer la perte, télécharger l'attestation, prendre rendez-vous, apporter photo et identité; utiliser l'attestation trente jours", "déclaration en ligne puis attestation provisoire et rendez-vous; attestation valable 30 jours", "заявить о потере, скачать справку, записаться и принести фото с удостоверением; справка на 30 дней"], "requiredTokens": [],
-          "modelAnswer": "Il faut déclarer la perte en ligne, télécharger l'attestation provisoire, puis prendre rendez-vous avec une photo et une pièce d'identité. On peut utiliser l'attestation pendant trente jours.",
+          "requiredTokenGroups": [
+            { "label": "déclarer la perte", "anyOf": ["déclarer la perte", "déclaration en ligne", "après la déclaration"] },
+            { "label": "télécharger l'attestation", "anyOf": ["télécharger l'attestation", "téléchargement de l'attestation"] },
+            { "label": "prendre rendez-vous", "anyOf": ["prendre rendez-vous", "au rendez-vous"] },
+            { "label": "apporter une photo", "anyOf": ["apporter une photo", "apporte la photo", "apporte l'identité et la photo"] },
+            { "label": "apporter une pièce d'identité", "anyOf": ["apporter une pièce d'identité", "apporte l'identité", "identité et la photo"] },
+            { "label": "attestation valable trente jours", "anyOf": ["attestation pendant trente jours", "attestation trente jours", "attestation valable 30 jours"] }
+          ],
+          "modelAnswer": "Il faut déclarer la perte en ligne, télécharger l'attestation provisoire, puis prendre rendez-vous. Au rendez-vous, il faut apporter une photo et une pièce d'identité. On peut utiliser l'attestation pendant trente jours.",
           "explanation": "Les marqueurs d'abord et ensuite donnent l'ordre; la dernière phrase précise la solution temporaire.",
           "hints": ["Commence par les deux actions en ligne.", "La nouvelle carte demande ensuite un rendez-vous.", "La solution temporaire est valable trente jours."],
           "objectiveIds": ["obj:a2-l24-reading"]
@@ -2457,7 +2515,7 @@
       "dialogue": [
         { "speaker": "Formatrice", "fr": "Lisez d'abord la consigne sur la plateforme.", "ipa": "/lize dabɔʁ la kɔ̃siɲ syʁ la platfɔʁm/", "ru": "Сначала прочитайте инструкцию на платформе." },
         { "speaker": "Étudiant", "fr": "Est-ce qu'il faut rendre un seul fichier ?", "ipa": "/ɛs kil fo ʁɑ̃dʁ œ̃ sœl fiʃje/", "ru": "Нужно сдать только один файл?" },
-        { "speaker": "Formatrice", "fr": "Non, joignez aussi le tableau que vous avez préparé.", "ipa": "/nɔ̃ ʒwɑ̃je osi lə tablo kə vu zave pʁepaʁe/", "ru": "Нет, также приложите таблицу, которую вы подготовили." },
+        { "speaker": "Formatrice", "fr": "Non, joignez aussi le tableau que vous avez préparé.", "ipa": "/nɔ̃ ʒwaɲe osi lə tablo kə vu zave pʁepaʁe/", "ru": "Нет, также приложите таблицу, которую вы подготовили." },
         { "speaker": "Formatrice", "fr": "Déposez les deux fichiers avant vendredi à dix-huit heures.", "ipa": "/depoze le dø fiʃje avɑ̃ vɑ̃dʁədi a dizɥitœʁ/", "ru": "Загрузите оба файла до пятницы, 18:00." }
       ],
       "vocabulary": [
@@ -2481,7 +2539,14 @@
           "id": "a2-l25-e2", "type": "listening-comprehension",
           "prompt": "Qui prépare les diapositives, à qui faut-il les envoyer et quand l'équipe répète-t-elle ?",
           "listenText": "Pour la présentation, Malik prépare les six premières diapositives et Inès vérifie les chiffres. Malik doit envoyer le fichier à Clara avant jeudi midi. Toute l'équipe se retrouve vendredi à neuf heures pour répéter.",
-          "transcript": "Pour la présentation, Malik prépare les six premières diapositives et Inès vérifie les chiffres. Malik doit envoyer le fichier à Clara avant jeudi midi. Toute l'équipe se retrouve vendredi à 9h pour répéter.",
+          "transcript": "Responsable : Malik, tu prépares les six premières diapositives et Inès vérifie les chiffres.\nMalik : D'accord. À qui dois-je envoyer le fichier ?\nResponsable : À Clara, avant jeudi midi.\nMalik : Et quand est-ce que toute l'équipe répète ?\nResponsable : Vendredi à 9h.",
+          "audioScene": [
+            { "speaker": "Responsable", "text": "Malik, tu prépares les six premières diapositives et Inès vérifie les chiffres.", "voice": "fr-FR-DeniseNeural" },
+            { "speaker": "Malik", "text": "D'accord. À qui dois-je envoyer le fichier ?", "voice": "fr-FR-HenriNeural" },
+            { "speaker": "Responsable", "text": "À Clara, avant jeudi midi.", "voice": "fr-FR-DeniseNeural" },
+            { "speaker": "Malik", "text": "Et quand est-ce que toute l'équipe répète ?", "voice": "fr-FR-HenriNeural" },
+            { "speaker": "Responsable", "text": "Vendredi à neuf heures.", "voice": "fr-FR-DeniseNeural" }
+          ],
           "acceptedAnswers": ["Malik, à Clara avant jeudi midi, vendredi à 9h", "Malik prépare; il envoie à Clara; répétition vendredi neuf heures", "Малик, Кларе до полудня четверга, репетиция в пятницу в 9"], "requiredTokens": [],
           "modelAnswer": "Malik prépare les diapositives et les envoie à Clara avant jeudi midi; l'équipe répète vendredi à neuf heures.",
           "explanation": "Le premier nom reçoit la tâche, le destinataire suit à, et le rendez-vous commun vient dans la dernière phrase.",
@@ -2564,7 +2629,7 @@
           "explanation": "Une présentation claire sépare la routine, les personnes ou outils associés et la priorité du jour.",
           "hints": ["Commence par Je m'occupe de…", "Relie une personne avec qui et un document avec que.", "Termine par Aujourd'hui, je dois…"],
           "rubric": ["Au moins trois responsabilités sont nommées.", "Qui et que relient correctement deux informations.", "La priorité actuelle est explicite."],
-          "requiresRecording": true, "minimumRecordingSeconds": 20,
+          "requiresRecording": true, "minimumRecordingSeconds": 45,
           "objectiveIds": ["obj:a2-l26-speaking"]
         }
       ],
@@ -2807,8 +2872,18 @@
           "id": "a2-l30-e1", "type": "reading-comprehension",
           "prompt": "Quelles sont les étapes du travail, la date limite de dépôt et l'heure de la présentation ?",
           "sourceText": "Projet final : lisez le guide, choisissez deux exemples et préparez quatre diapositives. Déposez la présentation et une page de notes avant mardi à 17h. Mercredi à 10h, chaque groupe présente son travail pendant cinq minutes dans la salle B. Après la présentation, envoyez les corrections avant vendredi midi.",
-          "acceptedAnswers": ["lire, choisir deux exemples, préparer quatre diapositives; mardi 17h; mercredi 10h salle B", "guide, exemples, diapositives et notes; dépôt mardi; présentation mercredi dix heures", "прочитать, выбрать примеры, сделать слайды; до вторника 17:00; презентация в среду 10:00"], "requiredTokens": [],
-          "modelAnswer": "Il faut lire le guide, choisir deux exemples, préparer quatre diapositives et une page de notes. Le dépôt est prévu mardi à dix-sept heures et la présentation mercredi à dix heures, salle B.",
+          "acceptedAnswers": ["lire, choisir deux exemples, préparer quatre diapositives et une page de notes; mardi 17h; mercredi 10h salle B; corrections vendredi midi", "guide, exemples, diapositives et notes; dépôt mardi; présentation mercredi dix heures; corrections vendredi midi", "прочитать, выбрать примеры, сделать слайды и заметки; до вторника 17:00; презентация в среду 10:00; исправления до пятницы"], "requiredTokens": [],
+          "requiredTokenGroups": [
+            { "label": "lire le guide", "anyOf": ["lire le guide", "прочитать руководство"] },
+            { "label": "choisir deux exemples", "anyOf": ["choisir deux exemples", "выбрать два примера"] },
+            { "label": "préparer quatre diapositives", "anyOf": ["préparer quatre diapositives", "сделать четыре слайда"] },
+            { "label": "une page de notes", "anyOf": ["une page de notes", "страница заметок"] },
+            { "label": "dépôt mardi à 17h", "anyOf": ["mardi à dix-sept heures", "mardi à 17h", "вторника 17"] },
+            { "label": "présentation mercredi à 10h", "anyOf": ["mercredi à dix heures", "mercredi à 10h", "среду 10"] },
+            { "label": "salle B", "anyOf": ["salle B", "аудитории B"] },
+            { "label": "corrections vendredi midi", "anyOf": ["corrections avant vendredi midi", "corriger avant vendredi midi", "исправления до пятницы"] }
+          ],
+          "modelAnswer": "Il faut lire le guide, choisir deux exemples, préparer quatre diapositives et une page de notes. Le dépôt est prévu mardi à dix-sept heures et la présentation mercredi à dix heures, salle B. Après la présentation, il faut envoyer les corrections avant vendredi midi.",
           "explanation": "Les verbes donnent la préparation; avant mardi indique le dépôt et Mercredi à 10h le passage oral.",
           "hints": ["Relève les trois actions avant Déposez.", "Le dépôt comprend deux fichiers.", "La présentation a son propre jour, heure et salle."],
           "objectiveIds": ["obj:a2-l30-reading"]
@@ -2817,9 +2892,14 @@
           "id": "a2-l30-e2", "type": "listening-comprehension",
           "prompt": "Quel est le nouveau moment de la présentation, quelles diapositives faut-il modifier et quand faut-il envoyer le fichier ?",
           "listenText": "Bonjour, petit changement pour la présentation. Elle n'aura pas lieu mercredi à dix heures, mais jeudi à quatorze heures. Corrigez les diapositives quatre et cinq, puis envoyez-moi la nouvelle version avant mercredi midi. Maya commence la réunion et Karim présente les résultats.",
-          "transcript": "Bonjour, petit changement pour la présentation. Elle n'aura pas lieu mercredi à 10h, mais jeudi à 14h. Corrigez les diapositives 4 et 5, puis envoyez-moi la nouvelle version avant mercredi midi. Maya commence la réunion et Karim présente les résultats.",
+          "transcript": "Responsable : Petit changement : la présentation n'aura pas lieu mercredi à 10h, mais jeudi à 14h. Corrigez les diapositives 4 et 5.\nKarim : D'accord. Quand faut-il envoyer la nouvelle version ?\nResponsable : Avant mercredi midi. Maya commence la réunion et Karim présente les résultats.",
+          "audioScene": [
+            { "speaker": "Responsable", "text": "Petit changement : la présentation n'aura pas lieu mercredi à dix heures, mais jeudi à quatorze heures. Corrigez les diapositives quatre et cinq.", "voice": "fr-FR-DeniseNeural" },
+            { "speaker": "Karim", "text": "D'accord. Quand faut-il envoyer la nouvelle version ?", "voice": "fr-FR-HenriNeural" },
+            { "speaker": "Responsable", "text": "Avant mercredi midi. Maya commence la réunion et Karim présente les résultats.", "voice": "fr-FR-DeniseNeural" }
+          ],
           "acceptedAnswers": ["jeudi à 14h, diapositives 4 et 5, avant mercredi midi", "présentation jeudi quatorze heures; corriger 4 et 5; fichier mercredi midi", "четверг 14:00, слайды 4 и 5, файл до полудня среды"], "requiredTokens": [],
-          "modelAnswer": "La présentation passe à jeudi à quatorze heures. Il faut corriger les diapositives quatre et cinq et envoyer le fichier avant mercredi midi.",
+          "modelAnswer": "La présentation est reportée à jeudi à quatorze heures. Il faut corriger les diapositives quatre et cinq et envoyer le fichier avant mercredi midi.",
           "explanation": "La structure ne… pas mais oppose l'ancien et le nouveau moment; puis relie la correction à l'envoi.",
           "hints": ["Écarte l'heure qui suit n'aura pas lieu.", "Deux numéros suivent Corrigez.", "Le délai du fichier vient après avant."],
           "objectiveIds": ["obj:a2-l30-listening"]
@@ -3054,7 +3134,7 @@
           "explanation": "Le récit distingue le décor, les événements, l'évaluation et une nuance négative.",
           "hints": ["Commence par c'était et il y avait.", "Ajoute deux événements en passé composé.", "Explique ton impression avec parce que puis nuance avec En revanche."],
           "rubric": ["Le cadre et deux événements sont distincts.", "L'impression positive est expliquée.", "Un point négatif nuance le récit sans casser sa conclusion."],
-          "requiresRecording": true, "minimumRecordingSeconds": 25,
+          "requiresRecording": true, "minimumRecordingSeconds": 60,
           "objectiveIds": ["obj:a2-l33-speaking"]
         }
       ],
@@ -3117,7 +3197,7 @@
           "id": "a2-l34-e3", "type": "rubric-writing",
           "prompt": "Écris 60–90 mots : compare deux lieux selon le prix, l'ambiance et le transport, puis recommande le meilleur pour une rencontre entre amis.",
           "acceptedAnswers": [], "requiredTokens": ["plus", "moins", "le meilleur", "parce que"],
-          "modelAnswer": "Le Café Central est plus proche du métro et son menu est moins cher, mais l'ambiance y est très bruyante le soir. Le Jardin se trouve un peu plus loin et coûte deux euros de plus. En revanche, c'est le lieu le plus calme et il y a une grande table pour les groupes. Je recommande Le Jardin parce que nous voulons surtout discuter. Pour nous, c'est le meilleur choix malgré la distance.",
+          "modelAnswer": "Le Café Central est plus proche du métro, mais son menu coûte deux euros de plus et l'ambiance y est très bruyante le soir. Le Jardin se trouve un peu plus loin, mais il est moins cher. En revanche, c'est le lieu le plus calme et il y a une grande table pour les groupes. Je recommande Le Jardin parce que nous voulons surtout discuter. Pour nous, c'est le meilleur choix malgré la distance.",
           "explanation": "La recommandation repose sur des critères comparés et sur la priorité réelle du groupe.",
           "hints": ["Consacre une phrase à chaque lieu.", "Utilise un comparatif pour le prix ou le transport.", "Termine par un superlatif et parce que."],
           "rubric": ["Prix, ambiance et transport sont comparés.", "Au moins un comparatif et un superlatif sont corrects.", "La recommandation suit une priorité explicite."],
@@ -3164,7 +3244,14 @@
           "id": "a2-l35-e1", "type": "listening-comprehension",
           "prompt": "Que préfère chaque personne, quelles sont les deux contraintes et quel compromis le groupe choisit-il ?",
           "listenText": "Emma veut voir un film, mais Lucas préfère une activité où l'on peut parler. Nina ne peut arriver qu'après dix-neuf heures et le groupe veut dépenser moins de vingt euros. Finalement, ils choisissent un café-jeux ouvert jusqu'à vingt-trois heures, avec une entrée à huit euros.",
-          "transcript": "Emma veut voir un film, mais Lucas préfère une activité où l'on peut parler. Nina ne peut arriver qu'après 19h et le groupe veut dépenser moins de 20 euros. Finalement, ils choisissent un café-jeux ouvert jusqu'à 23h, avec une entrée à 8 euros.",
+          "transcript": "Emma : Moi, je préfère voir un film.\nLucas : J'aimerais plutôt une activité où l'on peut parler.\nNina : Je ne peux arriver qu'après 19h.\nLucas : Et il faut dépenser moins de 20 euros.\nEmma : Alors, choisissons le café-jeux : il est ouvert jusqu'à 23h et l'entrée coûte 8 euros.",
+          "audioScene": [
+            { "speaker": "Emma", "text": "Moi, je préfère voir un film.", "voice": "fr-FR-DeniseNeural" },
+            { "speaker": "Lucas", "text": "J'aimerais plutôt une activité où l'on peut parler.", "voice": "fr-FR-HenriNeural" },
+            { "speaker": "Nina", "text": "Je ne peux arriver qu'après dix-neuf heures.", "voice": "fr-FR-DeniseNeural" },
+            { "speaker": "Lucas", "text": "Et il faut dépenser moins de vingt euros.", "voice": "fr-FR-HenriNeural" },
+            { "speaker": "Emma", "text": "Alors, choisissons le café-jeux : il est ouvert jusqu'à vingt-trois heures et l'entrée coûte huit euros.", "voice": "fr-FR-DeniseNeural" }
+          ],
           "acceptedAnswers": ["Emma film, Lucas parler; après 19h et moins de 20 euros; café-jeux à 8 euros", "film contre activité sociale, horaire et budget, compromis café-jeux", "Эмма хочет кино, Лукас — общение; после 19 и до 20 евро; кафе с играми"], "requiredTokens": [],
           "modelAnswer": "Emma préfère le cinéma et Lucas veut pouvoir parler. Il faut commencer après dix-neuf heures et rester sous vingt euros; le groupe choisit donc le café-jeux à huit euros.",
           "explanation": "Les préférences s'opposent dans la première phrase, les contraintes suivent, puis Finalement annonce le compromis.",

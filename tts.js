@@ -1,12 +1,13 @@
 import { getRecord, putRecord } from "./storage.js";
 
 const TTS_STORE = "ttsAudio";
-const MANIFEST_URL = "data/audio/manifest.json?v=20260713-vocab-edge-1";
+const MANIFEST_URL = "data/audio/manifest.json?v=20260722-a2-closure-1";
 const AUDIO_BASE_URL = "data/audio/";
-const AUDIO_CACHE_VERSION = "2026-07-13-vocab-edge-1";
+const AUDIO_CACHE_VERSION = "2026-07-22-a2-closure-1";
 
 let manifestPromise = null;
 let currentAudio = null;
+let finishCurrentAudio = null;
 
 const BROWSER_VOICE_NAME_HINTS = {
   "fr-FR-DeniseNeural": ["denise", "amélie", "amelie", "audrey", "aurélie", "aurelie", "marie", "céline", "celine", "julie", "sophie", "female", "feminine", "woman"],
@@ -43,16 +44,14 @@ export async function speakFrench(text, { voice, rate }) {
 
   const manifest = await loadManifest();
   if (manifest[key]) {
-    playUrl(`${AUDIO_BASE_URL}${manifest[key]}?v=${AUDIO_CACHE_VERSION}`, {
+    return playUrl(`${AUDIO_BASE_URL}${manifest[key]}?v=${AUDIO_CACHE_VERSION}`, {
       fallback: () => speakFrenchFallback(text, rate, voice)
     });
-    return;
   }
 
   const cached = await getRecord(TTS_STORE, key);
   if (cached?.blob) {
-    playBlob(cached.blob);
-    return;
+    return playBlob(cached.blob);
   }
 
   const normalized = normalizeSpeechText(text);
@@ -62,38 +61,60 @@ export async function speakFrench(text, { voice, rate }) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const blob = await response.blob();
     await putRecord(TTS_STORE, { id: key, blob, text: normalized, voice, rate, createdAt: new Date().toISOString() });
-    playBlob(blob);
+    return playBlob(blob);
   } catch (error) {
     console.warn("[tts] live synthesis unavailable, falling back to the browser voice", error);
-    speakFrenchFallback(text, rate, voice);
+    return speakFrenchFallback(text, rate, voice);
+  }
+}
+
+export async function speakFrenchSequence(turns, { rate }) {
+  for (const turn of turns || []) {
+    if (!turn?.text || !turn?.voice) continue;
+    await speakFrench(turn.text, { voice: turn.voice, rate });
   }
 }
 
 function playBlob(blob) {
-  playUrl(URL.createObjectURL(blob), { revokeOnEnd: true });
+  return playUrl(URL.createObjectURL(blob), { revokeOnEnd: true });
 }
 
 function playUrl(url, { revokeOnEnd = false, fallback } = {}) {
-  if (currentAudio) currentAudio.pause();
+  if (currentAudio) {
+    currentAudio.pause();
+    finishCurrentAudio?.();
+  }
   const audio = new Audio(url);
   currentAudio = audio;
-  let fallbackUsed = false;
-  const useFallback = () => {
-    if (fallbackUsed) return;
-    fallbackUsed = true;
-    fallback?.();
-  };
-  if (revokeOnEnd) {
-    audio.addEventListener("ended", () => URL.revokeObjectURL(url));
-  }
-  audio.addEventListener("error", () => {
-    if (revokeOnEnd) URL.revokeObjectURL(url);
-    console.warn("[tts] playback failed; using the browser's French voice");
-    useFallback();
-  });
-  audio.play().catch((error) => {
-    console.warn("[tts] playback failed", error);
-    useFallback();
+  return new Promise((resolve) => {
+    let settled = false;
+    let fallbackUsed = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      if (revokeOnEnd) URL.revokeObjectURL(url);
+      if (currentAudio === audio) {
+        currentAudio = null;
+        finishCurrentAudio = null;
+      }
+      resolve();
+    };
+    const useFallback = () => {
+      if (fallbackUsed) return;
+      fallbackUsed = true;
+      fallback?.();
+      finish();
+    };
+    audio.addEventListener("ended", finish);
+    finishCurrentAudio = finish;
+    audio.addEventListener("error", () => {
+      console.warn("[tts] playback failed; using the browser's French voice");
+      useFallback();
+    });
+    audio.play().catch((error) => {
+      console.warn("[tts] playback failed", error);
+      useFallback();
+    });
   });
 }
 

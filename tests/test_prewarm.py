@@ -4,7 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, call
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
@@ -14,6 +14,12 @@ import prewarm_tts  # noqa: E402
 
 
 class CollectTextsTests(unittest.TestCase):
+    def test_local_scene_voices_are_distinct(self):
+        self.assertNotEqual(
+            prewarm_tts.LOCAL_MACOS_VOICES["fr-FR-DeniseNeural"],
+            prewarm_tts.LOCAL_MACOS_VOICES["fr-FR-HenriNeural"],
+        )
+
     def test_collects_every_speakable_field(self):
         data = {
             "lessons": [{
@@ -66,6 +72,34 @@ class CollectTextsTests(unittest.TestCase):
             sorted({"Bonjour.", "Le train part à dix heures.", "Le magasin est ouvert."})
         )
 
+    def test_collects_multivoice_scene_with_explicit_voices(self):
+        data = {
+            "lessons": [{
+                "targetPhrase": "Bonjour.",
+                "dialogue": [],
+                "vocabulary": [],
+                "exercises": [{
+                    "type": "listening-comprehension",
+                    "audioScene": [
+                        {"text": "Bonjour Madame.", "voice": "fr-FR-HenriNeural"},
+                        {"text": "Bonjour Monsieur.", "voice": "fr-FR-DeniseNeural"},
+                    ],
+                }],
+            }],
+            "pronunciationTopics": [],
+        }
+        items = prewarm_tts.collect_audio_items(data)
+        self.assertIn(("Bonjour Madame.", "fr-FR-HenriNeural"), items)
+        self.assertIn(("Bonjour Monsieur.", "fr-FR-DeniseNeural"), items)
+
+    def test_merges_a1_and_a2_catalogs(self):
+        merged = prewarm_tts.merge_course_catalogs(
+            {"lessons": [{"id": "a1"}], "pronunciationTopics": [{"id": "p1"}]},
+            {"lessons": [{"id": "a2"}], "pronunciationTopics": [{"id": "p2"}]},
+        )
+        self.assertEqual([lesson["id"] for lesson in merged["lessons"]], ["a1", "a2"])
+        self.assertEqual([topic["id"] for topic in merged["pronunciationTopics"]], ["p1", "p2"])
+
     def test_collects_french_review_card_audio(self):
         data = {
             "lessons": [{
@@ -115,6 +149,52 @@ class CollectTextsTests(unittest.TestCase):
 
 
 class PrewarmManifestTests(unittest.TestCase):
+    def test_committed_manifest_covers_a1_a2_and_scene_voices(self):
+        a1 = json.loads(prewarm_tts.LESSONS_PATH.read_text(encoding="utf-8"))
+        a2 = json.loads(prewarm_tts.A2_LESSONS_PATH.read_text(encoding="utf-8"))
+        pronunciation = json.loads(prewarm_tts.PRONUNCIATION_PATH.read_text(encoding="utf-8"))
+        data = prewarm_tts.merge_course_catalogs(a1, a2)
+        manifest = json.loads((prewarm_tts.AUDIO_DIR / "manifest.json").read_text(encoding="utf-8"))
+        items = prewarm_tts.collect_audio_items(data, pronunciation)
+        missing = []
+        for text, voice in items:
+            key = server.cache_key(text, voice, prewarm_tts.RATE)
+            filename = manifest.get(key)
+            if not filename or not (prewarm_tts.AUDIO_DIR / filename).is_file():
+                missing.append((text, voice))
+        self.assertEqual(missing, [])
+        self.assertEqual(len(manifest), len(items))
+
+    def test_prewarm_uses_each_scene_voice_in_the_cache_key(self):
+        data = {
+            "lessons": [{
+                "targetPhrase": "Bonjour.",
+                "dialogue": [],
+                "vocabulary": [],
+                "exercises": [{
+                    "type": "listening-comprehension",
+                    "audioScene": [
+                        {"text": "Je confirme.", "voice": "fr-FR-DeniseNeural"},
+                        {"text": "Merci.", "voice": "fr-FR-HenriNeural"},
+                    ],
+                }],
+            }],
+            "pronunciationTopics": [],
+        }
+        synthesizer = AsyncMock(return_value=b"AUDIO")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manifest = asyncio.run(prewarm_tts.prewarm(
+                data,
+                audio_dir=Path(tmpdir),
+                synthesizer=synthesizer,
+            ))
+        synthesizer.assert_has_awaits([
+            call("Je confirme.", "fr-FR-DeniseNeural", prewarm_tts.RATE),
+            call("Merci.", "fr-FR-HenriNeural", prewarm_tts.RATE),
+        ], any_order=True)
+        self.assertIn(server.cache_key("Je confirme.", "fr-FR-DeniseNeural", prewarm_tts.RATE), manifest)
+        self.assertIn(server.cache_key("Merci.", "fr-FR-HenriNeural", prewarm_tts.RATE), manifest)
+
     def test_writes_manifest_matching_cache_key(self):
         data = {
             "lessons": [{"targetPhrase": "Bonjour !", "dialogue": [], "vocabulary": []}],

@@ -85,7 +85,7 @@ assert.match(data.lessons[5].rule, /не образуют универсальн
 
 assert.match(indexSource, /data-view="pronunciation">Правила чтения/);
 assert.match(indexSource, /data-view="pronunciation-review">Повторение чтения/);
-assert.match(indexSource, /app\.js\?v=20260722-a2-block-6/);
+assert.match(indexSource, /app\.js\?v=20260722-a2-closure-1/);
 assert.match(appSource, /data\/pronunciation-course\.json\?v=20260714-reading-4/);
 assert.match(appSource, /pronunciationData: null/);
 assert.match(appSource, /pronunciationState: defaultPronunciationState\(\)/);

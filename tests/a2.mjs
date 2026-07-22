@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { validateA2Contracts } from "../a2-validator.js";
 import { buildCards } from "../cards.js";
 import { validateCourseCatalog } from "../course-validator.js";
 import { checkExercise } from "../exercises.js";
@@ -9,6 +10,8 @@ const course = JSON.parse(await readFile(new URL("../data/a2/course.json", impor
 const matrix = JSON.parse(await readFile(new URL("../data/a2/can-do.json", import.meta.url), "utf8"));
 
 assert.equal(validateCourseCatalog(course), true);
+assert.equal(validateA2Contracts(course, matrix), true);
+assert.equal(course.meta.contentVersion, matrix.meta.contentVersion);
 assert.equal(course.levels.length, 1);
 assert.equal(course.levels[0].id, "a2");
 assert.equal(course.modules.length, 6, "A2 publishes six vertical blocks across A2.1 and A2.2");
@@ -27,6 +30,8 @@ const exercises = course.lessons.flatMap((lesson) => lesson.exercises);
 assert.equal(exercises.length, 114);
 assert.ok(exercises.every((exercise) => exercise.hints?.length === 3), "every A2 exercise has staged help");
 assert.ok(exercises.some((exercise) => exercise.interactionTurns?.length === 3), "the block includes a multi-turn interaction");
+assert.ok(exercises.filter((exercise) => exercise.audioScene?.length).length >= 4, "A2.2 includes several multi-voice listening scenes");
+assert.ok(exercises.filter((exercise) => exercise.audioScene?.length).every((exercise) => new Set(exercise.audioScene.map((turn) => turn.voice)).size >= 2));
 assert.ok(exercises.some((exercise) => exercise.type === "rubric-writing" && /60–90 слов/.test(exercise.prompt)));
 assert.ok(exercises.some((exercise) => exercise.type === "conversation-prompt" && exercise.requiresRecording));
 assert.ok(exercises.some((exercise) => /charges comprises/i.test(exercise.sourceText || "")), "housing input includes real listing conditions");
@@ -49,6 +54,60 @@ assert.ok(exercises.some((exercise) => /justificatif de domicile/i.test(exercise
 assert.ok(exercises.some((exercise) => /Pourriez-vous me confirmer/i.test(exercise.sourceText || "")), "study-work input includes a formal request");
 assert.ok(exercises.some((exercise) => /Café-jeux/i.test(exercise.sourceText || exercise.transcript || "")), "social input includes a realistic shared choice");
 assert.ok(course.courseRoadmap.levels[0].exitEvidence.some(({ evidence }) => /уместном регистре/.test(evidence)));
+assert.ok(course.courseRoadmap.sources.length >= 3, "published A2 keeps its official reference basis in the catalog");
+assert.ok(course.resources.some((resource) => resource.url.includes("coe.int")));
+assert.ok(course.resources.some((resource) => resource.url.includes("france-education-international.fr")));
+assert.ok(exercises.some((exercise) => exercise.id === "a2-l17-e3" && exercise.type === "recorded-monologue"));
+assert.ok(course.lessons.find((lesson) => lesson.id === "a2-l17").objectives.some((objective) => objective.skill === "spoken-production"));
+
+const countWords = (text) => (String(text).match(/[\p{L}]+(?:['’][\p{L}]+)?|\d+/gu) || []).length;
+for (const exercise of exercises) {
+  const range = exercise.prompt.match(/(\d+)[–-](\d+)\s*(?:слов|mots)/i);
+  if (!range) continue;
+  const words = countWords(exercise.modelAnswer);
+  assert.ok(words >= Number(range[1]) && words <= Number(range[2]), `${exercise.id}: model has ${words} words outside ${range[1]}–${range[2]}`);
+}
+for (const exercise of exercises.filter((exercise) => exercise.type === "recorded-monologue")) {
+  const range = exercise.prompt.match(/(\d+)[–-](\d+)\s*(?:секунд|secondes)/i);
+  assert.ok(range, `${exercise.id}: recorded monologue declares a duration range`);
+  assert.equal(exercise.minimumRecordingSeconds, Number(range[1]), `${exercise.id}: recording minimum matches the task`);
+}
+
+const l20 = exercises.find((exercise) => exercise.id === "a2-l20-e2");
+assert.equal(
+  checkExercise(l20, "Il faut se reposer, manger léger, boire normalement aujourd'hui et éviter le sport pendant la fatigue.").status,
+  "correct",
+  "a complete natural answer must not be rejected for using a new word order"
+);
+assert.equal(
+  checkExercise(l20, "Il faut rester au calme, manger léger et éviter le sport pendant la fatigue.").status,
+  "incorrect",
+  "the checker must still report a genuinely missing recommendation"
+);
+const l24 = exercises.find((exercise) => exercise.id === "a2-l24-e2");
+assert.equal(
+  checkExercise(l24, "On utilise l'attestation trente jours; ensuite on apporte l'identité et la photo au rendez-vous, après la déclaration en ligne et le téléchargement de l'attestation provisoire.").status,
+  "correct",
+  "closed comprehension accepts reordered facts and extra correct wording"
+);
+const l30 = exercises.find((exercise) => exercise.id === "a2-l30-e1");
+assert.equal(
+  checkExercise(l30, "Il faut lire le guide, choisir deux exemples, préparer quatre diapositives et une page de notes; dépôt mardi à 17h, présentation mercredi à 10h salle B, puis corriger avant vendredi midi.").status,
+  "correct",
+  "all project stages must be accepted semantically"
+);
+
+const serializedCourse = JSON.stringify(course);
+for (const staleError of ["plus mieux\",\"right\":\"meilleur", "elle est aussi plus petite", "Je voudrais la visiter", "vɛ̃tsɛ̃k", "ʒwɑ̃je", "La présentation passe à jeudi"]) {
+  assert.ok(!serializedCourse.includes(staleError), `removed A2 error must stay removed: ${staleError}`);
+}
+
+const brokenMatrixVersion = structuredClone(matrix);
+brokenMatrixVersion.meta.contentVersion = "0.0.0";
+assert.throws(() => validateA2Contracts(course, brokenMatrixVersion), /contentVersion/);
+const brokenRoadmapClaim = structuredClone(course);
+brokenRoadmapClaim.courseRoadmap.levels[0].modules.find((module) => module.id.endsWith("changing-plans")).exerciseTypes.push("guided-writing");
+assert.throws(() => validateA2Contracts(brokenRoadmapClaim, matrix), /claimed exercise type/);
 const brokenInteraction = structuredClone(course);
 brokenInteraction.lessons[3].exercises[1].interactionTurns = [{ speaker: "Agent", prompt: "Un seul tour" }];
 assert.throws(() => validateCourseCatalog(brokenInteraction), /expected at least two turns/);

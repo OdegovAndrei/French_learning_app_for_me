@@ -19,7 +19,7 @@ export function createRecordingRuntime({
   function renderVoiceLab(target, key, options = {}) {
     const showTarget = options.showTarget !== false;
     const targetAvailable = options.targetAvailable !== false;
-    return `<div class="voice-lab-box" data-target="${escapeHtml(target)}" data-key="${escapeHtml(key)}"
+    return `<div class="voice-lab-box" data-target="${targetAvailable ? escapeHtml(target) : ""}" data-key="${escapeHtml(key)}"
       data-target-available="${targetAvailable}"
       ${options.lessonId ? `data-lesson-id="${escapeHtml(options.lessonId)}"` : ""}
       ${options.exerciseId ? `data-exercise-id="${escapeHtml(options.exerciseId)}"` : ""}
