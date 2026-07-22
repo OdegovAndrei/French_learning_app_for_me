@@ -161,13 +161,8 @@ export function checkCatalogLessonPrerequisites(catalog, lesson, completedLesson
   };
 }
 
-export function getIntroducedLessonIds({ completedLessons = [], attempts = [], currentLessonId = null } = {}) {
-  const introduced = new Set(uniqueIds(iterableValues(completedLessons)));
-  for (const attempt of attemptValues(attempts)) {
-    if (validId(attempt?.lessonId)) introduced.add(attempt.lessonId);
-  }
-  if (validId(currentLessonId)) introduced.add(currentLessonId);
-  return [...introduced];
+export function getCompletedLessonIds(completedLessons = []) {
+  return uniqueIds(iterableValues(completedLessons));
 }
 
 function classifyExercise(exercise, attempt, recordingEvidence) {
@@ -298,11 +293,6 @@ function attemptEntries(attempts) {
   if (attempts instanceof Map) return attempts.entries();
   if (Array.isArray(attempts)) return attempts.map((attempt) => [null, attempt]);
   return [];
-}
-
-function attemptValues(attempts) {
-  if (attempts instanceof Map) return attempts.values();
-  return Array.isArray(attempts) ? attempts : [];
 }
 
 function iterableValues(value) {

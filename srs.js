@@ -211,6 +211,66 @@ export function buildReviewQueue({ cards, schedules, logs, now = new Date(), new
   return [...due, ...newCards];
 }
 
+/**
+ * Builds a transition queue for a learner who is studying the current level
+ * while keeping earlier material alive. Due cards may come from every supplied
+ * level; unscheduled cards are introduced only from newCards.
+ */
+export function buildCumulativeReviewQueue({
+  reviewCards,
+  newCards,
+  schedules,
+  logs,
+  now = new Date(),
+  newLimit = 10,
+  seen = new Set()
+}) {
+  const due = buildReviewQueue({
+    cards: reviewCards,
+    schedules,
+    logs,
+    now,
+    newLimit: 0,
+    seen
+  });
+  const currentLevelQueue = buildReviewQueue({
+    cards: newCards,
+    schedules,
+    logs,
+    now,
+    newLimit,
+    seen
+  });
+  const fresh = currentLevelQueue.filter((card) => isNewSchedule(schedules.get(card.id)));
+  const ids = new Set();
+  return [...due, ...fresh].filter((card) => {
+    if (ids.has(card.id)) return false;
+    ids.add(card.id);
+    return true;
+  });
+}
+
+export function shuffleReviewQueueByPool(queue, schedules, random = Math.random) {
+  const reviewCards = [];
+  const newCards = [];
+
+  for (const card of queue) {
+    if (isNewSchedule(schedules.get(card.id))) newCards.push(card);
+    else reviewCards.push(card);
+  }
+
+  return [...shuffleCards(reviewCards, random), ...shuffleCards(newCards, random)];
+}
+
+function shuffleCards(cards, random) {
+  const shuffled = [...cards];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
 export function serializeFsrsCard(card) {
   return {
     due: card.due.toISOString(),

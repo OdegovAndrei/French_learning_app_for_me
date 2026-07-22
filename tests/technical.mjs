@@ -4,6 +4,8 @@ import {
   ALL_STORE_NAMES,
   CACHE_STORE_NAMES,
   DB_VERSION,
+  getLevelStorageId,
+  getLevelStorageKey,
   STORE_NAMES,
   normalizeCompletionModel,
   validateBackup
@@ -11,7 +13,7 @@ import {
 import {
   checkLessonPrerequisites,
   evaluateLessonReadiness,
-  getIntroducedLessonIds
+  getCompletedLessonIds
 } from "../mastery.js";
 
 assert.deepEqual(CACHE_STORE_NAMES, ["ttsAudio"], "ttsAudio is the only cache-only store");
@@ -40,7 +42,7 @@ valid.stores.kv.push(
       suspendedNoteIds: []
     }
   },
-  { key: "settings", value: { voiceURI: "", voiceRate: 0.82, newCardsPerDay: 10 } }
+  { key: "settings", value: { learnerName: "Анна", voiceURI: "", voiceRate: 0.82, newCardsPerDay: 10 } }
 );
 const validSchedule = {
   id: "card:1",
@@ -57,6 +59,22 @@ const validSchedule = {
 };
 valid.stores.schedules.push(validSchedule);
 assert.equal(validateBackup(valid), true);
+
+assert.equal(getLevelStorageKey("a1", "appState"), "appState", "A1 keeps legacy state keys");
+assert.equal(getLevelStorageKey("a2", "appState"), "a2:appState", "A2 state is namespaced");
+assert.equal(getLevelStorageId("a1", "card:1"), "card:1", "A1 keeps legacy record ids");
+assert.equal(getLevelStorageId("a2", "card:1"), "a2:card:1", "A2 record ids cannot collide with A1");
+assert.equal(getLevelStorageKey("b1", "appState"), "b1:appState", "future levels use the same generic namespace");
+assert.equal(getLevelStorageId("a2.2", "card:1"), "a2.2:card:1", "sublevels can use the generic namespace");
+assert.throws(() => getLevelStorageKey("advanced", "appState"), /Неизвестный уровень/);
+
+const levelBackup = emptyBackup();
+levelBackup.stores.kv.push(
+  { key: "selectedLevel", value: "a2" },
+  { key: "a2:appState", value: { currentView: "today" } }
+);
+levelBackup.stores.schedules.push({ ...validSchedule, id: "a2:card:1" });
+assert.equal(validateBackup(levelBackup), true, "A2 records remain valid in the shared backup");
 
 const legacyPartial = emptyBackup();
 legacyPartial.stores.kv.push({ key: "appState", value: { completedLessons: [] } });
@@ -108,11 +126,16 @@ assert.deepEqual(
   { completedLessons: ["l01", "l03"], legacyCompletedLessons: [], completionModelVersion: 2 }
 );
 
-const appSource = await readFile(new URL("../app.js", import.meta.url), "utf8");
+const shellSource = await readFile(new URL("../app.js", import.meta.url), "utf8");
+const appSource = await readFile(new URL("../levels/a1/app.js", import.meta.url), "utf8");
+const a2Source = await readFile(new URL("../levels/a2/app.js", import.meta.url), "utf8");
+const runtimeSource = await readFile(new URL("../course-runtime.js", import.meta.url), "utf8");
+const recordingRuntimeSource = await readFile(new URL("../recording-runtime.js", import.meta.url), "utf8");
 const exercisesSource = await readFile(new URL("../exercises.js", import.meta.url), "utf8");
 const storageSource = await readFile(new URL("../storage.js", import.meta.url), "utf8");
 const indexSource = await readFile(new URL("../index.html", import.meta.url), "utf8");
-assert.match(appSource, /function switchView\(view\) \{\s+stopRecording\(\);/);
+const stylesSource = await readFile(new URL("../styles.css", import.meta.url), "utf8");
+assert.match(appSource, /createCourseRuntime\(\{[\s\S]*?beforeSwitch:[\s\S]*?stopRecording\(\)/, "A1 delegates navigation lifecycle to the shared runtime");
 assert.match(appSource, /if \(state\.reviewMode === "cram"\) \{[\s\S]*?state\.reviewSeen\.add\(card\.id\);[\s\S]*?return;/);
 assert.match(appSource, /data-card-resume/);
 assert.match(appSource, /window\.addEventListener\("pagehide"[\s\S]*?flushPendingSaves\(\)/);
@@ -124,6 +147,14 @@ assert.match(
 );
 assert.match(appSource, /data-review-direction="ru-fr"/, "review toolbar must render an RU→FR direction button");
 assert.match(appSource, /data-review-direction="fr-ru"/, "review toolbar must render an FR→RU direction button");
+assert.match(indexSource, /data-view="listening"/, "navigation must expose the regular listening ladder");
+assert.match(appSource, /listening: renderListeningLadder/, "the app must render the listening ladder view");
+assert.match(appSource, /function checkListeningLadderDictation\(drill, answer\)/, "listening dictation needs a dedicated exact-text check");
+assert.match(appSource, /Транскрипт откроется только после попытки/, "the ladder must keep the transcript hidden until dictation is checked");
+assert.match(appSource, /setValue\("listeningLadder", state\.listeningLadder\)/, "listening ladder progress must be saved locally");
+assert.match(appSource, /id="review-shuffle"/, "review toolbar must render the shuffle button");
+assert.match(appSource, /shuffleReviewQueueByPool\(queue, schedules\)/, "shuffle must keep new and review cards in separate pools");
+assert.match(appSource, /state\.reviewQueueOrder = createShuffledQueueOrder\(queue, state\.schedules\);/, "shuffle must preserve its order through card re-renders");
 assert.match(
   appSource,
   /document\.querySelectorAll\("\[data-review-direction\]"\)\.forEach\(\(button\) => \{[\s\S]*?state\.reviewDirection = button\.dataset\.reviewDirection;[\s\S]*?state\.reviewSeen\.clear\(\);[\s\S]*?renderReview\(\);/,
@@ -146,17 +177,20 @@ assert.equal(checkLessonPrerequisites(masteryLesson, []).met, false);
 assert.equal(evaluateLessonReadiness(masteryLesson, attempts).canComplete, false);
 attempts.get("open").selfReviewed = true;
 assert.equal(evaluateLessonReadiness(masteryLesson, attempts).canComplete, true);
-assert.deepEqual(
-  getIntroducedLessonIds({ completedLessons: ["lesson:first"], attempts, currentLessonId: "lesson:current" }).sort(),
-  ["lesson:current", "lesson:first", "lesson:mastery"].sort()
+assert.deepEqual(getCompletedLessonIds(["lesson:first", "lesson:first"]), ["lesson:first"]);
+const activeCardsSource = appSource.slice(
+  appSource.indexOf("function getActiveCards()"),
+  appSource.indexOf("function getReviewSummary(")
 );
-assert.match(appSource, /getIntroducedLessonIds\(/);
+assert.match(activeCardsSource, /getCompletedLessonIds\(state\.appState\.completedLessons\)/);
+assert.doesNotMatch(activeCardsSource, /currentLessonId|exerciseAttempts|legacyCompletedLessons/);
+assert.doesNotMatch(appSource, /getIntroducedLessonIds/);
 assert.match(appSource, /phrases: renderPhrases/);
 assert.match(appSource, /state\.reviewDeck = "phrases"/);
 assert.match(appSource, /isPhrasesDeck \? renderUnlockedPhrasesList\(deckCards\) : renderUnlockedWordsList\(deckCards\)/);
-assert.match(indexSource, /app\.js\?v=20260722-help-ladder-1/);
+assert.match(indexSource, /app\.js\?v=20260722-a2-block-1/);
 assert.match(appSource, /data-self-review/);
-assert.match(appSource, /from "\.\/exercise-help\.js"/);
+assert.match(appSource, /from "\.\.\/\.\.\/exercise-help\.js"/);
 assert.match(appSource, /function renderExerciseHelp\(hints, hintLevel, availableHintCount\)/);
 assert.match(appSource, /attempt\.helpFailures = getNonNegativeInteger\(attempt\.helpFailures\) \+ 1/);
 assert.match(appSource, /Следующий шаг откроется после ещё одной попытки/);
@@ -178,5 +212,31 @@ assert.match(appSource, /Сохранено в файл/);
 assert.doesNotMatch(appSource, /renderOriginWarning/);
 assert.match(storageSource, /FILE_STORAGE_ENDPOINT}\/transaction/);
 assert.match(storageSource, /initializeOnly: true/);
+assert.match(shellSource, /const LEVELS = Object\.freeze\(/, "the shell must own the level registry");
+assert.match(shellSource, /getValue\("selectedLevel", "a1"\)/, "the selected level must persist globally");
+assert.match(shellSource, /document\.documentElement\.dataset\.level = activeLevel\.id/, "the shell must apply the level palette");
+assert.match(shellSource, /function renderLearnerName\(value\)/, "the shell must show the learner name instead of the level label");
+assert.match(shellSource, /function setLevelMenuOpen\(open\)/, "the shell must control the level menu state");
+assert.match(shellSource, /await activeExperience\?\.dispose\?\.\(\);/, "switching levels must dispose the active experience");
+assert.match(runtimeSource, /export function createCourseRuntime/, "A1 and A2 must share the level lifecycle runtime");
+assert.match(runtimeSource, /nav\?\.addEventListener\("click", handleNavigationClick\)/, "the runtime owns delegated level navigation");
+assert.match(indexSource, /id="level-switch"[^>]*aria-controls="level-menu"/, "the green level mark controls the level menu");
+assert.match(indexSource, /class="brand-mark"[^>]*>A1<\//, "the mark displays A1 by default");
+assert.match(indexSource, /<html lang="ru" data-level="a1">/, "A1 palette must be the initial page palette");
+assert.match(stylesSource, /:root\[data-level="a2"\] \{[\s\S]*?--accent: #2d5b9a;[\s\S]*?--accent-dark: #234879;[\s\S]*?--accent-soft: #e5eefb;/, "A2 must have an independent blue palette");
+assert.match(a2Source, /createLevelStorage\("a2"\)/, "A2 must use its own scoped storage");
+assert.match(appSource, /id="learner-name"/, "A1 settings must provide a learner name field");
+assert.match(a2Source, /id="learner-name"/, "A2 settings must provide the shared learner name field");
+assert.match(appSource, /export const levelExperience/, "A1 exposes a lifecycle contract to the shell");
+assert.match(a2Source, /export const levelExperience/, "A2 exposes a lifecycle contract to the shell");
+assert.match(a2Source, /today: "Сегодня",[\s\S]*?settings: "Настройки"/, "A2 keeps the five-view shell contract");
+assert.match(a2Source, /data\/a2\/course\.json/, "A2 loads its independent course catalog");
+assert.match(a2Source, /data\/a2\/can-do\.json/, "A2 loads its A2.1\/A2.2 matrix");
+assert.match(a2Source, /buildCumulativeReviewQueue/, "A2 combines due A1\/A2 cards while introducing current-level cards");
+assert.match(a2Source, /newCards: a2Cards/, "new review cards must come only from A2");
+assert.match(a2Source, /createRecordingRuntime/, "the first A2 block includes local oral recording");
+assert.match(recordingRuntimeSource, /fetch\("\/stt", \{/, "the shared recording runtime keeps local STT");
+assert.match(a2Source, /обычный урок в едином учебном прогрессе/, "A2 progress follows the responsible-learner premise");
+assert.match(storageSource, /return levelId === LEGACY_A1_LEVEL \? key : `\$\{levelId\}:\$\{key\}`;/, "storage namespacing must not hard-code A2");
 
-console.log("Technical regression tests passed: file storage, backup, recording, cram, mastery gates, introduced cards, resources, save flush.");
+console.log("Technical regression tests passed: file storage, shared runtime, cumulative review, recording, mastery, resources, save flush.");

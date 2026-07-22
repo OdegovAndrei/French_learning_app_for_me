@@ -10,7 +10,7 @@ import {
 import { STORE_NAMES, validateBackup } from "../storage.js";
 
 const data = JSON.parse(await readFile(new URL("../data/pronunciation-course.json", import.meta.url), "utf8"));
-const appSource = await readFile(new URL("../app.js", import.meta.url), "utf8");
+const appSource = await readFile(new URL("../levels/a1/app.js", import.meta.url), "utf8");
 const indexSource = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
 assert.equal(validatePronunciationCourse(data), true);
@@ -85,7 +85,7 @@ assert.match(data.lessons[5].rule, /не образуют универсальн
 
 assert.match(indexSource, /data-view="pronunciation">Правила чтения/);
 assert.match(indexSource, /data-view="pronunciation-review">Повторение чтения/);
-assert.match(indexSource, /app\.js\?v=20260722-help-ladder-1/);
+assert.match(indexSource, /app\.js\?v=20260722-a2-block-1/);
 assert.match(appSource, /data\/pronunciation-course\.json\?v=20260714-reading-4/);
 assert.match(appSource, /pronunciationData: null/);
 assert.match(appSource, /pronunciationState: defaultPronunciationState\(\)/);

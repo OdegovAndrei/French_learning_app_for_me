@@ -1,0 +1,604 @@
+{
+  "meta": {
+    "title": "French Study A2",
+    "catalogSchemaVersion": 3,
+    "contentVersion": "1.0.0",
+    "dailyMinutes": "45-60",
+    "method": "real tasks, connected input, active output, cumulative A1+A2 review"
+  },
+  "levels": [
+    {
+      "id": "a2",
+      "title": "A2: связная повседневная коммуникация",
+      "order": 1,
+      "cefrLevels": ["A2"],
+      "prerequisites": [],
+      "claim": "Практический учебный трек A2 для ответственного самостоятельного прохождения; не является официальным сертификатом."
+    }
+  ],
+  "modules": [
+    {
+      "id": "module:a2:past-events",
+      "levelId": "a2",
+      "title": "Что произошло",
+      "description": "Шесть связанных уроков о выходных, поездке и небольшой проблеме: понять рассказ, восстановить последовательность, уточнить детали и рассказать самому.",
+      "order": 1,
+      "prerequisites": []
+    }
+  ],
+  "resources": [],
+  "courseRoadmap": {
+    "status": "in-progress",
+    "claimPolicy": "A2 развивается по can-do-матрице A2.1/A2.2. Завершённые уроки и bilan образуют единый учебный прогресс ответственного ученика.",
+    "sources": [],
+    "skillAxes": [
+      { "id": "listening", "title": "Аудирование", "evidenceTypes": ["listening-comprehension", "dictation"] },
+      { "id": "reading", "title": "Чтение", "evidenceTypes": ["reading-comprehension", "information-search"] },
+      { "id": "spoken-interaction", "title": "Устное взаимодействие", "evidenceTypes": ["conversation-prompt", "roleplay"] },
+      { "id": "spoken-production", "title": "Устный монолог", "evidenceTypes": ["recorded-monologue", "rubric-speaking"] },
+      { "id": "written-production", "title": "Письмо", "evidenceTypes": ["guided-writing", "message-reply"] },
+      { "id": "mediation", "title": "Медиация", "evidenceTypes": ["summarize-for-a-friend", "explain-information"] },
+      { "id": "language-system", "title": "Грамматика и словарь в действии", "evidenceTypes": ["gap-fill", "sentence-transform"] }
+    ],
+    "levels": [
+      {
+        "id": "roadmap:a2",
+        "cefrLevel": "A2",
+        "title": "A2: связная повседневная коммуникация",
+        "status": "in-progress",
+        "claim": "Первый опубликованный блок учит рассказывать о прошлых событиях и поддерживать уточняющий обмен.",
+        "prerequisites": [],
+        "targetOutcomes": [
+          "Понимать основные факты короткого связного рассказа о прошлом.",
+          "Рассказывать о событиях в логическом порядке.",
+          "Уточнять детали и восстанавливать общение.",
+          "Писать связное сообщение от 60 слов."
+        ],
+        "modules": [
+          {
+            "id": "roadmap:a2:past-events",
+            "title": "Что произошло",
+            "skillFocus": ["listening", "spoken-interaction", "spoken-production", "written-production", "language-system"],
+            "outcomes": ["рассказать о выходных", "описать поездку или проблему", "задать уточняющий вопрос", "связать события по порядку"],
+            "grammar": ["passé composé с avoir", "passé composé с être", "временные связки"],
+            "exerciseTypes": ["listening-comprehension", "reading-comprehension", "conversation-prompt", "recorded-monologue", "guided-writing"]
+          }
+        ],
+        "exitEvidence": [
+          { "skill": "listening", "evidence": "Понять основные факты нового короткого рассказа." },
+          { "skill": "reading", "evidence": "Восстановить последовательность событий по сообщению." },
+          { "skill": "spoken-interaction", "evidence": "Ответить на изменение условия и задать уточняющий вопрос." },
+          { "skill": "spoken-production", "evidence": "Записать связный рассказ длительностью 60–90 секунд." },
+          { "skill": "written-production", "evidence": "Написать связный текст от 60 слов." },
+          { "skill": "mediation", "evidence": "Передать другу основную практическую информацию." },
+          { "skill": "language-system", "evidence": "Использовать формы passé composé и временные связки в собственной речи." }
+        ]
+      }
+    ]
+  },
+  "pronunciationTopics": [
+    {
+      "id": "a2:past-participle-rhythm",
+      "title": "Ритм рассказа в passé composé",
+      "level": "A2",
+      "target": "Не отделять вспомогательный глагол от participe passé длинной паузой.",
+      "cue": "Произнеси j'ai visité, on a mangé, nous avons attendu как один ритмический блок.",
+      "minimalPairs": ["j'ai visité — je visite", "on a mangé — on mange"],
+      "paradigm": [
+        { "label": "короткий блок", "form": "j'ai parlé" },
+        { "label": "с дополнением", "form": "j'ai parlé avec Léa" }
+      ],
+      "commonMistakes": [
+        { "wrong": "j'ai / visité", "right": "j'ai-visité", "note": "Сохраняй единый ритмический блок." }
+      ],
+      "exceptions": [
+        { "wrong": "говорить без пауз вообще", "right": "делить рассказ на смысловые группы", "note": "Связность не означает монотонную скорость." }
+      ]
+    },
+    {
+      "id": "a2:sequence-intonation",
+      "title": "Интонация последовательности и уточнения",
+      "level": "A2",
+      "target": "Показывать голосом продолжение после d'abord, ensuite, puis и завершение после finalement.",
+      "cue": "Небольшой подъём перед продолжением, падение тона в финале; уточняющий вопрос заканчивается подъёмом.",
+      "minimalPairs": ["Ensuite, on est partis. — Ensuite ?", "Tu es arrivé. — Tu es arrivé ?"],
+      "paradigm": [
+        { "label": "продолжение", "form": "D'abord…, ensuite…" },
+        { "label": "завершение", "form": "Finalement, tout s'est bien passé." }
+      ],
+      "commonMistakes": [
+        { "wrong": "одинаковая интонация всех связок", "right": "выделить переход и финал", "note": "Так слушателю легче следить за порядком." }
+      ],
+      "exceptions": [
+        { "wrong": "поднимать тон в каждом конце фразы", "right": "поднимать только при продолжении или вопросе", "note": "Утверждение обычно завершается падением." }
+      ]
+    }
+  ],
+  "grammarTopics": [
+    {
+      "id": "a2:passe-compose-avoir",
+      "title": "Passé composé с avoir",
+      "level": "A2",
+      "rule": "Для большинства частотных глаголов: avoir в настоящем времени + participe passé.",
+      "examples": ["J'ai visité le musée.", "Nous avons attendu vingt minutes.", "Elle a pris le bus."],
+      "paradigm": [
+        { "label": "parler", "form": "j'ai parlé" },
+        { "label": "finir", "form": "j'ai fini" },
+        { "label": "prendre", "form": "j'ai pris" }
+      ],
+      "commonMistakes": [
+        { "wrong": "j'ai visite", "right": "j'ai visité", "note": "Participe passé глаголов на -er заканчивается на -é." }
+      ],
+      "exceptions": [
+        { "wrong": "j'ai prendu", "right": "j'ai pris", "note": "У prendre нерегулярное participe passé." }
+      ]
+    },
+    {
+      "id": "a2:passe-compose-etre",
+      "title": "Passé composé с être",
+      "level": "A2",
+      "rule": "Некоторые глаголы перемещения используют être; participe passé согласуется с подлежащим.",
+      "examples": ["Elle est arrivée à neuf heures.", "Nous sommes partis tôt.", "Ils sont rentrés dimanche."],
+      "paradigm": [
+        { "label": "arriver, elle", "form": "elle est arrivée" },
+        { "label": "partir, nous", "form": "nous sommes partis / parties" },
+        { "label": "rentrer, ils", "form": "ils sont rentrés" }
+      ],
+      "commonMistakes": [
+        { "wrong": "elle a arrivée", "right": "elle est arrivée", "note": "Arriver использует être." }
+      ],
+      "exceptions": [
+        { "wrong": "все глаголы движения используют être", "right": "j'ai marché, j'ai voyagé", "note": "Список глаголов с être нужно учить в контексте." }
+      ]
+    },
+    {
+      "id": "a2:time-connectors",
+      "title": "Связки времени",
+      "level": "A2",
+      "rule": "D'abord, ensuite, puis и finalement показывают порядок событий; mais и parce que связывают проблему с причиной.",
+      "examples": ["D'abord, nous avons pris le train.", "Ensuite, nous sommes arrivés à Lyon.", "Finalement, nous avons trouvé l'hôtel."],
+      "paradigm": [
+        { "label": "начало", "form": "d'abord" },
+        { "label": "продолжение", "form": "ensuite / puis" },
+        { "label": "финал", "form": "finalement" }
+      ],
+      "commonMistakes": [
+        { "wrong": "повторять et в каждой фразе", "right": "чередовать временные связки", "note": "Связки делают порядок явным." }
+      ],
+      "exceptions": [
+        { "wrong": "обязательно использовать все четыре связки", "right": "выбирать только нужные", "note": "Естественность важнее механического списка." }
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": "a2-l01",
+      "level": "A2",
+      "title": "Qu'est-ce que tu as fait ce week-end ?",
+      "goal": "Понять короткий рассказ о выходных и назвать три события в правильном порядке.",
+      "scenario": "past-weekend",
+      "targetPhrase": "D'abord, j'ai visité le marché, ensuite j'ai déjeuné avec Léa et finalement je suis rentré chez moi.",
+      "pronunciationTopic": "a2:past-participle-rhythm",
+      "grammarTopic": "a2:passe-compose-avoir",
+      "moduleId": "module:a2:past-events",
+      "order": 1,
+      "prerequisites": [],
+      "tags": ["a2.1", "past-events", "weekend"],
+      "objectives": [
+        { "id": "obj:a2-l01-listening", "skill": "listening", "cefrCanDo": "Понимаю основные события короткого рассказа о выходных.", "required": true },
+        { "id": "obj:a2-l01-system", "skill": "language-system", "cefrCanDo": "Использую несколько частотных форм passé composé с avoir.", "required": true },
+        { "id": "obj:a2-l01-speaking", "skill": "spoken-production", "cefrCanDo": "Связываю три события временными маркерами.", "required": true }
+      ],
+      "dialogue": [
+        { "speaker": "Nora", "fr": "Qu'est-ce que tu as fait ce week-end ?", "ipa": "/kɛs kə ty a fɛ sə wikɛnd/", "ru": "Что ты делал на выходных?" },
+        { "speaker": "Léo", "fr": "Samedi, j'ai visité le marché avec Léa.", "ipa": "/samdi ʒe vizite lə maʁʃe avɛk lea/", "ru": "В субботу я сходил на рынок с Леа." },
+        { "speaker": "Léo", "fr": "Ensuite, nous avons déjeuné dans un petit café.", "ipa": "/ɑ̃sɥit nu zavɔ̃ deʒœne dɑ̃z‿œ̃ pəti kafe/", "ru": "Затем мы пообедали в маленьком кафе." },
+        { "speaker": "Léo", "fr": "Finalement, je suis rentré assez tôt.", "ipa": "/finalmɑ̃ ʒə sɥi ʁɑ̃tʁe ase to/", "ru": "В итоге я вернулся довольно рано." }
+      ],
+      "vocabulary": [
+        { "id": "vocab:a2-l01-weekend", "fr": "le week-end", "ipa": "/lə wikɛnd/", "ru": "выходные", "note": "Часто: ce week-end, le week-end dernier." },
+        { "id": "vocab:a2-l01-visit", "fr": "visiter", "ipa": "/vizite/", "ru": "посещать", "note": "Visiter un lieu; для человека обычно rendre visite à." },
+        { "id": "vocab:a2-l01-lunch", "fr": "déjeuner", "ipa": "/deʒœne/", "ru": "обедать", "note": "J'ai déjeuné — я пообедал." },
+        { "id": "vocab:a2-l01-finally", "fr": "finalement", "ipa": "/finalmɑ̃/", "ru": "в итоге", "note": "Связка для последнего события или результата." }
+      ],
+      "exercises": [
+        {
+          "id": "a2-l01-e1", "type": "listening-comprehension",
+          "prompt": "Прослушай рассказ. С кем Лéo ходил на рынок?",
+          "listenText": "Samedi, Léo a visité le marché avec Léa. Ensuite, ils ont déjeuné dans un petit café. Finalement, Léo est rentré assez tôt.",
+          "transcript": "Samedi, Léo a visité le marché avec Léa. Ensuite, ils ont déjeuné dans un petit café. Finalement, Léo est rentré assez tôt.",
+          "acceptedAnswers": ["avec Léa", "Léa"], "requiredTokens": [],
+          "modelAnswer": "Avec Léa.", "explanation": "В первом событии прямо назван спутник Лéo.",
+          "hints": ["Сначала определи первое событие.", "Услышь оборот avec…", "Имя начинается на L."],
+          "objectiveIds": ["obj:a2-l01-listening"]
+        },
+        {
+          "id": "a2-l01-e2", "type": "gap-fill",
+          "prompt": "Заполни: Samedi, j'___ le marché et nous ___ dans un café.",
+          "acceptedAnswers": ["ai visité, avons déjeuné", "j'ai visité le marché et nous avons déjeuné dans un café"], "requiredTokens": [],
+          "modelAnswer": "J'ai visité le marché et nous avons déjeuné dans un café.", "explanation": "Оба глагола образуют passé composé с avoir.",
+          "hints": ["Нужны две формы passé composé.", "Для je используй ai, для nous — avons.", "Participe passé: visité и déjeuné."],
+          "objectiveIds": ["obj:a2-l01-system"]
+        },
+        {
+          "id": "a2-l01-e3", "type": "recorded-monologue",
+          "prompt": "Расскажи о трёх событиях своих выходных по порядку. Запиши 30–60 секунд.",
+          "acceptedAnswers": [], "requiredTokens": ["d'abord", "ensuite", "finalement"],
+          "modelAnswer": "D'abord, j'ai fait les courses. Ensuite, j'ai retrouvé des amis. Finalement, je suis rentré chez moi.",
+          "explanation": "Важны связность, понятный порядок и формы прошлого времени.",
+          "hints": ["Выбери три простых события.", "Начни каждое событие с временной связки.", "Используй j'ai + participe passé; для rentrer — je suis rentré(e)."],
+          "rubric": ["Три события идут по порядку.", "Есть d'abord, ensuite и finalement.", "Речь понятна без чтения полного текста."],
+          "requiresRecording": true, "minimumRecordingSeconds": 15,
+          "objectiveIds": ["obj:a2-l01-speaking"]
+        }
+      ],
+      "cards": [
+        { "id": "phrase:a2-l01-1", "front": "Что ты делал на выходных?", "back": "Qu'est-ce que tu as fait ce week-end ?", "type": "phrase" },
+        { "id": "phrase:a2-l01-2", "front": "{{c1::Ensuite}}, nous avons déjeuné dans un petit café.", "back": "Затем мы пообедали в маленьком кафе.", "type": "cloze" }
+      ]
+    },
+    {
+      "id": "a2-l02",
+      "level": "A2",
+      "title": "Une journée bien remplie",
+      "goal": "Восстановить последовательность нескольких действий и написать короткий связный рассказ.",
+      "scenario": "busy-day",
+      "targetPhrase": "Le matin, j'ai travaillé; puis j'ai fait les courses parce que des amis sont venus dîner.",
+      "pronunciationTopic": "a2:past-participle-rhythm",
+      "grammarTopic": "a2:passe-compose-avoir",
+      "moduleId": "module:a2:past-events",
+      "order": 2,
+      "prerequisites": ["a2-l01"],
+      "tags": ["a2.1", "past-events", "sequence"],
+      "objectives": [
+        { "id": "obj:a2-l02-reading", "skill": "reading", "cefrCanDo": "Нахожу порядок действий в коротком связанном сообщении.", "required": true },
+        { "id": "obj:a2-l02-system", "skill": "language-system", "cefrCanDo": "Выбираю подходящее participe passé частотного глагола.", "required": true },
+        { "id": "obj:a2-l02-writing", "skill": "written-production", "cefrCanDo": "Пишу короткий связный рассказ о насыщенном дне.", "required": true }
+      ],
+      "dialogue": [
+        { "speaker": "Maya", "fr": "Tu as passé une bonne journée hier ?", "ipa": "/ty a pase yn bɔn ʒuʁne jɛʁ/", "ru": "Ты хорошо провёл вчерашний день?" },
+        { "speaker": "Émile", "fr": "Oui, mais j'ai fait beaucoup de choses.", "ipa": "/wi mɛ ʒe fɛ boku də ʃoz/", "ru": "Да, но я сделал много всего." },
+        { "speaker": "Émile", "fr": "Le matin, j'ai travaillé, puis j'ai fait les courses.", "ipa": "/lə matɛ̃ ʒe tʁavaje pɥi ʒe fɛ le kuʁs/", "ru": "Утром я работал, потом сходил за покупками." },
+        { "speaker": "Émile", "fr": "Le soir, j'ai préparé le dîner pour mes amis.", "ipa": "/lə swaʁ ʒe pʁepaʁe lə dine puʁ mez ami/", "ru": "Вечером я приготовил ужин для друзей." }
+      ],
+      "vocabulary": [
+        { "id": "vocab:a2-l02-spend", "fr": "passer une journée", "ipa": "/pase yn ʒuʁne/", "ru": "провести день", "note": "Не путай с passer par — проходить через." },
+        { "id": "vocab:a2-l02-busy", "fr": "bien rempli / remplie", "ipa": "/bjɛ̃ ʁɑ̃pli/", "ru": "насыщенный / насыщенная", "note": "Une journée bien remplie." },
+        { "id": "vocab:a2-l02-prepare", "fr": "préparer", "ipa": "/pʁepaʁe/", "ru": "готовить, подготавливать", "note": "Préparer le dîner, préparer un examen." },
+        { "id": "vocab:a2-l02-then", "fr": "puis", "ipa": "/pɥi/", "ru": "затем", "note": "Короткая связка последовательности." }
+      ],
+      "exercises": [
+        {
+          "id": "a2-l02-e1", "type": "reading-comprehension",
+          "prompt": "Что Émile сделал непосредственно перед ужином с друзьями?",
+          "sourceText": "Hier, Émile a eu une journée bien remplie. D'abord, il a travaillé à la bibliothèque. À midi, il a déjeuné avec sa sœur. Ensuite, il a fait les courses. Le soir, il a préparé le dîner et ses amis sont arrivés à huit heures.",
+          "acceptedAnswers": ["il a préparé le dîner", "a préparé le dîner", "приготовил ужин"], "requiredTokens": [],
+          "modelAnswer": "Il a préparé le dîner.", "explanation": "Подготовка ужина — последнее действие перед приходом друзей.",
+          "hints": ["Найди последнее событие до huit heures.", "Ответ находится в предложении, начинающемся Le soir.", "Ищи глагол préparer."],
+          "objectiveIds": ["obj:a2-l02-reading"]
+        },
+        {
+          "id": "a2-l02-e2", "type": "gap-fill",
+          "prompt": "Заполни тремя формами: Hier, j'___ (avoir) une journée chargée, j'___ (faire) les courses et j'___ (préparer) le dîner.",
+          "acceptedAnswers": ["ai eu, ai fait, ai préparé", "j'ai eu une journée chargée, j'ai fait les courses et j'ai préparé le dîner"], "requiredTokens": [],
+          "modelAnswer": "Hier, j'ai eu une journée chargée, j'ai fait les courses et j'ai préparé le dîner.",
+          "explanation": "Participe passé: eu, fait, préparé.",
+          "hints": ["Все три формы используют avoir.", "Participe passé avoir — eu; faire — fait.", "Préparer — préparé."],
+          "objectiveIds": ["obj:a2-l02-system"]
+        },
+        {
+          "id": "a2-l02-e3", "type": "guided-writing",
+          "prompt": "Напиши 45–70 слов о вчерашнем дне: утро, день, вечер и причина одного действия.",
+          "acceptedAnswers": [], "requiredTokens": ["le matin", "ensuite", "le soir", "parce que"],
+          "modelAnswer": "Le matin, j'ai étudié à la bibliothèque. Ensuite, j'ai déjeuné avec un ami parce que nous avions un projet à préparer. L'après-midi, j'ai fait les courses. Le soir, j'ai cuisiné et j'ai regardé un film. C'était une journée bien remplie.",
+          "explanation": "Сравни порядок, связки, формы прошлого и понятность причины.",
+          "hints": ["Раздели день на три части.", "Добавь ensuite и одну причину с parce que.", "Проверь avoir + participe passé."],
+          "rubric": ["Есть утро, день и вечер.", "События связаны, а не перечислены отдельными словами.", "Одна причина выражена через parce que."],
+          "objectiveIds": ["obj:a2-l02-writing"]
+        }
+      ],
+      "cards": [
+        { "id": "phrase:a2-l02-1", "front": "У меня был насыщенный день.", "back": "J'ai eu une journée bien remplie.", "type": "phrase" },
+        { "id": "phrase:a2-l02-2", "front": "Le soir, j'ai {{c1::préparé}} le dîner.", "back": "Вечером я приготовил ужин.", "type": "cloze" }
+      ]
+    },
+    {
+      "id": "a2-l03",
+      "level": "A2",
+      "title": "Le trajet et l'arrivée",
+      "goal": "Рассказать о перемещении и правильно выбрать être в passé composé.",
+      "scenario": "trip-arrival",
+      "targetPhrase": "Nous sommes partis tôt, nous sommes arrivés à midi et nous sommes rentrés dimanche soir.",
+      "pronunciationTopic": "a2:past-participle-rhythm",
+      "grammarTopic": "a2:passe-compose-etre",
+      "moduleId": "module:a2:past-events",
+      "order": 3,
+      "prerequisites": ["a2-l02"],
+      "tags": ["a2.1", "past-events", "travel"],
+      "objectives": [
+        { "id": "obj:a2-l03-listening", "skill": "listening", "cefrCanDo": "Понимаю время отправления и прибытия в коротком рассказе.", "required": true },
+        { "id": "obj:a2-l03-system", "skill": "language-system", "cefrCanDo": "Согласую participe passé с подлежащим при être.", "required": true },
+        { "id": "obj:a2-l03-speaking", "skill": "spoken-production", "cefrCanDo": "Кратко описываю поездку от отправления до возвращения.", "required": true }
+      ],
+      "dialogue": [
+        { "speaker": "Lina", "fr": "À quelle heure vous êtes partis ?", "ipa": "/a kɛl œʁ vu zɛt paʁti/", "ru": "Во сколько вы уехали?" },
+        { "speaker": "Tom", "fr": "Nous sommes partis à sept heures.", "ipa": "/nu sɔm paʁti a sɛt œʁ/", "ru": "Мы уехали в семь часов." },
+        { "speaker": "Lina", "fr": "Et vous êtes arrivés quand ?", "ipa": "/e vu zɛt aʁive kɑ̃/", "ru": "А когда вы приехали?" },
+        { "speaker": "Tom", "fr": "Nous sommes arrivés vers midi, mais ma sœur est arrivée plus tard.", "ipa": "/nu sɔm aʁive vɛʁ midi mɛ ma sœʁ ɛt aʁive ply taʁ/", "ru": "Мы приехали около полудня, но моя сестра приехала позже." }
+      ],
+      "vocabulary": [
+        { "id": "vocab:a2-l03-leave", "fr": "partir", "ipa": "/paʁtiʁ/", "ru": "уезжать, уходить", "note": "Passé composé: être parti(e)." },
+        { "id": "vocab:a2-l03-arrive", "fr": "arriver", "ipa": "/aʁive/", "ru": "прибывать", "note": "Passé composé: être arrivé(e)." },
+        { "id": "vocab:a2-l03-return", "fr": "rentrer", "ipa": "/ʁɑ̃tʁe/", "ru": "возвращаться", "note": "Passé composé: être rentré(e)." },
+        { "id": "vocab:a2-l03-late", "fr": "plus tard", "ipa": "/ply taʁ/", "ru": "позже", "note": "Противопоставляется plus tôt — раньше." }
+      ],
+      "exercises": [
+        {
+          "id": "a2-l03-e1", "type": "listening-comprehension",
+          "prompt": "Прослушай. Почему Camille приехала позже остальных?",
+          "listenText": "Nous sommes partis à sept heures et nous sommes arrivés vers midi. Camille est arrivée plus tard parce qu'elle a raté le premier train.",
+          "transcript": "Nous sommes partis à sept heures et nous sommes arrivés vers midi. Camille est arrivée plus tard parce qu'elle a raté le premier train.",
+          "acceptedAnswers": ["elle a raté le premier train", "parce qu'elle a raté le premier train", "она опоздала на первый поезд"], "requiredTokens": [],
+          "modelAnswer": "Parce qu'elle a raté le premier train.", "explanation": "Причина следует после parce que.",
+          "hints": ["Слушай последнюю часть сообщения.", "Причина вводится parce que.", "Ищи сочетание rater le train."],
+          "objectiveIds": ["obj:a2-l03-listening"]
+        },
+        {
+          "id": "a2-l03-e2", "type": "sentence-transform",
+          "prompt": "Преобразуй для женской группы: Ils sont partis tôt et ils sont arrivés à midi.",
+          "acceptedAnswers": [], "requiredTokens": ["elles sont parties", "elles sont arrivées"],
+          "modelAnswer": "Elles sont parties tôt et elles sont arrivées à midi.",
+          "explanation": "С être обе формы согласуются во множественном числе женского рода.",
+          "hints": ["Замени ils на elles.", "Добавь -es к обоим participe passé.", "Нужны формы parties и arrivées."],
+          "objectiveIds": ["obj:a2-l03-system"]
+        },
+        {
+          "id": "a2-l03-e3", "type": "recorded-monologue",
+          "prompt": "Опиши недавний маршрут: когда вышел/выехал, как добрался, когда прибыл и вернулся. Запиши 45–75 секунд.",
+          "acceptedAnswers": [], "requiredTokens": [],
+          "requiredTokenGroups": [
+            { "label": "форма partir с согласованием", "anyOf": ["je suis parti", "je suis partie"] },
+            { "label": "форма arriver с согласованием", "anyOf": ["je suis arrivé", "je suis arrivée"] },
+            { "label": "форма rentrer с согласованием", "anyOf": ["je suis rentré", "je suis rentrée"] }
+          ],
+          "modelAnswer": "Je suis parti tôt samedi matin. D'abord, j'ai pris le bus, puis le train. Je suis arrivé à Almaty vers midi. Dimanche soir, je suis rentré chez moi.",
+          "explanation": "Можно адаптировать окончания к своему роду; оцени связность и понятность маршрута.",
+          "hints": ["Назови отправление, транспорт, прибытие и возвращение.", "Используй partir, arriver и rentrer с être.", "Свяжи этапы с d'abord и puis."],
+          "rubric": ["Маршрут понятен по порядку.", "Формы с être согласованы с говорящим.", "Названы хотя бы два временных ориентира."],
+          "requiresRecording": true, "minimumRecordingSeconds": 20,
+          "objectiveIds": ["obj:a2-l03-speaking"]
+        }
+      ],
+      "cards": [
+        { "id": "phrase:a2-l03-1", "front": "Мы уехали рано и приехали около полудня.", "back": "Nous sommes partis tôt et nous sommes arrivés vers midi.", "type": "phrase" },
+        { "id": "phrase:a2-l03-2", "front": "Elle est {{c1::arrivée}} plus tard.", "back": "Она приехала позже.", "type": "cloze" }
+      ]
+    },
+    {
+      "id": "a2-l04",
+      "level": "A2",
+      "title": "Un problème en route",
+      "goal": "Объяснить небольшую проблему, понять изменение условия и задать уточняющий вопрос.",
+      "scenario": "travel-problem",
+      "targetPhrase": "J'ai raté mon train, alors j'ai pris le suivant; vous pouvez répéter l'heure d'arrivée ?",
+      "pronunciationTopic": "a2:sequence-intonation",
+      "grammarTopic": "a2:time-connectors",
+      "moduleId": "module:a2:past-events",
+      "order": 4,
+      "prerequisites": ["a2-l03"],
+      "tags": ["a2.1", "past-events", "interaction", "repair"],
+      "objectives": [
+        { "id": "obj:a2-l04-reading", "skill": "reading", "cefrCanDo": "Понимаю изменение маршрута в коротком сообщении.", "required": true },
+        { "id": "obj:a2-l04-interaction", "skill": "spoken-interaction", "cefrCanDo": "Реагирую на новое условие и задаю уточняющий вопрос.", "required": true },
+        { "id": "obj:a2-l04-system", "skill": "language-system", "cefrCanDo": "Связываю проблему и решение с alors, mais и finalement.", "required": true }
+      ],
+      "dialogue": [
+        { "speaker": "Agent", "fr": "Le train de quinze heures est supprimé.", "ipa": "/lə tʁɛ̃ də kɛ̃z œʁ ɛ sypʁime/", "ru": "Поезд на 15:00 отменён." },
+        { "speaker": "Voyageur", "fr": "D'accord. Quel est le prochain train ?", "ipa": "/dakɔʁ kɛl ɛ lə pʁɔʃɛ̃ tʁɛ̃/", "ru": "Хорошо. Какой следующий поезд?" },
+        { "speaker": "Agent", "fr": "Il part à seize heures vingt, mais il arrive à dix-neuf heures.", "ipa": "/il paʁ a sɛz œʁ vɛ̃ mɛ il aʁiv a diznœv œʁ/", "ru": "Он отправляется в 16:20, но прибывает в 19:00." },
+        { "speaker": "Voyageur", "fr": "Vous pouvez répéter l'heure d'arrivée, s'il vous plaît ?", "ipa": "/vu puve ʁepete lœʁ daʁive sil vu plɛ/", "ru": "Можете повторить время прибытия?" }
+      ],
+      "vocabulary": [
+        { "id": "vocab:a2-l04-miss", "fr": "rater", "ipa": "/ʁate/", "ru": "опоздать на, пропустить", "note": "Rater un train, rater un rendez-vous." },
+        { "id": "vocab:a2-l04-cancel", "fr": "supprimé / supprimée", "ipa": "/sypʁime/", "ru": "отменённый / отменённая", "note": "Le train est supprimé." },
+        { "id": "vocab:a2-l04-next", "fr": "le suivant / la suivante", "ipa": "/lə sɥivɑ̃ la sɥivɑ̃t/", "ru": "следующий / следующая", "note": "Заменяет уже названный предмет." },
+        { "id": "vocab:a2-l04-repeat", "fr": "répéter", "ipa": "/ʁepete/", "ru": "повторять", "note": "Стратегия восстановления общения." }
+      ],
+      "exercises": [
+        {
+          "id": "a2-l04-e1", "type": "reading-comprehension",
+          "prompt": "Как теперь нужно добраться до Dijon?",
+          "sourceText": "Information voyageurs : le train direct Lyon–Dijon de 15h05 est supprimé. Prenez le train de 15h30 jusqu'à Mâcon, puis changez pour Dijon. Arrivée prévue à 17h40.",
+          "acceptedAnswers": ["prendre le train de 15h30 et changer à Mâcon", "поехать в 15:30 и пересесть в Mâcon", "il faut changer à Mâcon"], "requiredTokens": [],
+          "modelAnswer": "Il faut prendre le train de 15h30 et changer à Mâcon.",
+          "explanation": "Новый маршрут содержит один обязательный changement.",
+          "hints": ["Прямой поезд отменён.", "Найди два действия после Prenez.", "Пересадка происходит в Mâcon."],
+          "objectiveIds": ["obj:a2-l04-reading"]
+        },
+        {
+          "id": "a2-l04-e2", "type": "conversation-prompt",
+          "prompt": "Ответь на три хода ситуации: поезд отменён; следующий требует пересадки; время пересадки ты не понял. Напиши план и запиши свои реплики.",
+          "interactionTurns": [
+            { "speaker": "Agent", "prompt": "Votre train est supprimé." },
+            { "speaker": "Agent", "prompt": "Prenez le train de 15h30 et changez à Mâcon." },
+            { "speaker": "Agent", "prompt": "La correspondance part à 16h42." }
+          ],
+          "acceptedAnswers": [], "requiredTokens": ["quel est", "je dois changer", "vous pouvez répéter"],
+          "modelAnswer": "Quel est le prochain train ? D'accord, je dois changer à Mâcon. Vous pouvez répéter l'heure de la correspondance, s'il vous plaît ?",
+          "explanation": "Задача проверяет реакцию на новое условие, подтверждение и запрос повтора.",
+          "hints": ["Сначала спроси о следующем поезде.", "Подтверди место пересадки своими словами.", "Заверши просьбой повторить время."],
+          "rubric": ["Есть реакция на каждый ход.", "Уточнение относится именно к непонятой детали.", "Формулировки вежливы и понятны."],
+          "requiresRecording": true, "minimumRecordingSeconds": 20,
+          "objectiveIds": ["obj:a2-l04-interaction"]
+        },
+        {
+          "id": "a2-l04-e3", "type": "controlled-production",
+          "prompt": "Свяжи четыре факта: опоздал на поезд → взял следующий → была пересадка → всё-таки приехал.",
+          "acceptedAnswers": [], "requiredTokens": ["j'ai raté", "alors", "mais", "finalement"],
+          "modelAnswer": "J'ai raté mon train, alors j'ai pris le suivant. Il y avait une correspondance, mais finalement je suis arrivé à l'heure.",
+          "explanation": "Alors показывает следствие, mais — препятствие, finalement — результат.",
+          "hints": ["Начни с J'ai raté…", "Решение введи через alors.", "Перед финальным результатом используй mais и finalement."],
+          "objectiveIds": ["obj:a2-l04-system"]
+        }
+      ],
+      "cards": [
+        { "id": "phrase:a2-l04-1", "front": "Можете повторить время прибытия?", "back": "Vous pouvez répéter l'heure d'arrivée ?", "type": "phrase" },
+        { "id": "phrase:a2-l04-2", "front": "J'ai raté mon train, {{c1::alors}} j'ai pris le suivant.", "back": "Я опоздал на поезд, поэтому сел на следующий.", "type": "cloze" }
+      ]
+    },
+    {
+      "id": "a2-l05",
+      "level": "A2",
+      "title": "Raconter avec des détails",
+      "goal": "Собрать короткие события в связный текст от 60 слов и передать основную информацию другому человеку.",
+      "scenario": "connected-story",
+      "targetPhrase": "Au début, tout allait bien, mais nous avons eu un problème; heureusement, nous avons trouvé une solution.",
+      "pronunciationTopic": "a2:sequence-intonation",
+      "grammarTopic": "a2:time-connectors",
+      "moduleId": "module:a2:past-events",
+      "order": 5,
+      "prerequisites": ["a2-l04"],
+      "tags": ["a2.1", "past-events", "writing", "mediation"],
+      "objectives": [
+        { "id": "obj:a2-l05-listening", "skill": "listening", "cefrCanDo": "Восстанавливаю ключевую фразу короткого рассказа на слух.", "required": true },
+        { "id": "obj:a2-l05-writing", "skill": "written-production", "cefrCanDo": "Пишу связный рассказ от 60 слов с проблемой и решением.", "required": true },
+        { "id": "obj:a2-l05-mediation", "skill": "mediation", "cefrCanDo": "Передаю другу основные факты практической ситуации.", "required": true }
+      ],
+      "dialogue": [
+        { "speaker": "Inès", "fr": "Comment s'est passée votre excursion ?", "ipa": "/kɔmɑ̃ sɛ pase vɔtʁ ɛkskyʁsjɔ̃/", "ru": "Как прошла ваша экскурсия?" },
+        { "speaker": "Hugo", "fr": "Au début, tout allait bien, mais le bus est tombé en panne.", "ipa": "/o deby tu talɛ bjɛ̃ mɛ lə bys ɛ tɔ̃be ɑ̃ pan/", "ru": "Сначала всё шло хорошо, но автобус сломался." },
+        { "speaker": "Hugo", "fr": "Nous avons attendu une heure et nous avons appelé l'agence.", "ipa": "/nu zavɔ̃ atɑ̃dy yn œʁ e nu zavɔ̃ aple laʒɑ̃s/", "ru": "Мы ждали час и позвонили в агентство." },
+        { "speaker": "Hugo", "fr": "Heureusement, un autre bus est arrivé et nous avons continué.", "ipa": "/øʁøzmɑ̃ œ̃ notʁ bys ɛt aʁive e nu zavɔ̃ kɔ̃tinɥe/", "ru": "К счастью, приехал другой автобус, и мы продолжили." }
+      ],
+      "vocabulary": [
+        { "id": "vocab:a2-l05-beginning", "fr": "au début", "ipa": "/o deby/", "ru": "в начале", "note": "Начало рассказа или периода." },
+        { "id": "vocab:a2-l05-breakdown", "fr": "tomber en panne", "ipa": "/tɔ̃be ɑ̃ pan/", "ru": "сломаться", "note": "О транспорте и технике." },
+        { "id": "vocab:a2-l05-fortunately", "fr": "heureusement", "ipa": "/øʁøzmɑ̃/", "ru": "к счастью", "note": "Вводит положительный поворот." },
+        { "id": "vocab:a2-l05-continue", "fr": "continuer", "ipa": "/kɔ̃tinɥe/", "ru": "продолжать", "note": "Continuer le voyage, continuer à travailler." }
+      ],
+      "exercises": [
+        {
+          "id": "a2-l05-e1", "type": "dictation",
+          "prompt": "Запиши услышанную фразу полностью.",
+          "listenText": "Heureusement, un autre bus est arrivé et nous avons continué notre voyage.",
+          "transcript": "Heureusement, un autre bus est arrivé et nous avons continué notre voyage.",
+          "acceptedAnswers": ["Heureusement, un autre bus est arrivé et nous avons continué notre voyage."], "requiredTokens": [],
+          "modelAnswer": "Heureusement, un autre bus est arrivé et nous avons continué notre voyage.",
+          "explanation": "Проверь heureusement, согласование arrivé и форму continué.",
+          "hints": ["Фраза начинается с наречия на -ment.", "Первое событие использует être, второе — avoir.", "Финальные слова: notre voyage."],
+          "objectiveIds": ["obj:a2-l05-listening"]
+        },
+        {
+          "id": "a2-l05-e2", "type": "rubric-writing",
+          "prompt": "Напиши 60–90 слов о поездке или дне, когда возникла проблема. Опиши начало, проблему, свои действия и результат.",
+          "acceptedAnswers": [], "requiredTokens": ["au début", "mais", "ensuite", "finalement"],
+          "modelAnswer": "Au début, notre voyage s'est très bien passé. Nous sommes partis tôt et nous avons pris le train pour Lyon. Mais à Mâcon, le train s'est arrêté pendant une heure. Ensuite, nous avons parlé avec un agent et nous avons changé de train. Finalement, nous sommes arrivés à Lyon avec du retard, mais nous avons quand même passé une bonne soirée.",
+          "explanation": "Сравни структуру, связки, формы прошлого и понятность результата.",
+          "hints": ["Составь четыре части: начало, проблема, действия, результат.", "Используй минимум четыре временные или логические связки.", "Проверь выбор avoir/être у каждого глагола."],
+          "rubric": ["Не менее 60 слов.", "Проблема и решение понятны без дополнительных пояснений.", "События связаны и расположены логично."],
+          "objectiveIds": ["obj:a2-l05-writing"]
+        },
+        {
+          "id": "a2-l05-e3", "type": "summarize-for-a-friend",
+          "prompt": "Друг ждёт тебя. Передай ему по-французски главную информацию из объявления и скажи, что вы будете делать.",
+          "sourceText": "Le bus 24 ne circule pas entre 18h00 et 20h00 à cause de travaux. Les voyageurs peuvent prendre le tram T2 depuis la place Centrale. Le trajet dure environ quinze minutes de plus.",
+          "acceptedAnswers": [], "requiredTokens": ["le bus 24", "ne circule pas", "le tram T2", "quinze minutes"],
+          "modelAnswer": "Le bus 24 ne circule pas entre dix-huit et vingt heures. Nous allons prendre le tram T2 à la place Centrale. Le trajet va durer environ quinze minutes de plus.",
+          "explanation": "Медиация сохраняет только нужные другу факты и превращает их в план действий.",
+          "hints": ["Скажи, что не работает и когда.", "Назови альтернативный транспорт.", "Предупреди о дополнительных пятнадцати минутах."],
+          "rubric": ["Переданы ограничение, альтернатива и задержка.", "Текст не копируется механически целиком.", "Друг понимает, что делать."],
+          "objectiveIds": ["obj:a2-l05-mediation"]
+        }
+      ],
+      "cards": [
+        { "id": "phrase:a2-l05-1", "front": "К счастью, мы нашли решение.", "back": "Heureusement, nous avons trouvé une solution.", "type": "phrase" },
+        { "id": "phrase:a2-l05-2", "front": "Le bus est {{c1::tombé en panne}}.", "back": "Автобус сломался.", "type": "cloze" }
+      ]
+    },
+    {
+      "id": "a2-l06",
+      "level": "A2",
+      "title": "Bilan du bloc : une sortie imprévue",
+      "goal": "Самостоятельно собрать навыки блока в новой бытовой истории и завершить первый этап общего прогресса A2.",
+      "scenario": "past-events-bilan",
+      "targetPhrase": "Nous avions un plan, mais la situation a changé; finalement, nous avons trouvé une autre solution.",
+      "pronunciationTopic": "a2:sequence-intonation",
+      "grammarTopic": "a2:time-connectors",
+      "moduleId": "module:a2:past-events",
+      "order": 6,
+      "prerequisites": ["a2-l05"],
+      "tags": ["a2.1", "past-events", "bilan"],
+      "objectives": [
+        { "id": "obj:a2-l06-reception", "skill": "listening", "cefrCanDo": "Понимаю основную проблему и итог нового рассказа.", "required": true },
+        { "id": "obj:a2-l06-reading", "skill": "reading", "cefrCanDo": "Извлекаю практические детали из нового сообщения.", "required": true },
+        { "id": "obj:a2-l06-writing", "skill": "written-production", "cefrCanDo": "Пишу связный ответ о неожиданном изменении плана.", "required": true },
+        { "id": "obj:a2-l06-interaction", "skill": "spoken-interaction", "cefrCanDo": "Предлагаю решение и уточняю новую договорённость.", "required": true }
+      ],
+      "dialogue": [
+        { "speaker": "Sara", "fr": "On devait visiter le château, mais il est fermé aujourd'hui.", "ipa": "/ɔ̃ dəvɛ vizite lə ʃato mɛ il ɛ fɛʁme oʒuʁdɥi/", "ru": "Мы собирались посетить замок, но сегодня он закрыт." },
+        { "speaker": "Noé", "fr": "Ah bon ? Qu'est-ce qu'on peut faire à la place ?", "ipa": "/a bɔ̃ kɛs kɔ̃ pø fɛʁ a la plas/", "ru": "Правда? Что можно сделать вместо этого?" },
+        { "speaker": "Sara", "fr": "Le musée est ouvert et il y a une visite à quatorze heures.", "ipa": "/lə myze ɛt uvɛʁ e il ja yn vizit a katɔʁz œʁ/", "ru": "Музей открыт, и в 14:00 есть экскурсия." },
+        { "speaker": "Noé", "fr": "D'accord. Où est-ce qu'on se retrouve ?", "ipa": "/dakɔʁ u ɛs kɔ̃ sə ʁətʁuv/", "ru": "Хорошо. Где встречаемся?" }
+      ],
+      "vocabulary": [
+        { "id": "vocab:a2-l06-unexpected", "fr": "imprévu / imprévue", "ipa": "/ɛ̃pʁevy/", "ru": "непредвиденный / непредвиденная", "note": "Un changement imprévu." },
+        { "id": "vocab:a2-l06-instead", "fr": "à la place", "ipa": "/a la plas/", "ru": "вместо этого", "note": "Предлагает альтернативу." },
+        { "id": "vocab:a2-l06-meet", "fr": "se retrouver", "ipa": "/sə ʁətʁuve/", "ru": "встречаться", "note": "Où est-ce qu'on se retrouve ?" },
+        { "id": "vocab:a2-l06-solution", "fr": "une solution", "ipa": "/yn sɔlysjɔ̃/", "ru": "решение", "note": "Trouver / proposer une solution." }
+      ],
+      "exercises": [
+        {
+          "id": "a2-l06-e1", "type": "listening-comprehension",
+          "prompt": "Прослушай один раз. Какое решение нашли Camille и Yanis?",
+          "listenText": "Camille et Yanis voulaient faire une promenade au bord du lac, mais il a commencé à pleuvoir. Ils ont regardé le programme de la médiathèque et ils ont trouvé un concert gratuit à dix-sept heures. Finalement, ils ont décidé d'aller au concert.",
+          "transcript": "Camille et Yanis voulaient faire une promenade au bord du lac, mais il a commencé à pleuvoir. Ils ont regardé le programme de la médiathèque et ils ont trouvé un concert gratuit à dix-sept heures. Finalement, ils ont décidé d'aller au concert.",
+          "acceptedAnswers": ["ils ont décidé d'aller au concert", "aller au concert", "пойти на концерт"], "requiredTokens": [],
+          "modelAnswer": "Ils ont décidé d'aller au concert gratuit.",
+          "explanation": "Решение сформулировано в последнем предложении.",
+          "hints": ["Отдели первоначальный план от нового.", "Ищи событие в dix-sept heures.", "Финал начинается с finalement."],
+          "objectiveIds": ["obj:a2-l06-reception"]
+        },
+        {
+          "id": "a2-l06-e2", "type": "reading-comprehension",
+          "prompt": "Назови место и время новой встречи.",
+          "sourceText": "Salut ! Le parc ferme exceptionnellement à 16h. On se retrouve donc devant la médiathèque à 16h30. Le concert commence à 17h et l'entrée est gratuite. À tout à l'heure !",
+          "acceptedAnswers": ["devant la médiathèque à 16h30", "перед медиатекой в 16:30", "à 16h30 devant la médiathèque"], "requiredTokens": [],
+          "modelAnswer": "Devant la médiathèque à 16h30.",
+          "explanation": "Не путай время встречи 16h30 и начало концерта 17h.",
+          "hints": ["В тексте два времени.", "Ищи оборот on se retrouve.", "Место вводится devant."],
+          "objectiveIds": ["obj:a2-l06-reading"]
+        },
+        {
+          "id": "a2-l06-e3", "type": "message-reply",
+          "prompt": "Ответь 60–80 словами: подтверди, что понял изменение, объясни небольшое опоздание, предложи решение и уточни место встречи.",
+          "acceptedAnswers": [], "requiredTokens": ["j'ai compris", "je vais arriver", "je propose", "où est-ce qu'on se retrouve"],
+          "modelAnswer": "Salut ! J'ai compris que le parc ferme plus tôt. Je vais arriver avec dix minutes de retard parce que mon bus est supprimé. Je propose de prendre le tram et de vous rejoindre directement à la médiathèque. Le concert à dix-sept heures me va très bien. Où est-ce qu'on se retrouve exactement : devant l'entrée principale ou près du café ? À tout à l'heure !",
+          "explanation": "Ответ должен решать ситуацию, а не просто повторять исходное сообщение.",
+          "hints": ["Подтверди изменение одним предложением.", "Назови причину опоздания и свою альтернативу.", "Заверши точным вопросом о месте."],
+          "rubric": ["Все четыре коммуникативные задачи выполнены.", "Текст не короче 60 слов.", "Связки делают сообщение понятным."],
+          "objectiveIds": ["obj:a2-l06-writing"]
+        },
+        {
+          "id": "a2-l06-e4", "type": "conversation-prompt",
+          "prompt": "Запиши ответ на изменение плана: подтверди проблему, предложи альтернативу и уточни один практический пункт.",
+          "interactionTurns": [
+            { "speaker": "Ami", "prompt": "Le château est fermé aujourd'hui." },
+            { "speaker": "Ami", "prompt": "Le musée est ouvert, mais la visite commence dans quarante minutes." },
+            { "speaker": "Ami", "prompt": "On peut se retrouver directement là-bas." }
+          ],
+          "acceptedAnswers": [], "requiredTokens": ["d'accord", "on peut", "où est-ce qu'on se retrouve"],
+          "modelAnswer": "D'accord, le château est fermé. On peut visiter le musée à la place. Où est-ce qu'on se retrouve exactement ?",
+          "explanation": "Ответ строится вокруг сотрудничества и ясной новой договорённости.",
+          "hints": ["Сначала покажи, что понял проблему.", "Предложи или прими альтернативу.", "Заверши вопросом о конкретной детали."],
+          "rubric": ["Есть реакция на изменение.", "Предложено практическое решение.", "Задан один точный уточняющий вопрос."],
+          "requiresRecording": true, "minimumRecordingSeconds": 15,
+          "objectiveIds": ["obj:a2-l06-interaction"]
+        }
+      ],
+      "cards": [
+        { "id": "phrase:a2-l06-1", "front": "Что можно сделать вместо этого?", "back": "Qu'est-ce qu'on peut faire à la place ?", "type": "phrase" },
+        { "id": "phrase:a2-l06-2", "front": "Où est-ce qu'on {{c1::se retrouve}} ?", "back": "Где встречаемся?", "type": "cloze" }
+      ]
+    }
+  ]
+}

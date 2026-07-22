@@ -15,7 +15,7 @@ const expectedByLesson = {
   l09: ["le matin"],
   l10: ["l'après-midi"],
   l12: ["le prénom", "votre", "une fiche d'inscription", "italien / italienne"],
-  l15: ["samedi", "savoir", "le centre", "une fermeture"],
+  l15: ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche", "savoir", "le centre", "une fermeture"],
   l17: ["prochain / prochaine", "non", "d'accord"],
   l18: ["une liste de courses"],
   l19: ["le soleil"],
@@ -38,7 +38,7 @@ const expectedByLesson = {
 const lessonById = new Map(data.lessons.map((lesson) => [lesson.id, lesson]));
 const expectedCount = Object.values(expectedByLesson).flat().length;
 
-assert.equal(expectedCount, 86, "Audit inventory must retain its exact 73 additions and 13 earlier moves");
+assert.equal(expectedCount, 92, "Audit inventory must retain its exact 73 additions and introduce all seven days in l15");
 for (const [lessonId, expectedTerms] of Object.entries(expectedByLesson)) {
   const lesson = lessonById.get(lessonId);
   assert.ok(lesson, `Missing lesson ${lessonId}`);

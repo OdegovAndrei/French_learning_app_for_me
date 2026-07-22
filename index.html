@@ -1,18 +1,21 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-level="a1">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>French Study Starter</title>
+    <title>French Study</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="app-shell">
       <aside class="sidebar" aria-label="Навигация">
         <div class="brand">
-          <div class="brand-mark" aria-hidden="true">FR</div>
+          <div class="level-switcher">
+            <button class="brand-mark" id="level-switch" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="level-menu">A1</button>
+            <div class="level-menu" id="level-menu" role="menu" hidden></div>
+          </div>
           <div>
-            <p class="eyebrow" id="course-stage">Starter</p>
+            <p class="eyebrow" id="course-stage">A1</p>
             <h1>French Study</h1>
           </div>
         </div>
@@ -20,6 +23,7 @@
         <nav class="nav-list" aria-label="Разделы">
           <button class="nav-item active" type="button" data-view="today">Сегодня</button>
           <button class="nav-item" type="button" data-view="lessons">Уроки</button>
+          <button class="nav-item" type="button" data-view="listening">Аудирование</button>
           <button class="nav-item" type="button" data-view="pronunciation">Правила чтения</button>
           <button class="nav-item" type="button" data-view="grammar">Грамматика</button>
           <button class="nav-item" type="button" data-view="vocabulary">Словарь</button>
@@ -30,7 +34,7 @@
           <button class="nav-item" type="button" data-view="settings">Настройки</button>
         </nav>
 
-        <div class="sidebar-note">
+        <div class="sidebar-note" id="sidebar-note">
           <p>45-60 минут в день</p>
           <strong>Фраза -> произношение -> мини-грамматика -> output</strong>
         </div>
@@ -120,6 +124,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260722-help-ladder-1" type="module"></script>
+    <script src="app.js?v=20260722-a2-block-1" type="module"></script>
   </body>
 </html>

@@ -46,13 +46,13 @@ export function checkExercise(exercise, input) {
     ];
 
     if (isOpenEnded) {
-      if (!required.length) {
+      if (!required.length && !groups.length) {
         return {
           status: "open",
           message: "Это открытое задание. Сравни ответ с примером: автоматическая проверка не может оценить грамматику и выполнение задачи.",
           matched: [],
           missing: [],
-          coverageComplete: false,
+          coverageComplete: true,
           needsReview: true
         };
       }

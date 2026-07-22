@@ -4,7 +4,7 @@ import {
   checkCatalogLessonPrerequisites,
   checkLessonPrerequisites,
   evaluateLessonReadiness,
-  getIntroducedLessonIds
+  getCompletedLessonIds
 } from "../mastery.js";
 
 const lesson = {
@@ -206,30 +206,14 @@ assert.equal(unknownDirectLesson.met, false, "A completed but unknown prerequisi
 assert.ok(unknownDirectLesson.reasons.some((reason) => reason.type === "catalog" && reason.id === "missing-lesson"));
 
 assert.deepEqual(
-  getIntroducedLessonIds({
-    completedLessons: ["l01", "l02", "l01"],
-    attempts: [
-      { id: "e1", lessonId: "l02" },
-      { id: "e2", lessonId: "l03" },
-      null,
-      { lessonId: "" }
-    ],
-    currentLessonId: "l04"
-  }),
-  ["l01", "l02", "l03", "l04"]
-);
-assert.deepEqual(
-  getIntroducedLessonIds({
-    completedLessons: new Set(["l01"]),
-    attempts: new Map([
-      ["e1", { lessonId: "l02" }],
-      ["e2", { lessonId: "l01" }]
-    ]),
-    currentLessonId: "l02"
-  }),
+  getCompletedLessonIds(["l01", "l02", "l01"]),
   ["l01", "l02"]
 );
-assert.deepEqual(getIntroducedLessonIds(), []);
-assert.deepEqual(getIntroducedLessonIds({ completedLessons: "bad", attempts: {}, currentLessonId: null }), []);
+assert.deepEqual(
+  getCompletedLessonIds(new Set(["l01", "l02", "l01"])),
+  ["l01", "l02"]
+);
+assert.deepEqual(getCompletedLessonIds(), []);
+assert.deepEqual(getCompletedLessonIds("bad"), []);
 
 console.log("Mastery tests passed.");

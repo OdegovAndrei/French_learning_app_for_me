@@ -201,12 +201,20 @@ export function collectCourseValidationErrors(catalog) {
       });
       validateTextArray(exercise?.options, `${exercisePath}.options`, errors);
       validateTextArray(exercise?.rubric, `${exercisePath}.rubric`, errors);
+      validateStructuredArray(exercise?.interactionTurns, `${exercisePath}.interactionTurns`, COURSE_SCHEMA.interactionTurn, errors);
+      if (exercise?.interactionTurns != null && exercise?.type !== "conversation-prompt") {
+        errors.push(`${exercisePath}.interactionTurns: supported only for conversation-prompt`);
+      }
+      if (Array.isArray(exercise?.interactionTurns) && exercise.interactionTurns.length < 2) {
+        errors.push(`${exercisePath}.interactionTurns: expected at least two turns`);
+      }
       if (exercise?.type === "reading-comprehension" && !hasText(exercise?.sourceText)) {
         errors.push(`${exercisePath}.sourceText: reading-comprehension requires a source text`);
       }
       if (["listening-comprehension", "dictation"].includes(exercise?.type) && !hasText(exercise?.transcript)) {
         errors.push(`${exercisePath}.transcript: ${exercise.type} requires a transcript`);
       }
+      validateListeningLadder(exercise?.listeningLadder, `${exercisePath}.listeningLadder`, errors);
       if ([
         "conversation-prompt",
         "debate-roleplay",
@@ -271,6 +279,33 @@ function validateRequiredTokenGroups(value, path, errors) {
     if (!isObject(group) || !hasText(group.label)) errors.push(`${groupPath}.label: expected text`);
     validateTextArray(group?.anyOf, `${groupPath}.anyOf`, errors, { nonEmpty: true, unique: true });
   });
+}
+
+function validateListeningLadder(value, path, errors) {
+  if (value == null) return;
+  if (!isObject(value)) {
+    errors.push(`${path}: expected an object`);
+    return;
+  }
+  const gist = value.gist;
+  const detail = value.detail;
+  if (!isObject(gist)) {
+    errors.push(`${path}.gist: expected an object`);
+  } else {
+    if (!hasText(gist.prompt)) errors.push(`${path}.gist.prompt: expected text`);
+    validateTextArray(gist.options, `${path}.gist.options`, errors, { nonEmpty: true, unique: true });
+    if (!hasText(gist.answer)) errors.push(`${path}.gist.answer: expected text`);
+    else if (!Array.isArray(gist.options) || !gist.options.includes(gist.answer)) {
+      errors.push(`${path}.gist.answer: must be one of gist.options`);
+    }
+  }
+  if (!isObject(detail)) {
+    errors.push(`${path}.detail: expected an object`);
+    return;
+  }
+  if (!hasText(detail.prompt)) errors.push(`${path}.detail.prompt: expected text`);
+  validateTextArray(detail.acceptedAnswers, `${path}.detail.acceptedAnswers`, errors, { nonEmpty: true, unique: true });
+  if (!hasText(detail.modelAnswer)) errors.push(`${path}.detail.modelAnswer: expected text`);
 }
 
 export function validateCourseCatalog(catalog) {

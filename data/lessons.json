@@ -211,7 +211,7 @@
   ],
   "courseRoadmap": {
     "status": "draft",
-    "claimPolicy": "A1 заявлен как практический самостоятельный курс после прохождения 38 уроков и checkpoint по семи skill axes. Это не официальный сертификат CEFR/DELF; A2-B2 остаются roadmap.",
+    "claimPolicy": "A1 заявлен как практический самостоятельный курс после прохождения 40 уроков и checkpoint по семи skill axes. Это не официальный сертификат CEFR/DELF; A2-B2 развиваются как отдельные учебные треки.",
     "sources": [
       {
         "name": "Council of Europe CEFR",
@@ -426,8 +426,8 @@
         "id": "roadmap:a2",
         "cefrLevel": "A2",
         "title": "A2: устойчивые бытовые сценарии",
-        "status": "planned",
-        "claim": "План A2: больше тем, прошлого времени, связности и самостоятельности, но всё ещё простая коммуникация.",
+        "status": "in-progress",
+        "claim": "A2 развивается как отдельный практический трек: опубликован первый блок о прошлых событиях, остальные блоки следуют can-do-матрице A2.1/A2.2.",
         "prerequisites": [
           "roadmap:a1"
         ],
@@ -440,74 +440,151 @@
         "modules": [
           {
             "id": "roadmap:a2:past-events",
-            "title": "Что произошло: выходные, поездка, проблема",
+            "title": "A2.1 · Что произошло",
             "skillFocus": [
+              "listening",
               "spoken-production",
+              "spoken-interaction",
               "written-production",
               "language-system"
             ],
             "outcomes": [
               "рассказать последовательность событий",
               "описать проблему",
-              "попросить решение"
+              "уточнить непонятую деталь",
+              "написать связный текст от 60 слов"
             ],
             "grammar": [
-              "passé composé",
-              "imparfait introduction",
+              "passé composé with avoir/être",
               "time connectors"
             ],
             "exerciseTypes": [
-              "order-dialogue",
+              "listening-comprehension",
               "guided-writing",
+              "conversation-prompt",
               "recorded-monologue"
             ]
           },
           {
-            "id": "roadmap:a2:travel-housing",
-            "title": "Поездка, жильё и городские сервисы",
+            "id": "roadmap:a2:housing-options",
+            "title": "A2.1 · Жильё и сравнение вариантов",
             "skillFocus": [
-              "listening",
               "reading",
-              "spoken-interaction"
+              "spoken-interaction",
+              "written-production",
+              "mediation"
             ],
             "outcomes": [
-              "забронировать",
-              "уточнить условия",
-              "сравнить варианты"
+              "понять условия объявления",
+              "сравнить два варианта",
+              "уточнить цену и правила"
             ],
             "grammar": [
               "comparatives",
               "prepositions of place",
-              "object pronouns introduction"
-            ],
-            "exerciseTypes": [
-              "reading-comprehension",
-              "listening-comprehension",
-              "roleplay"
-            ]
-          },
-          {
-            "id": "roadmap:a2:work-study-health",
-            "title": "Учёба, работа, здоровье и обязанности",
-            "skillFocus": [
-              "listening",
-              "mediation",
-              "written-production"
-            ],
-            "outcomes": [
-              "понять инструкцию",
-              "объяснить потребность",
-              "написать короткое официальное сообщение"
-            ],
-            "grammar": [
-              "devoir/pouvoir/vouloir",
-              "imperative",
               "pronouns y/en introduction"
             ],
             "exerciseTypes": [
-              "dictation",
-              "summarize-for-a-friend",
+              "reading-comprehension",
+              "roleplay",
               "message-reply"
+            ]
+          },
+          {
+            "id": "roadmap:a2:changing-plans",
+            "title": "A2.1 · Транспорт и изменение планов",
+            "skillFocus": [
+              "listening",
+              "spoken-interaction",
+              "language-system"
+            ],
+            "outcomes": [
+              "понять причину изменения",
+              "предложить альтернативу",
+              "уточнить последовательность действий"
+            ],
+            "grammar": [
+              "devoir/pouvoir/vouloir",
+              "futur proche",
+              "cause and consequence"
+            ],
+            "exerciseTypes": [
+              "listening-comprehension",
+              "conversation-prompt",
+              "message-reply"
+            ]
+          },
+          {
+            "id": "roadmap:a2:health-administration",
+            "title": "A2.2 · Здоровье, советы и администрация",
+            "skillFocus": [
+              "listening",
+              "spoken-interaction",
+              "mediation"
+            ],
+            "outcomes": [
+              "описать симптомы",
+              "понять рекомендацию",
+              "объяснить, какая услуга нужна"
+            ],
+            "grammar": [
+              "il faut and devoir",
+              "imperative",
+              "direct object pronouns"
+            ],
+            "exerciseTypes": [
+              "listening-comprehension",
+              "roleplay",
+              "summarize-for-a-friend",
+              "dictation"
+            ]
+          },
+          {
+            "id": "roadmap:a2:study-work-messages",
+            "title": "A2.2 · Учёба, работа и сообщения",
+            "skillFocus": [
+              "reading",
+              "written-production",
+              "spoken-production"
+            ],
+            "outcomes": [
+              "описать обязанности и опыт",
+              "понять простую инструкцию",
+              "написать формальное или неформальное сообщение"
+            ],
+            "grammar": [
+              "past tense review",
+              "polite written formulas",
+              "relative pronouns introduction"
+            ],
+            "exerciseTypes": [
+              "reading-comprehension",
+              "message-reply",
+              "recorded-monologue"
+            ]
+          },
+          {
+            "id": "roadmap:a2:social-choices",
+            "title": "A2.2 · Социальная жизнь, впечатления и выбор",
+            "skillFocus": [
+              "spoken-interaction",
+              "spoken-production",
+              "written-production"
+            ],
+            "outcomes": [
+              "пригласить и ответить на приглашение",
+              "рассказать о впечатлении",
+              "сравнить варианты и договориться"
+            ],
+            "grammar": [
+              "parce que/mais/donc",
+              "comparatives and superlatives",
+              "passé composé vs imparfait introduction"
+            ],
+            "exerciseTypes": [
+              "conversation-prompt",
+              "recorded-monologue",
+              "guided-writing"
             ]
           }
         ],
@@ -3986,6 +4063,26 @@
           "prompt": "Диктант: прослушай и запиши фразу полностью.",
           "transcript": "Il y a quinze personnes et huit chaises.",
           "listenText": "Il y a quinze personnes et huit chaises.",
+          "listeningLadder": {
+            "gist": {
+              "prompt": "О чём сообщает запись?",
+              "options": [
+                "В комнате считают людей и стулья.",
+                "Магазин сообщает часы работы.",
+                "Поезд отправляется с платформы."
+              ],
+              "answer": "В комнате считают людей и стулья."
+            },
+            "detail": {
+              "prompt": "Сколько людей и стульев в комнате?",
+              "acceptedAnswers": [
+                "quinze personnes et huit chaises",
+                "15 человек и 8 стульев",
+                "Il y a quinze personnes et huit chaises."
+              ],
+              "modelAnswer": "Il y a quinze personnes et huit chaises."
+            }
+          },
           "acceptedAnswers": [
             "Il y a quinze personnes et huit chaises."
           ],
@@ -4869,6 +4966,26 @@
           "prompt": "Прослушай объявление. Когда магазин открыт?",
           "transcript": "Bonjour. Le magasin est ouvert de neuf heures à midi. Aujourd'hui, il est fermé l'après-midi.",
           "listenText": "Bonjour. Le magasin est ouvert de neuf heures à midi. Aujourd'hui, il est fermé l'après-midi.",
+          "listeningLadder": {
+            "gist": {
+              "prompt": "Что это за запись?",
+              "options": [
+                "Объявление о часах работы магазина.",
+                "Прогноз погоды на завтра.",
+                "Сообщение об отправлении поезда."
+              ],
+              "answer": "Объявление о часах работы магазина."
+            },
+            "detail": {
+              "prompt": "Когда магазин открыт?",
+              "acceptedAnswers": [
+                "de neuf heures à midi",
+                "neuf heures à midi",
+                "9 heures à midi"
+              ],
+              "modelAnswer": "Le magasin est ouvert de neuf heures à midi."
+            }
+          },
           "acceptedAnswers": [
             "de neuf heures à midi",
             "neuf heures à midi",
@@ -5463,6 +5580,27 @@
           "prompt": "Прослушай рассказ о Лео. Сколько ему лет и где он живёт?",
           "transcript": "Bonjour, je m'appelle Léo. J'ai vingt-cinq ans. J'habite à Lyon.",
           "listenText": "Bonjour, je m'appelle Léo. J'ai vingt-cinq ans. J'habite à Lyon.",
+          "listeningLadder": {
+            "gist": {
+              "prompt": "Что делает Лéo?",
+              "options": [
+                "Представляется и рассказывает о себе.",
+                "Заказывает завтрак в кафе.",
+                "Спрашивает дорогу до университета."
+              ],
+              "answer": "Представляется и рассказывает о себе."
+            },
+            "detail": {
+              "prompt": "Сколько Лéo лет и где он живёт?",
+              "acceptedAnswers": [
+                "vingt-cinq ans, Lyon",
+                "25 лет, Лион",
+                "Il a vingt-cinq ans et il habite à Lyon.",
+                "vingt-cinq ans à Lyon"
+              ],
+              "modelAnswer": "Léo a vingt-cinq ans et il habite à Lyon."
+            }
+          },
           "acceptedAnswers": [
             "vingt-cinq ans, Lyon",
             "25 лет, Лион",
@@ -6543,6 +6681,25 @@
           "prompt": "Прослушай прогноз погоды. Какая погода сегодня и завтра?",
           "transcript": "Aujourd'hui, il fait froid et il pleut. Demain, il fait beau et il fait soleil.",
           "listenText": "Aujourd'hui, il fait froid et il pleut. Demain, il fait beau et il fait soleil.",
+          "listeningLadder": {
+            "gist": {
+              "prompt": "Что это за запись?",
+              "options": [
+                "Короткий прогноз погоды.",
+                "Распорядок дня студента.",
+                "Объявление о библиотеке."
+              ],
+              "answer": "Короткий прогноз погоды."
+            },
+            "detail": {
+              "prompt": "Какая погода сегодня и завтра?",
+              "acceptedAnswers": [
+                "сегодня холодно и дождь, завтра хорошая погода и солнце",
+                "aujourd'hui froid et pluie, demain beau et soleil"
+              ],
+              "modelAnswer": "Aujourd'hui il fait froid et il pleut, demain il fait beau."
+            }
+          },
           "acceptedAnswers": [
             "сегодня холодно и дождь, завтра хорошая погода и солнце",
             "aujourd'hui froid et pluie, demain beau et soleil"
@@ -7574,6 +7731,26 @@
           "prompt": "Прослушай. К какому числу нужно сдать работу?",
           "transcript": "Le devoir est pour le 12 octobre.",
           "listenText": "Le devoir est pour le 12 octobre.",
+          "listeningLadder": {
+            "gist": {
+              "prompt": "О чём напоминает запись?",
+              "options": [
+                "О сроке сдачи работы.",
+                "О начале занятия утром.",
+                "О закрытии магазина."
+              ],
+              "answer": "О сроке сдачи работы."
+            },
+            "detail": {
+              "prompt": "К какому числу нужно сдать работу?",
+              "acceptedAnswers": [
+                "le 12 octobre",
+                "12 octobre",
+                "12 октября"
+              ],
+              "modelAnswer": "Le 12 octobre."
+            }
+          },
           "acceptedAnswers": [
             "le 12 octobre",
             "12 octobre",
@@ -7934,6 +8111,26 @@
           "prompt": "Прослушай. Во сколько начинается курс?",
           "transcript": "Le cours commence à neuf heures.",
           "listenText": "Le cours commence à neuf heures.",
+          "listeningLadder": {
+            "gist": {
+              "prompt": "Что сообщает запись?",
+              "options": [
+                "Во сколько начинается курс.",
+                "Во сколько закрывается библиотека.",
+                "Где находится остановка."
+              ],
+              "answer": "Во сколько начинается курс."
+            },
+            "detail": {
+              "prompt": "Во сколько начинается курс?",
+              "acceptedAnswers": [
+                "à neuf heures",
+                "neuf heures",
+                "в девять"
+              ],
+              "modelAnswer": "À neuf heures."
+            }
+          },
           "acceptedAnswers": [
             "à neuf heures",
             "neuf heures",
@@ -8653,6 +8850,25 @@
           "prompt": "Во сколько и откуда отправляется поезд?",
           "transcript": "Le train pour Lyon part à dix-huit heures, quai quatre.",
           "listenText": "Le train pour Lyon part à dix-huit heures, quai quatre.",
+          "listeningLadder": {
+            "gist": {
+              "prompt": "Что это за объявление?",
+              "options": [
+                "Об отправлении поезда.",
+                "О меню в кафе.",
+                "О записи к врачу."
+              ],
+              "answer": "Об отправлении поезда."
+            },
+            "detail": {
+              "prompt": "Во сколько и откуда отправляется поезд?",
+              "acceptedAnswers": [
+                "à dix-huit heures, quai quatre",
+                "18 часов, платформа 4"
+              ],
+              "modelAnswer": "À dix-huit heures, quai quatre."
+            }
+          },
           "acceptedAnswers": [
             "à dix-huit heures, quai quatre",
             "18 часов, платформа 4"
@@ -9226,8 +9442,16 @@
           "Каркас: «Je préfère … parce que … .»"
           ],
           "requiredTokens": [
-            "je préfère",
-            "parce que"
+            "je préfère"
+          ],
+          "requiredTokenGroups": [
+            {
+              "label": "parce que / parce qu'",
+              "anyOf": [
+                "parce que",
+                "parce qu"
+              ]
+            }
           ],
           "requiresRecording": true,
           "minimumRecordingSeconds": 5,
@@ -9875,8 +10099,16 @@
           "Каркас: «Идите в … с … .»"
           ],
           "requiredTokens": [
-            "секретариат",
-            "паспорт"
+            "секретариат"
+          ],
+          "requiredTokenGroups": [
+            {
+              "label": "паспорт",
+              "anyOf": [
+                "паспорт",
+                "паспортом"
+              ]
+            }
           ],
           "objectiveIds": [
             "obj:l37:mediate-problem-note"
@@ -10079,6 +10311,25 @@
           "prompt": "Прослушай без транскрипта. Когда закрывается библиотека и откуда идёт автобус?",
           "transcript": "La bibliothèque ferme à dix-huit heures. Le bus pour le centre part devant l'université.",
           "listenText": "La bibliothèque ferme à dix-huit heures. Le bus pour le centre part devant l'université.",
+          "listeningLadder": {
+            "gist": {
+              "prompt": "О чём сообщает запись?",
+              "options": [
+                "О библиотеке и автобусе в кампусе.",
+                "О погоде на неделю.",
+                "О заказе в ресторане."
+              ],
+              "answer": "О библиотеке и автобусе в кампусе."
+            },
+            "detail": {
+              "prompt": "Когда закрывается библиотека и откуда идёт автобус?",
+              "acceptedAnswers": [
+                "à dix-huit heures, devant l'université",
+                "в 18 часов, перед университетом"
+              ],
+              "modelAnswer": "À dix-huit heures; le bus part devant l'université."
+            }
+          },
           "acceptedAnswers": [
             "à dix-huit heures, devant l'université",
             "в 18 часов, перед университетом"

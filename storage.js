@@ -15,6 +15,9 @@ export const CACHE_STORE_NAMES = ["ttsAudio"];
 export const ALL_STORE_NAMES = [...STORE_NAMES, ...CACHE_STORE_NAMES];
 
 const FILE_STORAGE_ENDPOINT = "/api/storage";
+const LEGACY_A1_LEVEL = "a1";
+const LEVEL_ID_PATTERN = /^[a-z][0-9](?:[._-][a-z0-9]+)*$/;
+const SCOPED_LEVEL_PREFIX_PATTERN = /^[a-z][0-9](?:[._-][a-z0-9]+)*:/;
 
 let databasePromise;
 let fileStorageReady = false;
@@ -103,6 +106,108 @@ export async function getValue(key, fallback = null) {
 
 export async function setValue(key, value) {
   return putRecord("kv", { key, value });
+}
+
+/**
+ * Creates a level-local view of the study stores.
+ *
+ * A1 deliberately keeps its established keys and identifiers, so existing
+ * learner data remains readable without a migration. Records for every other
+ * level are namespaced before they reach IndexedDB or the shared backup file.
+ */
+export function createLevelStorage(levelId) {
+  assertLevelId(levelId);
+
+  return Object.freeze({
+    levelId,
+    getValue: (key, fallback = null) => getValue(scopeKey(levelId, key), fallback),
+    setValue: (key, value) => setValue(scopeKey(levelId, key), value),
+    getRecord: async (storeName, id) => {
+      const record = await getRecord(storeName, scopeId(levelId, id));
+      return record ? unscopeRecord(levelId, storeName, record) : record;
+    },
+    getAllRecords: async (storeName) => {
+      const records = await getAllRecords(storeName);
+      return records
+        .filter((record) => belongsToLevel(levelId, storeName, record))
+        .map((record) => unscopeRecord(levelId, storeName, record));
+    },
+    putRecord: (storeName, record) => putRecord(storeName, scopeRecord(levelId, storeName, record)),
+    deleteRecord: (storeName, id) => deleteRecord(storeName, scopeId(levelId, id)),
+    putReviewResult: (schedule, log) => putReviewResult(
+      scopeRecord(levelId, "schedules", schedule),
+      scopeRecord(levelId, "reviewLogs", log)
+    ),
+    putRecordingResult: (recording, exerciseAttempt = null) => putRecordingResult(
+      scopeRecord(levelId, "recordings", recording),
+      exerciseAttempt ? scopeRecord(levelId, "exercises", exerciseAttempt) : null
+    )
+  });
+}
+
+export function getLevelStorageKey(levelId, key) {
+  assertLevelId(levelId);
+  return scopeKey(levelId, key);
+}
+
+export function getLevelStorageId(levelId, id) {
+  assertLevelId(levelId);
+  return scopeId(levelId, id);
+}
+
+function assertLevelId(levelId) {
+  if (typeof levelId !== "string" || !LEVEL_ID_PATTERN.test(levelId)) {
+    throw new Error(`Неизвестный уровень хранилища: ${String(levelId)}.`);
+  }
+}
+
+function scopeKey(levelId, key) {
+  return levelId === LEGACY_A1_LEVEL ? key : `${levelId}:${key}`;
+}
+
+function scopeId(levelId, id) {
+  return levelId === LEGACY_A1_LEVEL ? id : `${levelId}:${id}`;
+}
+
+function belongsToLevel(levelId, storeName, record) {
+  const identifier = storeName === "kv" ? record?.key : record?.id;
+  if (typeof identifier !== "string") return false;
+  return levelId === LEGACY_A1_LEVEL
+    ? !SCOPED_LEVEL_PREFIX_PATTERN.test(identifier)
+    : identifier.startsWith(`${levelId}:`);
+}
+
+function scopeRecord(levelId, storeName, record) {
+  const scoped = { ...record };
+  const idField = storeName === "kv" ? "key" : "id";
+  scoped[idField] = levelId === LEGACY_A1_LEVEL
+    ? scoped[idField]
+    : scopeId(levelId, scoped[idField]);
+  if (levelId === LEGACY_A1_LEVEL) return scoped;
+
+  if (storeName === "reviewLogs" && typeof scoped.cardId === "string") {
+    scoped.cardId = scopeId(levelId, scoped.cardId);
+  }
+  if (storeName === "exercises" && typeof scoped.recordingKey === "string") {
+    scoped.recordingKey = scopeId(levelId, scoped.recordingKey);
+  }
+  return scoped;
+}
+
+function unscopeRecord(levelId, storeName, record) {
+  const unscoped = { ...record };
+  if (levelId === LEGACY_A1_LEVEL) return unscoped;
+  const idField = storeName === "kv" ? "key" : "id";
+  const prefixLength = `${levelId}:`.length;
+  unscoped[idField] = unscoped[idField].slice(prefixLength);
+
+  if (storeName === "reviewLogs" && typeof unscoped.cardId === "string") {
+    unscoped.cardId = unscoped.cardId.slice(prefixLength);
+  }
+  if (storeName === "exercises" && typeof unscoped.recordingKey === "string") {
+    unscoped.recordingKey = unscoped.recordingKey.slice(prefixLength);
+  }
+  return unscoped;
 }
 
 export async function putReviewResult(schedule, log) {
@@ -240,11 +345,16 @@ function validateStoreRecord(storeName, record, index) {
 
 function validateKeyValueRecord(record) {
   if (!("value" in record)) throw new Error(`Настройка ${record.key} не содержит value.`);
-  if (record.key === "appState") validateAppState(record.value);
-  if (record.key === "pronunciationState") validatePronunciationState(record.value);
-  if (record.key === "settings") validateSettings(record.value);
-  if (["legacyMigrationDone", "legacySchedulesMigrated"].includes(record.key) && typeof record.value !== "boolean") {
+  const scopedPrefix = record.key.match(SCOPED_LEVEL_PREFIX_PATTERN)?.[0] || "";
+  const logicalKey = scopedPrefix ? record.key.slice(scopedPrefix.length) : record.key;
+  if (logicalKey === "appState") validateAppState(record.value);
+  if (logicalKey === "pronunciationState") validatePronunciationState(record.value);
+  if (logicalKey === "settings") validateSettings(record.value);
+  if (["legacyMigrationDone", "legacySchedulesMigrated"].includes(logicalKey) && typeof record.value !== "boolean") {
     throw new Error(`Настройка ${record.key} должна быть логическим значением.`);
+  }
+  if (record.key === "selectedLevel" && !["a1", "a2"].includes(record.value)) {
+    throw new Error("selectedLevel должен быть «a1» или «a2».");
   }
 }
 
@@ -284,6 +394,9 @@ function validatePronunciationState(value) {
 
 function validateSettings(value) {
   if (!isPlainObject(value)) throw new Error("settings должен быть объектом.");
+  if (value.learnerName != null && (typeof value.learnerName !== "string" || value.learnerName.length > 40)) {
+    throw new Error("settings.learnerName должен быть строкой не длиннее 40 символов.");
+  }
   if (value.voiceURI != null && typeof value.voiceURI !== "string") throw new Error("settings.voiceURI должен быть строкой.");
   if (value.voiceRate != null && (!Number.isFinite(value.voiceRate) || value.voiceRate < 0.1 || value.voiceRate > 3)) {
     throw new Error("settings.voiceRate находится вне допустимого диапазона.");

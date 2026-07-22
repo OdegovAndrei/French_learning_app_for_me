@@ -115,6 +115,9 @@ export const COURSE_SCHEMA = Object.freeze({
     requiredText: Object.freeze(["id", "type", "prompt", "modelAnswer", "explanation"]),
     requiredArrays: Object.freeze(["acceptedAnswers", "requiredTokens", "objectiveIds"])
   }),
+  interactionTurn: Object.freeze({
+    requiredText: Object.freeze(["speaker", "prompt"])
+  }),
   lessonCard: Object.freeze({
     requiredText: Object.freeze(["id", "front", "back", "type"])
   })

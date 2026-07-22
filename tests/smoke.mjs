@@ -11,7 +11,8 @@ import {
   createSchedule,
   createScheduler,
   previewSchedule,
-  reviewSchedule
+  reviewSchedule,
+  shuffleReviewQueueByPool
 } from "../srs.js";
 import { STORE_NAMES, validateBackup } from "../storage.js";
 
@@ -73,6 +74,11 @@ for (const axis of [
 }
 
 const exercises = data.lessons.flatMap((lesson) => lesson.exercises);
+const selfReviewExerciseTypes = new Set([
+  "writing", "speaking", "substitution", "controlled-production", "conversation-prompt", "debate-roleplay",
+  "guided-writing", "message-reply", "recorded-monologue", "mediation", "roleplay", "rubric-writing",
+  "sentence-transform", "summarize-for-a-friend"
+]);
 assert.equal(exercises.length, 124, "40 lessons include 124 exercises with a seven-part checkpoint");
 assert.ok(exercises.length >= data.lessons.length, "Every lesson needs assessable practice");
 assert.ok(
@@ -93,12 +99,12 @@ for (const exercise of exercises) {
   assert.ok(Array.isArray(exercise.requiredTokens));
   assert.ok(Array.isArray(exercise.objectiveIds) && exercise.objectiveIds.length > 0);
   assert.ok(exercise.explanation);
-  if (![
-    "writing", "speaking", "substitution", "controlled-production", "conversation-prompt", "debate-roleplay",
-    "guided-writing", "message-reply", "recorded-monologue", "mediation", "roleplay", "rubric-writing",
-    "sentence-transform", "summarize-for-a-friend"
-  ].includes(exercise.type)) {
-    assert.equal(checkExercise(exercise, exercise.modelAnswer).status, "correct", `${exercise.id}: visible model answer must be accepted`);
+  const modelResult = checkExercise(exercise, exercise.modelAnswer);
+  if (!selfReviewExerciseTypes.has(exercise.type)) {
+    assert.equal(modelResult.status, "correct", `${exercise.id}: visible model answer must be accepted`);
+  } else {
+    assert.equal(modelResult.needsReview, true, `${exercise.id}: visible model answer must remain self-reviewed`);
+    assert.equal(modelResult.coverageComplete, true, `${exercise.id}: visible model answer must unlock self-review`);
   }
 }
 
@@ -112,6 +118,17 @@ for (const type of [
   "summarize-for-a-friend"
 ]) {
   assert.ok(publishedExerciseTypes.has(type), `Third-wave Starter content must exercise ${type}`);
+}
+
+const listeningLadderExercises = exercises.filter((exercise) => exercise.listeningLadder);
+assert.equal(listeningLadderExercises.length, 8, "The regular listening ladder needs eight distinct unlocked recordings");
+for (const exercise of listeningLadderExercises) {
+  const { gist, detail } = exercise.listeningLadder;
+  assert.ok(gist?.prompt && detail?.prompt, `${exercise.id}: ladder needs a gist and a detail question`);
+  assert.ok(Array.isArray(gist?.options) && gist.options.length === 3, `${exercise.id}: gist needs three choices`);
+  assert.ok(gist.options.includes(gist.answer), `${exercise.id}: gist answer must be one of its choices`);
+  assert.ok(Array.isArray(detail?.acceptedAnswers) && detail.acceptedAnswers.length > 0, `${exercise.id}: detail needs accepted answers`);
+  assert.ok(detail.modelAnswer, `${exercise.id}: detail needs a model answer`);
 }
 
 assert.equal(
@@ -662,6 +679,19 @@ const queueWithDue = buildReviewQueue({
   seen: new Set()
 });
 assert.equal(queueWithDue[0].id, overdue.id, "Due cards should be shown before new cards");
+const shuffledQueueByPool = shuffleReviewQueueByPool(queueWithSkippedDue, new Map([
+  [overdue.id, overdue],
+  [cards[0].id, firstCardAfterAgain.schedule]
+]), () => 0);
+assert.deepEqual(
+  shuffledQueueByPool.slice(0, 2).map((card) => card.id),
+  [overdue.id, cards[0].id],
+  "Shuffling may reorder review cards but keeps them in the review pool"
+);
+assert.ok(
+  shuffledQueueByPool.slice(2).every((card) => ![overdue.id, cards[0].id].includes(card.id)),
+  "New cards must remain after the shuffled review pool"
+);
 
 const translation = data.lessons[4].exercises[1];
 const coverage = checkExercise(
