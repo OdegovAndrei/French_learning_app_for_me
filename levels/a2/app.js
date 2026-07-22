@@ -129,8 +129,8 @@ void init();
 async function init() {
   try {
     const [courseResponse, matrixResponse, a1Response] = await Promise.all([
-      fetch("data/a2/course.json?v=20260722-a2-block-1"),
-      fetch("data/a2/can-do.json?v=20260722-a2-matrix-1"),
+      fetch("data/a2/course.json?v=20260722-a2-block-6"),
+      fetch("data/a2/can-do.json?v=20260722-a2-matrix-6"),
       fetch("data/lessons.json?v=20260722-help-ladder-1")
     ]);
     if (!courseResponse.ok) throw new Error(`Курс A2: HTTP ${courseResponse.status}`);
@@ -192,6 +192,10 @@ function renderToday() {
   const lesson = getCurrentLesson();
   const review = getReviewSummary();
   const completed = state.appState.completedLessons.length;
+  const module = getModule(lesson?.moduleId);
+  const modulePhaseLabel = getModulePhaseLabel(module);
+  const moduleLessons = module ? getModuleLessons(module.id) : [];
+  const moduleCompleted = moduleLessons.filter((item) => state.appState.completedLessons.includes(item.id)).length;
   app.innerHTML = `
     <div class="metrics-grid today-metrics">
       <button class="metric metric-button" type="button" data-go-review>
@@ -200,9 +204,9 @@ function renderToday() {
         <span>A1 + A2 · ${review.newSlots} новых A2 сегодня</span>
       </button>
       <div class="metric">
-        <p class="eyebrow">Первый блок A2.1</p>
+        <p class="eyebrow">${module ? `Блок ${module.order} · ${escapeHtml(modulePhaseLabel)}` : "Опубликованные блоки A2"}</p>
         <strong>${completed}/${state.data.lessons.length} уроков</strong>
-        <span>Что произошло: рассказ, проблема, уточнение</span>
+        <span>${module ? `${escapeHtml(module.title)} · ${moduleCompleted}/${moduleLessons.length}` : "Все уроки отмечены пройденными"}</span>
       </div>
     </div>
     ${lesson ? `
@@ -222,8 +226,8 @@ function renderToday() {
         </aside>
       </div>` : `
       <section class="empty-state with-top-gap">
-        <strong>Первый блок завершён</strong>
-        <p>Продолжай накопительное повторение. Следующий блок появится после проверки этого маршрута в реальном прохождении.</p>
+        <strong>Опубликованные блоки завершены</strong>
+        <p>Продолжай накопительное повторение и возвращайся к любому уроку из общего списка.</p>
       </section>`}`;
   if (lesson) renderLessonInto(document.querySelector("#today-lesson"), lesson);
   document.querySelectorAll("[data-go-review]").forEach((button) => button.addEventListener("click", () => switchView("review")));
@@ -232,21 +236,30 @@ function renderToday() {
 
 function renderLessons() {
   const completed = new Set(state.appState.completedLessons);
+  const modules = [...state.data.modules].sort((left, right) => left.order - right.order);
+  const phaseLabels = [...new Set(modules.map(getModulePhaseLabel))];
+  const bilanCount = state.data.lessons.filter((lesson) => lesson.scenario.endsWith("bilan")).length;
+  const regularLessonCount = state.data.lessons.length - bilanCount;
   app.innerHTML = `
     <div class="metrics-grid">
-      ${metric("Опубликовано", state.data.lessons.length, "5 уроков + bilan")}
+      ${metric("Опубликовано", state.data.lessons.length, `${regularLessonCount} уроков + ${bilanCount} bilan`)}
       ${metric("Пройдено", completed.size, `из ${state.data.lessons.length}`)}
       ${metric("Упражнения", state.data.lessons.flatMap((lesson) => lesson.exercises).length, "проверяемые и открытые")}
-      ${metric("Фаза", "A2.1", "связать знакомые фразы")}
+      ${metric("Блоки", modules.length, phaseLabels.join(" · "))}
     </div>
-    <section class="section-band with-top-gap">
-      <div class="section-heading">
-        <div><p class="eyebrow">Блок 1 · Что произошло</p><h3>Выходные, поездка и небольшая проблема</h3></div>
-        <span class="tag">${completed.size}/${state.data.lessons.length}</span>
-      </div>
-      <p class="note">Bilan завершает блок и отмечается как обычный урок в едином учебном прогрессе.</p>
-      <div class="lesson-list">${state.data.lessons.map(renderLessonTile).join("")}</div>
-    </section>
+    ${modules.map((module) => {
+      const lessons = getModuleLessons(module.id);
+      const moduleCompleted = lessons.filter((lesson) => completed.has(lesson.id)).length;
+      const phaseLabel = getModulePhaseLabel(module);
+      return `<section class="section-band with-top-gap">
+        <div class="section-heading">
+          <div><p class="eyebrow">Блок ${module.order} · ${escapeHtml(phaseLabel)}</p><h3>${escapeHtml(module.title)}</h3></div>
+          <span class="tag">${moduleCompleted}/${lessons.length}</span>
+        </div>
+        <p class="note">${escapeHtml(module.description)} Bilan отмечается как обычный урок в едином учебном прогрессе.</p>
+        <div class="lesson-list">${lessons.map(renderLessonTile).join("")}</div>
+      </section>`;
+    }).join("")}
     <div id="selected-lesson" class="with-top-gap"></div>`;
 
   document.querySelectorAll("[data-lesson-id]").forEach((button) => {
@@ -299,6 +312,8 @@ function renderReview() {
 function renderProgress() {
   const completed = new Set(state.appState.completedLessons);
   const exercises = state.data.lessons.flatMap((lesson) => lesson.exercises);
+  const blocks = state.matrix.phases.flatMap((phase) => phase.blocks);
+  const publishedBlocks = blocks.filter((block) => block.status === "published").length;
   const readyExercises = exercises.filter((exercise) => {
     const lesson = state.data.lessons.find((item) => item.exercises.some((candidate) => candidate.id === exercise.id));
     return mastery.evaluateLessonReadiness(lesson, state.exerciseAttempts, state.recordings)
@@ -306,10 +321,10 @@ function renderProgress() {
   }).length;
   app.innerHTML = `
     <div class="metrics-grid">
-      ${metric("Уроки", `${completed.size}/${state.data.lessons.length}`, "первый блок")}
+      ${metric("Уроки", `${completed.size}/${state.data.lessons.length}`, `${publishedBlocks} блоков опубликовано`)}
       ${metric("Задания", `${readyExercises}/${exercises.length}`, "выполнено")}
       ${metric("Фазы", state.matrix.phases.length, "A2.1 и A2.2")}
-      ${metric("Блоки", state.matrix.phases.flatMap((phase) => phase.blocks).length, "1 опубликован")}
+      ${metric("Блоки", blocks.length, `${publishedBlocks} опубликовано`)}
     </div>
     <section class="section-band with-top-gap">
       <div class="section-heading"><div><p class="eyebrow">Исходная предпосылка</p><h3>Ответственное самостоятельное обучение</h3></div></div>
@@ -383,7 +398,7 @@ function renderSettings() {
 function renderLessonInto(container, lesson) {
   if (!container || !lesson) return;
   const template = document.querySelector("#lesson-template").content.cloneNode(true);
-  template.querySelector(".lesson-level").textContent = `${lesson.level} · A2.1 · ${lesson.scenario}`;
+  template.querySelector(".lesson-level").textContent = `${lesson.level} · ${getModulePhaseLabel(getModule(lesson.moduleId))} · ${lesson.scenario}`;
   template.querySelector(".lesson-title").textContent = lesson.title;
   template.querySelector(".lesson-goal").textContent = lesson.goal;
   template.querySelector(".lesson-objectives").innerHTML = lesson.objectives
@@ -745,6 +760,23 @@ function chooseCurrentLessonId() {
 
 function getLesson(id) {
   return state.data?.lessons.find((lesson) => lesson.id === id) || null;
+}
+
+function getModule(id) {
+  return state.data?.modules.find((module) => module.id === id) || null;
+}
+
+function getModuleLessons(moduleId) {
+  return state.data.lessons
+    .filter((lesson) => lesson.moduleId === moduleId)
+    .sort((left, right) => left.order - right.order);
+}
+
+function getModulePhaseLabel(module) {
+  if (!module) return "A2";
+  const blockId = module.id.split(":").at(-1);
+  const phase = state.matrix?.phases.find((item) => item.blocks.some((block) => block.id === blockId));
+  return phase?.id?.toUpperCase() || "A2";
 }
 
 function getLessonPrerequisites(lesson) {
